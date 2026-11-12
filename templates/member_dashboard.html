@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Area - St. Jerome Library</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #2e1d1a; color: #FDFBF7; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col relative" x-data="{ showPwdModal: false, oldPwd: '', newPwd: '', pwdMsg: '', pwdLoading: false, async submitPwd() { this.pwdLoading = true; this.pwdMsg = ''; try { const res = await fetch('/opac/member/change_password', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({old_password: this.oldPwd, new_password: this.newPwd}) }); const data = await res.json(); if(data.status==='success') { alert('Kata sandi berhasil diubah!'); this.showPwdModal = false; this.oldPwd = ''; this.newPwd = ''; } else { this.pwdMsg = data.message || 'Gagal mengubah kata sandi'; } } catch(e) { this.pwdMsg = 'Terjadi kesalahan jaringan.'; } this.pwdLoading = false; } }">
+    
+    <!-- Immersive Global Library Background -->
+    <div class="fixed inset-0 z-[-1]">
+        <!-- Dark Brown Overlay -->
+        <div class="absolute inset-0 bg-[#2e1d1a] opacity-95 mix-blend-multiply z-10"></div>
+        <!-- Library Image -->
+        <img src="/static/img/bg4.jpg" class="w-full h-full object-cover z-0 grayscale opacity-40">
+    </div>
+
+
+    <!-- Top Navigation -->
+    <nav class="sticky top-0 z-50 bg-transparent backdrop-blur-md border-b border-[#E6B325]/20 px-6 md:px-12 py-5 flex justify-between items-center">
+        <!-- Logo -->
+        <div class="flex items-center gap-4 cursor-pointer" onclick="window.location.href='/opac'">
+            <img src="/static/img/logo_imavi.png" alt="Logo" class="h-12 w-12 object-cover bg-white/95 rounded-full p-1 shadow-md">
+            <div class="flex flex-col">
+                <span class="font-serif font-bold text-xl leading-none text-white">ST. JEROME</span>
+                <span class="text-[10px] tracking-[0.2em] uppercase text-[#E6B325] mt-1">Library</span>
+            </div>
+        </div>
+
+        <!-- Center Nav -->
+        <div class="hidden md:flex gap-10 text-sm font-medium text-white/60">
+            <a href="/opac/member/dashboard" class="text-[#E6B325] border-b-2 border-[#E6B325] pb-1">Dasbor</a>
+            <a href="/opac/member/reader" class="hover:text-white transition-colors pb-1">Ruang Baca Virtual</a>
+            <a href="/opac/member/reservasi" class="hover:text-white transition-colors pb-1">Daftar Reservasi</a>
+            <a href="/pos/kirim_print" class="hover:text-[#E6B325] transition-colors pb-1 flex items-center gap-1.5"><i class="fa-solid fa-print text-xs"></i> Kirim Print Mandiri</a>
+        </div>
+
+        <!-- User Profile -->
+        <div class="flex items-center gap-5">
+            <div class="text-right hidden md:block">
+                <div class="text-sm font-semibold text-white">{{ nama }}</div>
+                
+                <div class="text-xs text-[#E6B325]">{{ tipe }}</div>
+                <button @click="showPwdModal = true" class="text-[10px] text-white/50 hover:text-[#E6B325] underline decoration-dotted transition-colors mt-0.5">Ubah Kata Sandi</button>
+
+            </div>
+            <a href="/opac/member/logout" class="w-10 h-10 rounded-full bg-[#E6B325] text-[#2e1d1a] flex items-center justify-center hover:bg-white transition-colors shadow-md" title="Keluar">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 w-full max-w-7xl mx-auto px-6 md:px-12 py-16">
+        
+        <h1 class="text-5xl md:text-6xl font-serif font-bold mb-16 tracking-tight text-white">
+            Selamat datang kembali,<br>
+            <span class="text-[#E6B325] font-light italic">{{ nama.split(" ")[0] }}.</span>
+        </h1>
+
+        <!-- Typography-Driven Stats (No boxes/cards) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 border-b border-[#E6B325]/20 pb-16 mb-16">
+            <div class="flex flex-col">
+                <span class="text-xs text-white/50 uppercase tracking-[0.15em] font-bold mb-6">Sedang Dipinjam</span>
+                <div class="text-6xl font-light font-serif text-white">{{ pinjam_count }} <span class="text-xl font-sans text-white/40 uppercase tracking-widest ml-2">Buku</span></div>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-xs text-white/50 uppercase tracking-[0.15em] font-bold mb-6 flex items-center justify-between cursor-pointer hover:text-[#E6B325]" onclick="window.location.href='/opac/member/reservasi'">Reservasi Aktif <i class="fa-solid fa-arrow-right text-[10px]"></i></span>
+                <div class="text-6xl font-light font-serif text-white">{{ reservasi_count }} <span class="text-xl font-sans text-white/40 uppercase tracking-widest ml-2">Buku</span></div>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-xs text-[#E6B325] uppercase tracking-[0.15em] font-bold mb-6 flex items-center justify-between">
+                    <span>Saldo Fotocopy/Print</span>
+                    <a href="/pos/kirim_print" class="text-[11px] underline hover:text-white" title="Portal Print Dokumen Mandiri"><i class="fa-solid fa-print"></i> Kirim Print</a>
+                </span>
+                <div class="text-5xl lg:text-6xl font-light font-serif text-emerald-400">
+                    Rp {{ "{:,}".format(saldo_tabungan or 0).replace(",", ".") }}
+                </div>
+                {% if no_rekening %}
+                <div class="text-xs text-white/50 mt-3 font-mono">No. Rekening: <span class="text-amber-400 font-bold">{{ no_rekening }}</span></div>
+                {% endif %}
+            </div>
+            <div class="flex flex-col">
+                <span class="text-xs text-red-400 uppercase tracking-[0.15em] font-bold mb-6">Tunggakan Denda</span>
+                <div class="text-6xl font-light font-serif text-white">Rp 0</div>
+            </div>
+        </div>
+        
+        <!-- Immersive Ruang Baca Virtual Section -->
+        <div class="mb-20">
+            <div class="flex items-center justify-between mb-10">
+                <h2 class="text-3xl font-serif font-bold text-white">Ruang Baca Virtual</h2>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span class="text-xs font-bold text-white/50 uppercase tracking-widest">Sesi Aktif</span>
+                </div>
+            </div>
+            
+            <div class="relative w-full rounded-[2rem] overflow-hidden shadow-2xl group border border-[#E6B325]/20">
+                <!-- Immersive Background -->
+                <div class="absolute inset-0 bg-black/40 backdrop-blur-sm z-0">
+                    <img src="/static/img/bg2.jpg" class="w-full h-full object-cover opacity-20 mix-blend-screen transition-transform duration-1000 group-hover:scale-105">
+                </div>
+                
+                <div class="relative z-10 p-10 md:p-20 flex flex-col md:flex-row gap-12 md:gap-20 items-center">
+                    <!-- Book Cover -->
+                    <div class="w-48 md:w-56 shrink-0 relative">
+                        <img src="https://covers.openlibrary.org/b/isbn/0674295021-M.jpg" alt="Book Cover" class="w-full h-auto shadow-2xl rounded-sm transform transition-transform duration-500 group-hover:-translate-y-4">
+                        <div class="absolute -bottom-6 -right-6 w-24 h-24 bg-[#E6B325] rounded-full mix-blend-multiply blur-2xl opacity-40"></div>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div class="text-white w-full">
+                        <div class="inline-block border border-[#E6B325]/50 bg-[#E6B325]/20 text-[#E6B325] text-[10px] uppercase tracking-[0.2em] font-bold px-4 py-1.5 rounded-full mb-6">
+                            Lanjutkan Membaca
+                        </div>
+                        
+                        <h3 class="text-4xl md:text-5xl font-serif font-bold mb-4 leading-tight text-white">The fate of reason</h3>
+                        <p class="text-xl text-white/70 font-serif italic mb-12">Beiser, Frederick</p>
+                        
+                        <div class="max-w-md w-full">
+                            <div class="flex justify-between text-[11px] font-bold uppercase tracking-widest mb-4 text-white/60">
+                                <span>Progres 45%</span>
+                                <span>Hal 120 / 268</span>
+                            </div>
+                            <!-- Beautiful Progress Bar -->
+                            <div class="w-full bg-white/10 h-1.5 rounded-full mb-10 overflow-visible">
+                                <div class="bg-[#E6B325] h-1.5 w-[45%] rounded-full relative shadow-[0_0_15px_rgba(230,179,37,0.6)]">
+                                    <div class="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-md"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a href="/opac/member/reader" class="inline-block bg-[#E6B325] text-[#2e1d1a] px-10 py-4 rounded-full text-sm font-bold uppercase tracking-widest hover:bg-white transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1">
+                            Buka Dokumen
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Ubah Kata Sandi -->
+    <div x-show="showPwdModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" style="display: none;">
+        <div class="bg-[#1f1311] border border-[#E6B325]/30 rounded-2xl p-8 max-w-md w-full shadow-2xl relative" @click.away="showPwdModal = false">
+            <button @click="showPwdModal = false" class="absolute top-4 right-4 text-white/50 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h3 class="text-2xl font-serif font-bold text-white mb-2">Ubah Kata Sandi</h3>
+            <p class="text-sm text-white/60 mb-6">Pastikan kata sandi baru mudah Anda ingat.</p>
+            <form @submit.prevent="submitPwd()" class="flex flex-col gap-4">
+                <div>
+                    <label class="block text-xs uppercase font-bold text-white/50 mb-1">Kata Sandi Lama (Default: NIM)</label>
+                    <input type="password" x-model="oldPwd" required class="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#E6B325]">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase font-bold text-white/50 mb-1">Kata Sandi Baru</label>
+                    <input type="password" x-model="newPwd" required minlength="4" class="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#E6B325]">
+                </div>
+                <div x-show="pwdMsg" class="text-xs text-red-400 font-medium" x-text="pwdMsg"></div>
+                <button type="submit" :disabled="pwdLoading" class="mt-2 bg-[#E6B325] text-[#2e1d1a] font-bold py-3 rounded-lg hover:bg-white transition-all uppercase text-xs tracking-wider disabled:opacity-50">
+                    <span x-text="pwdLoading ? 'Menyimpan...' : 'Simpan Kata Sandi Baru'"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+    
+</body>
+</html>

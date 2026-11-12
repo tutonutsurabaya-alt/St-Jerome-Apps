@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>OPAC - Perpustakaan St. Jerome</title>
+
+    
+
+    <!-- Google Fonts: Inter & Playfair Display (Substitute for Heldane) -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+
+    
+
+    <!-- Tailwind CSS (via CDN) -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    
+
+    <!-- FontAwesome -->
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    
+
+    <!-- Alpine.js -->
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    
+
+    <script>
+
+        tailwind.config = {
+
+            theme: {
+
+                extend: {
+
+                    colors: {
+
+                        'fable-forest': '#3e2723',
+
+                        'storybook-sky': '#c09268',
+
+                        'paper-cream': '#f7f4ee',
+
+                        'ink': '#161015',
+
+                        'charcoal-plum': '#292229',
+
+                        'graphite': '#3f383d',
+
+                        'char': '#070607',
+
+                        'fog': '#ededed',
+
+                    },
+
+                    fontFamily: {
+
+                        'sans': ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+
+                        'display': ['"Playfair Display"', 'ui-serif', 'serif'],
+
+                    },
+
+                    borderRadius: {
+
+                        'buttons': '60px',
+
+                        'cards': '12px',
+
+                    },
+
+                    boxShadow: {
+
+                        'pill': '0 4px 20px 0 rgba(0, 0, 0, 0.4)',
+
+                        'book': '0 2px 8px 0 rgba(0, 0, 0, 0.2)',
+
+                    },
+
+                    spacing: {
+
+                        'section': '80px',
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    </script>
+
+    
+
+    <style>
+
+        body {
+
+            background-color: #ffffff;
+
+            color: #3f383d; /* Graphite */
+
+        }
+
+        
+
+        /* Editorial Typography adjustments */
+
+        .headline-display {
+
+            font-family: 'Playfair Display', serif;
+
+            font-weight: 400;
+
+            line-height: 0.94;
+
+            color: #161015; /* Ink */
+
+        }
+
+        .headline-display.dark-bg {
+
+            color: #ffffff;
+
+        }
+
+        
+
+        .btn-pill-dark {
+
+            background-color: #292229;
+
+            color: #ffffff;
+
+            border-radius: 60px;
+
+            padding: 16px 28px;
+
+            font-weight: 500;
+
+            letter-spacing: -0.32px;
+
+            box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.4);
+
+            transition: transform 0.2s;
+
+        }
+
+        .btn-pill-dark:hover { transform: translateY(-2px); }
+
+        
+
+        .btn-pill-white {
+
+            background-color: #ffffff;
+
+            color: #161015;
+
+            border-radius: 60px;
+
+            padding: 16px 28px;
+
+            font-weight: 500;
+
+            letter-spacing: -0.32px;
+
+            box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.4);
+
+            transition: transform 0.2s;
+
+        }
+
+        .btn-pill-white:hover { transform: translateY(-2px); }
+
+        
+
+        .nav-link {
+
+            font-weight: 500;
+
+            color: #161015;
+
+            text-decoration: none;
+
+            letter-spacing: -0.25px;
+
+        }
+
+        .nav-link.dark-bg {
+
+            color: #ffffff;
+
+        }
+
+        
+
+        /* Body typography tracking (tighten) */
+
+        p, span, div, input {
+
+            letter-spacing: -0.32px;
+
+            line-height: 1.5;
+
+        }
+
+        
+
+        .hide-scrollbar::-webkit-scrollbar {
+
+            display: none;
+
+        }
+
+        .hide-scrollbar {
+
+            -ms-overflow-style: none;
+
+            scrollbar-width: none;
+
+        }
+
+    
+
+        @keyframes scrollRight {
+
+            0% { transform: translateX(-50%); }
+
+            100% { transform: translateX(0); }
+
+        }
+
+        @keyframes scrollLeft {
+
+            0% { transform: translateX(0); }
+
+            100% { transform: translateX(-50%); }
+
+        }
+
+        .animate-marquee-left { animation: scrollLeft 30s linear infinite; }
+
+        .animate-marquee-right { animation: scrollRight 30s linear infinite; }
+
+        .marquee-hover:hover { animation-play-state: paused; }
+
+</style>
+
+</head>
+
+<body x-data="searchApp()" x-init="initApp()" class="antialiased">
+
+
+
+    <!-- Navigation -->
+
+    <nav class="w-full absolute top-0 left-0 z-10 px-8 py-6">
+
+        <div class="max-w-[1200px] mx-auto flex justify-between items-center">
+
+            <a href="/opac" class="flex items-center gap-3">
+
+                <img src="/static/img/logo_imavi.png" alt="Logo" class="h-14 w-14 object-contain bg-white/20 p-1 backdrop-blur-sm" style="border-radius: 9999px;">
+
+                <div class="flex flex-col">
+
+                    <span class="font-sans font-bold text-white text-2xl tracking-tight leading-none mb-1">St. Jerome</span>
+
+                    <span class="text-white/80 text-[10px] tracking-[0.2em] uppercase font-bold">Library &amp; Catalog</span>
+
+                </div>
+
+            </a>
+
+            <div class="hidden md:flex gap-8">
+
+                <a href="/opac" class="nav-link dark-bg">Katalog</a>
+
+                <a href="#" class="nav-link dark-bg">Koleksi Baru</a>
+
+                <a href="#" class="nav-link dark-bg">E-Resources</a>
+
+            </div>
+
+            <div class="flex gap-4">
+
+                <a href="/login" class="nav-link dark-bg"><i class="fa-regular fa-user text-xl"></i></a>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+
+
+    <!-- Fable Forest Hero Section -->
+
+    <section class="pt-32 pb-section w-full relative overflow-hidden" x-data="heroSlideshow()">
+        <!-- Background Image Slideshow with Brown Overlay -->
+        <div class="absolute inset-0 z-0 bg-[#3e2723]">
+            <template x-for="(bg, index) in bgs" :key="index">
+                <img :src="bg" class="w-full h-full object-cover absolute inset-0 transition-opacity duration-[2000ms] ease-in-out" 
+                     :class="currentBg === index ? 'opacity-40' : 'opacity-0'" alt="Library Background">
+            </template>
+            <div class="absolute inset-0 bg-[#3e2723]/70 mix-blend-multiply"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-[#3e2723] via-[#3e2723]/80 to-transparent"></div>
+        </div>
+
+        <!-- Centered Content -->
+        <div class="max-w-[1000px] mx-auto px-6 flex flex-col items-center text-center relative z-10 pt-10 pb-20">
+            <!-- Left: Typography & Search (Now Centered) -->
+            <h1 class="font-sans font-bold text-white text-5xl md:text-7xl mb-6 tracking-tight leading-[0.9]">
+                Temukan<br>inspirasi bacaan<br>Anda.
+            </h1>
+            <p class="text-white/90 text-lg md:text-xl mb-10 max-w-2xl font-light">
+                Jelajahi ribuan koleksi filsafat, teologi, dan humaniora di Perpustakaan St. Jerome. Cari judul, pengarang, atau kata kunci.
+            </p>
+
+            <!-- Search Form -->
+            <form @submit.prevent="doSearch" class="relative w-full max-w-3xl flex items-center mb-8">
+                <input type="text" x-model="searchQuery"
+                    placeholder="Cari buku, pengarang..." 
+                    class="w-full bg-white text-ink text-lg md:text-xl placeholder:text-ink/40 rounded-full py-4 md:py-5 pl-8 pr-16 md:pr-20 focus:outline-none focus:ring-4 focus:ring-yellow-600/50 shadow-2xl transition-all"
+                >
+                <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 bg-[#3e2723] hover:bg-[#2e1d1a] text-white w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-magnifying-glass md:text-lg"></i>
+                </button>
+            </form>
+            
+            <div class="flex gap-4 items-center">
+                <a href="#katalog" class="text-white/80 hover:text-white text-sm uppercase tracking-wider font-semibold underline decoration-yellow-600 underline-offset-4">Jelajahi Katalog</a>
+            </div>
+        </div>
+
+                <!-- Operating Hours & Running Text -->
+        <div class="w-full relative mt-10 z-10 flex flex-col">
+                        <!-- Running Text (Brown Band) -->
+            <div class="w-full bg-[#5c3a21] text-white/90 overflow-hidden py-3 shadow-xl border-y border-white/10">
+                <div class="flex w-max animate-marquee-left items-center whitespace-nowrap">
+                    <!-- Repeat text -->
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6">ST. JEROME LIBRARY NEW ARRIVALS</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6 text-white/50">•</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6">ST. JEROME LIBRARY NEW ARRIVALS</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6 text-white/50">•</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6">ST. JEROME LIBRARY NEW ARRIVALS</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6 text-white/50">•</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6">ST. JEROME LIBRARY NEW ARRIVALS</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6 text-white/50">•</span>
+                    <!-- Duplicate for seamless loop -->
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6">ST. JEROME LIBRARY NEW ARRIVALS</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6 text-white/50">•</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6">ST. JEROME LIBRARY NEW ARRIVALS</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6 text-white/50">•</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6">ST. JEROME LIBRARY NEW ARRIVALS</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6 text-white/50">•</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6">ST. JEROME LIBRARY NEW ARRIVALS</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6 text-white/50">•</span>
+                    <!-- Extra repeats to ensure overflow width -->
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6">ST. JEROME LIBRARY NEW ARRIVALS</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6 text-white/50">•</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6">ST. JEROME LIBRARY NEW ARRIVALS</span>
+                    <span class="text-xl md:text-2xl font-black uppercase tracking-widest mx-6 text-white/50">•</span>
+                </div>
+            </div>
+
+            <!-- Book Covers Ribbon (Moving Left to Right) -->
+            <div class="w-full relative h-[160px] overflow-hidden bg-[#3e2723]" x-data="heroMarquee()" x-init="fetchCovers()">
+                <!-- Fade Edges -->
+                <div class="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#3e2723] to-transparent z-10 pointer-events-none"></div>
+                <div class="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#3e2723] to-transparent z-10 pointer-events-none"></div>
+                
+                <div class="flex w-max h-full animate-marquee-right marquee-hover gap-6 items-center opacity-90 hover:opacity-100 transition-opacity pt-4 pb-4">
+                    <template x-for="(book, index) in row1" :key="index">
+                        <div class="w-[90px] md:w-[100px] shrink-0 bg-white shadow-xl rounded overflow-hidden transform transition duration-300 hover:-translate-y-2 hover:scale-110 cursor-pointer">
+                            <img :src="getCover(book)" class="w-full h-[130px] md:h-[145px] object-cover" :alt="book.judul">
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Loading State -->
+
+    <div x-show="isLoading" class="py-20 text-center bg-paper-cream">
+
+        <i class="fa-solid fa-circle-notch fa-spin text-3xl text-charcoal-plum mb-4"></i>
+
+        <p class="text-graphite font-medium">Mencari koleksi perpustakaan...</p>
+
+    </div>
+
+
+
+    <!-- Results: Storybook Sky Section (If Has Results) -->
+
+    <section x-show="!isLoading && searchResults.length > 0" class="bg-storybook-sky py-section w-full" x-cloak>
+
+        <div class="max-w-[1200px] mx-auto px-6 mb-12">
+
+            <h2 class="headline-display text-4xl mb-4">Hasil Pencarian</h2>
+
+            <p class="text-ink font-medium">Menemukan <span x-text="searchResults.length"></span> buku untuk "<span x-text="searchQuery"></span>"</p>
+
+        </div>
+
+
+
+        <!-- Book Cover Grid Row (Overhanging) -->
+
+        <div class="w-full overflow-x-auto hide-scrollbar pl-6 md:pl-[calc(50vw-600px)] pr-6 pb-8">
+
+            <div class="flex gap-4 w-max">
+
+                <template x-for="book in searchResults" :key="book.id">
+
+                    <div class="w-[180px] flex flex-col group cursor-pointer" @click="alert('Detail buku: ' + book.judul)">
+
+                        <!-- Cover -->
+
+                        <div class="w-[180px] h-[260px] bg-paper-cream rounded-sm shadow-book mb-4 overflow-hidden relative transition-transform duration-300 group-hover:-translate-y-2 group-hover:shadow-pill">
+
+                            <img :src="getCoverUrl(book)" class="w-full h-full object-cover">
+
+                            
+
+                            <!-- Status Badge -->
+
+                            <div class="absolute top-2 right-2 px-2 py-1 rounded text-[10px] font-bold tracking-tight uppercase"
+
+                                 :class="book.tersedia > 0 ? 'bg-fable-forest text-white' : 'bg-charcoal-plum text-white'">
+
+                                <span x-text="book.tersedia > 0 ? 'Tersedia' : 'Dipinjam'"></span>
+
+                            </div>
+
+                        </div>
+
+                        
+
+                        <!-- Metadata -->
+
+                        <h3 class="headline-display text-lg leading-tight mb-1 line-clamp-2" x-text="book.judul"></h3>
+
+                        <p class="text-ink text-sm font-medium line-clamp-1 opacity-80" x-text="book.pengarang"></p>
+
+                    </div>
+
+                </template>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- Empty State: Paper Cream Section -->
+
+    <section x-show="!isLoading && searchQuery !== '' && searchResults.length === 0" class="bg-paper-cream py-section w-full" x-cloak>
+
+        <div class="max-w-[1200px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+
+            <div class="max-w-[520px]">
+
+                <h2 class="headline-display text-5xl mb-6">Buku tidak ditemukan.</h2>
+
+                <p class="text-graphite mb-8">
+
+                    Kami tidak dapat menemukan "<span x-text="searchQuery" class="font-semibold text-ink"></span>" di rak kami. 
+
+                    Namun jangan khawatir, Anda dapat mengusulkan buku ini kepada pustakawan kami untuk ditambahkan ke koleksi.
+
+                </p>
+
+                <button @click="openRequestModal()" class="btn-pill-dark">
+
+                    Usulkan Buku Ini
+
+                </button>
+
+            </div>
+
+            
+
+            <div class="hidden md:flex justify-end">
+
+                <div class="w-72 h-72 bg-white rounded-full" style="border-radius: 9999px;" flex items-center justify-center shadow-pill">
+
+                    <i class="fa-solid fa-book-open-reader text-6xl text-storybook-sky opacity-80"></i>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- Footer: Char Band -->
+
+    <!-- New Footer GSJS Style -->
+    <footer class="bg-[#0f0a09] py-16 w-full text-white/70 text-sm font-sans">
+        <div class="max-w-[1200px] mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
+            
+            <!-- Column 1: Brand & Desc -->
+            <div class="col-span-1 md:col-span-1">
+                <div class="flex items-center gap-3 mb-6">
+                    <img src="/static/img/logo_imavi.png" alt="Logo" class="h-10 w-10 object-contain bg-white/20 p-1 rounded-full backdrop-blur-sm">
+                    <h2 class="text-white text-xl font-bold tracking-wide">St. Jerome</h2>
+                </div>
+                <p class="mb-8 leading-relaxed text-xs text-white/60">
+                    Perpustakaan St. Jerome hadir dengan visi untuk menyediakan sumber literatur teologi, filsafat, dan humaniora terlengkap. Menjadi wadah bagi mahasiswa dan umat untuk bertumbuh dalam iman dan pengetahuan.
+                </p>
+                
+                <h3 class="text-white font-bold tracking-[0.2em] uppercase mb-4 text-xs">Alamat</h3>
+                <p class="leading-relaxed mb-8 text-xs text-white/60">
+                    Jl. Kalisari Selatan No. 1, Kalisari,<br>
+                    Kec. Mulyorejo, Kota Surabaya,<br>
+                    Jawa Timur 60112
+                </p>
+
+                <h3 class="text-white font-bold tracking-[0.2em] uppercase mb-4 text-xs">Jam Operasional</h3>
+                <p class="leading-relaxed text-xs">
+                    <span class="block text-white/60 mb-1">Senin - Jumat : <span class="text-white font-semibold">08.00 - 16.00 WIB</span></span>
+                    <span class="block text-red-400">Sabtu - Minggu : <span class="font-semibold">Libur</span></span>
+                </p>
+            </div>
+
+            <!-- Column 2: Layanan / Link -->
+            <div class="col-span-1 md:col-span-1 md:ml-auto">
+                <h3 class="text-white font-bold tracking-[0.2em] uppercase mb-6 text-xs">Layanan</h3>
+                <ul class="space-y-4 text-xs">
+                    <li><a href="/opac" class="hover:text-white transition-colors">Beranda</a></li>
+                    <li><a href="#katalog" class="hover:text-white transition-colors">Pencarian Katalog</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Koleksi Terbaru</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">E-Resources</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Usulan Buku</a></li>
+                </ul>
+            </div>
+
+            <!-- Column 3: Lainnya -->
+            <div class="col-span-1 md:col-span-1 md:ml-auto">
+                <h3 class="text-white font-bold tracking-[0.2em] uppercase mb-6 text-xs">Tautan Terkait</h3>
+                <ul class="space-y-4 text-xs">
+                    <li><a href="https://imavi.org" target="_blank" class="hover:text-white transition-colors">Website IMAVI</a></li>
+                    <li><a href="https://ukwms.ac.id" target="_blank" class="hover:text-white transition-colors">Universitas Katolik Widya Mandala</a></li>
+                    <li><a href="/login" class="hover:text-white transition-colors">Login Pustakawan</a></li>
+                </ul>
+            </div>
+
+            <!-- Column 4: Social / Apps -->
+            <div class="col-span-1 md:col-span-1 md:ml-auto">
+                <h3 class="text-white font-bold tracking-[0.2em] uppercase mb-6 text-xs">Sosial Media</h3>
+                <div class="flex gap-3">
+                    <a href="#" class="w-10 h-10 rounded border border-white/20 flex items-center justify-center hover:bg-white hover:text-[#0f0a09] transition-all">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded border border-white/20 flex items-center justify-center hover:bg-white hover:text-[#0f0a09] transition-all">
+                        <i class="fa-brands fa-youtube"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded border border-white/20 flex items-center justify-center hover:bg-white hover:text-[#0f0a09] transition-all">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </a>
+                </div>
+            </div>
+            
+        </div>
+        <div class="max-w-[1200px] mx-auto px-6 mt-16 pt-8 border-t border-white/10 text-center text-[11px] text-white/30 tracking-widest uppercase">
+            &copy; 2026 Institut Filsafat & Teologi (IMAVI). Hak Cipta Dilindungi.
+        </div>
+    </footer>
+
+
+
+    <!-- Request Modal -->
+
+    <div x-show="isRequestModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 backdrop-blur-sm p-4" x-cloak>
+
+        <div class="bg-paper-cream rounded-cards w-full max-w-[500px] p-8 shadow-pill" @click.outside="closeModal()">
+
+            <div class="flex justify-between items-center mb-6">
+
+                <h3 class="headline-display text-3xl">Usulan Buku</h3>
+
+                <button @click="closeModal()" class="text-graphite hover:text-ink text-xl"><i class="fa-solid fa-times"></i></button>
+
+            </div>
+
+            
+
+            <form @submit.prevent="submitRequest" class="flex flex-col gap-5">
+
+                <div>
+
+                    <label class="block text-sm font-semibold text-ink mb-2">Judul Buku</label>
+
+                    <input type="text" x-model="requestForm.judul" required class="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-ink focus:outline-none focus:border-storybook-sky">
+
+                </div>
+
+                <div>
+
+                    <label class="block text-sm font-semibold text-ink mb-2">Pengarang (Opsional)</label>
+
+                    <input type="text" x-model="requestForm.pengarang" class="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-ink focus:outline-none focus:border-storybook-sky">
+
+                </div>
+
+                <div>
+
+                    <label class="block text-sm font-semibold text-ink mb-2">Catatan (Opsional)</label>
+
+                    <textarea x-model="requestForm.catatan" rows="3" class="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-ink focus:outline-none focus:border-storybook-sky"></textarea>
+
+                </div>
+
+                
+
+                <button type="submit" class="btn-pill-dark w-full mt-2">Kirim Usulan</button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Script -->
+
+    <script>
+
+        function searchApp() {
+
+            return {
+
+                searchQuery: '',
+
+                searchResults: [],
+
+                isLoading: false,
+
+                requestForm: { judul: '', pengarang: '', catatan: '' },
+
+                isRequestModalOpen: false,
+
+
+
+                initApp() {
+
+                    const urlParams = new URLSearchParams(window.location.search);
+
+                    const q = urlParams.get('q');
+
+                    if (q) {
+
+                        this.searchQuery = q;
+
+                        this.doSearch();
+
+                    }
+
+                },
+
+
+
+                async doSearch() {
+
+                    if (!this.searchQuery.trim()) return;
+
+                    this.isLoading = true;
+
+                    // Update URL silently
+
+                    window.history.replaceState({}, '', '/opac?q=' + encodeURIComponent(this.searchQuery));
+
+                    
+
+                    try {
+
+                        const res = await fetch('/api/opac/search?q=' + encodeURIComponent(this.searchQuery));
+
+                        this.searchResults = await res.json();
+
+                        setTimeout(() => this.findCoverFromGoogle(this.searchResults), 100);
+
+                    } catch(e) { console.error(e); }
+
+                    this.isLoading = false;
+
+                },
+
+
+
+                getCoverUrl(book) {
+                    let img = book.cover_url || book.image;
+                    if (!img || img === 'NOT_FOUND' || img === 'RATE_LIMIT' || img === 'tidak_ada') {
+                        let title = (book.judul || 'Buku').replace(/[^a-zA-Z0-9 ]/g, '');
+                        if (title.length > 35) title = title.substring(0, 35) + '...';
+                        
+                        let words = title.split(' ');
+                        let lines = [];
+                        let currentLine = '';
+                        words.forEach(w => {
+                            if ((currentLine + w).length > 15) {
+                                lines.push(currentLine);
+                                currentLine = w + ' ';
+                            } else {
+                                currentLine += w + ' ';
+                            }
+                        });
+                        lines.push(currentLine);
+                        
+                        const colors = ['#3e2723', '#4e342e', '#5d4037', '#6d4c41', '#8d6e63', '#a1887f'];
+                        const bgColor = colors[(book.id || 0) % colors.length];
+                        
+                        let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="150" height="200" viewBox="0 0 150 200">
+                            <rect width="150" height="200" fill="${bgColor}"/>
+                            <rect width="10" height="200" fill="#271410"/>
+                            <text x="50%" y="30%" fill="#ffffff" font-family="sans-serif" font-size="12" text-anchor="middle" font-weight="bold">`;
+                        
+                        lines.forEach((l, i) => {
+                            svg += `<tspan x="50%" dy="${i === 0 ? 0 : 16}">${l.trim()}</tspan>`;
+                        });
+                        
+                        svg += `</text>
+                            <text x="50%" y="85%" fill="#e0e0e0" font-family="sans-serif" font-size="10" text-anchor="middle" font-style="italic">${(book.pengarang || '').substring(0, 20)}</text>
+                        </svg>`;
+                        
+                        return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+                    }
+                    if (img.startsWith('http') || img.startsWith('/static/')) return img;
+                    if (img.startsWith('uploads/')) return '/static/' + img;
+                    return '/static/uploads/' + img;
+                },
+
+
+
+                async findCoverFromGoogle(bookList) {
+                    {% if is_feature('ENABLE_AUTOCOVER_ONLINE') %}
+                    for (let i = 0; i < bookList.length; i++) {
+
+                        let book = bookList[i];
+
+                        if (!book.image || book.image === 'NOT_FOUND' || book.image === 'RATE_LIMIT' || book.image === 'tidak_ada') {
+
+                            try {
+
+                                const query = book.judul + (book.pengarang ? ' ' + book.pengarang : '');
+
+                                const res = await fetch('https://www.googleapis.com/books/v1/volumes?q=' + encodeURIComponent(query));
+
+                                const data = await res.json();
+
+                                if (data.items && data.items.length > 0) {
+
+                                    let img = data.items[0].volumeInfo?.imageLinks?.thumbnail;
+
+                                    if (img) {
+
+                                        img = img.replace('http:', 'https:');
+
+                                        bookList[i].cover_url = img;
+
+                                    }
+
+                                }
+
+                            } catch (e) {}
+
+                        }
+
+                    }
+                    {% endif %}
+
+                },
+
+
+
+                openRequestModal() {
+
+                    this.requestForm.judul = this.searchQuery;
+
+                    this.requestForm.pengarang = '';
+
+                    this.requestForm.catatan = '';
+
+                    this.isRequestModalOpen = true;
+
+                },
+
+
+
+                closeModal() {
+
+                    this.isRequestModalOpen = false;
+
+                },
+
+
+
+                async submitRequest() {
+
+                    try {
+
+                        const res = await fetch('/api/opac/request', {
+
+                            method: 'POST',
+
+                            headers: { 'Content-Type': 'application/json' },
+
+                            body: JSON.stringify(this.requestForm)
+
+                        });
+
+                        if (res.ok) {
+
+                            alert("Usulan berhasil dikirim! Terima kasih atas masukannya.");
+
+                            this.closeModal();
+
+                        } else {
+
+                            alert("Gagal mengirim usulan.");
+
+                        }
+
+                    } catch (e) {
+
+                        alert("Error: " + e.message);
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    </script>
+
+
+
+    <script>
+
+        document.addEventListener('alpine:init', () => {
+
+            Alpine.data('heroSlideshow', () => ({
+                currentBg: 0,
+                bgs: ['/static/img/bg1.jpg', '/static/img/bg2.jpg', '/static/img/bg3.jpg', '/static/img/bg4.jpg'],
+                init() {
+                    setInterval(() => {
+                        this.currentBg = (this.currentBg + 1) % this.bgs.length;
+                    }, 5000);
+                }
+            }));
+            
+            Alpine.data('heroMarquee', () => ({
+
+                row1: [],
+
+                row2: [],
+
+                async fetchCovers() {
+                    try {
+                        const res1 = await fetch('/api/opac/koleksi_unggulan');
+                        const res2 = await fetch('/api/opac/koleksi_terbaru');
+                        let b1 = await res1.json();
+                        let b2 = await res2.json();
+                        let books = b1.concat(b2);
+                        
+                        books = books.filter(b => b.image && b.image !== 'NOT_FOUND' && b.image !== 'RATE_LIMIT' && b.image !== 'tidak_ada');
+                        
+                        if (books.length === 0) {
+                            books = [
+                                {image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=300'}, 
+                                {image: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=300'}
+                            ];
+                        }
+                        
+                        while(books.length < 20) {
+                            books = books.concat(JSON.parse(JSON.stringify(books)));
+                        }
+                        
+                        this.row1 = books.concat(books).concat(books).concat(books).concat(books).concat(books);
+                        this.row2 = books.slice(10, 20).concat(books.slice(10, 20)); 
+                    } catch(e) { console.error(e); }
+                },
+
+                getCover(book) {
+                    if (!book) return '';
+                    let img = book.cover_url || book.image;
+                    if (img && img !== 'NOT_FOUND' && img !== 'RATE_LIMIT' && img !== 'tidak_ada') {
+                        if (img.startsWith('http')) return img;
+                        if (img.startsWith('/static/')) return img;
+                        if (img.startsWith('uploads/')) return '/static/' + img;
+                        return '/static/uploads/' + img;
+                    }
+                    return 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=300';
+                }
+
+            }));
+
+        });
+
+    </script>
+
+</body>
+
+</html>
+

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Resources - Perpustakaan St. Jerome</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #2e1d1a; color: #f5f5f5; }
+        h1, h2, h3, .font-serif { font-family: 'Playfair Display', serif; }
+        .glass-panel { background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-[#1f1311] py-6 border-b border-white/10 sticky top-0 z-50">
+        <div class="max-w-[1200px] mx-auto px-6 flex justify-between items-center">
+            <a href="/opac" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                <div class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/20">
+                    <i class="fa-solid fa-arrow-left text-white"></i>
+                </div>
+                <h1 class="text-xl font-bold font-serif text-white tracking-wide">Kembali ke Beranda</h1>
+            </a>
+            <div class="flex items-center gap-3">
+                <img src="/static/img/logo_imavi.png" alt="Logo" class="h-10 w-10 object-contain bg-white/20 p-1 rounded-full backdrop-blur-sm">
+                <span class="font-bold tracking-widest text-[#facc15] uppercase text-sm hidden md:block">St. Jerome</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow py-16 px-6 relative">
+        <!-- Background decorative image -->
+        <div class="absolute inset-0 z-0 opacity-10 pointer-events-none">
+            <img src="/static/img/bg4.jpg" class="w-full h-full object-cover grayscale mix-blend-luminosity">
+            <div class="absolute inset-0 bg-gradient-to-b from-[#2e1d1a] via-[#2e1d1a]/80 to-[#2e1d1a]"></div>
+        </div>
+
+        <div class="max-w-[1200px] mx-auto relative z-10">
+            <div class="mb-12">
+                <h1 class="text-4xl md:text-5xl font-bold font-serif text-white mb-4">Akses E-Resources</h1>
+                <p class="text-white/60 max-w-3xl text-lg leading-relaxed">
+                    Direktori tautan jurnal filsafat dan teologi dari IMAVI serta berbagai universitas dan sekolah tinggi ternama di Indonesia. Gunakan literatur ilmiah ini untuk menunjang riset dan studi Anda.
+                </p>
+            </div>
+
+            <div class="glass-panel rounded-2xl overflow-hidden shadow-2xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-[#1f1311] text-white/50 text-sm tracking-widest uppercase border-b border-white/10">
+                                <th class="p-6 font-semibold w-1/3">Nama Jurnal</th>
+                                <th class="p-6 font-semibold w-1/3">Institusi / Universitas</th>
+                                <th class="p-6 font-semibold w-1/3 text-right">Tautan Akses</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/10">
+                            <!-- IMAVI -->
+                            <tr class="hover:bg-white/5 transition-colors group">
+                                <td class="p-6">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fa-solid fa-star text-[#facc15] text-xs"></i>
+                                        <span class="font-bold text-white text-lg">Jurnal IMAVI</span>
+                                    </div>
+                                    <div class="text-sm text-white/50 mt-1">Jurnal Teologi dan Filsafat Resmi St. Jerome</div>
+                                </td>
+                                <td class="p-6 text-white/80">Institutum Theologicum Ioannis Mariae Vianney (IMAVI)</td>
+                                <td class="p-6 text-right">
+                                    <a href="https://jurnal.imavi.org" target="_blank" class="inline-flex items-center gap-2 bg-[#facc15] text-[#1f1311] px-5 py-2.5 rounded-full font-bold text-sm hover:bg-white transition-colors">
+                                        Kunjungi Web <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            
+                            <!-- UGM -->
+                            <tr class="hover:bg-white/5 transition-colors">
+                                <td class="p-6">
+                                    <div class="font-bold text-white text-lg">Jurnal Filsafat</div>
+                                    <div class="text-sm text-white/50 mt-1">SINTA 2</div>
+                                </td>
+                                <td class="p-6 text-white/80">Universitas Gadjah Mada (UGM)</td>
+                                <td class="p-6 text-right">
+                                    <a href="https://jurnal.ugm.ac.id/wisdom" target="_blank" class="text-[#facc15] hover:text-white font-medium inline-flex items-center gap-2 transition-colors">
+                                        Buka Jurnal <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
+                                </td>
+                            </tr>
+
+                            <!-- Driyarkara -->
+                            <tr class="hover:bg-white/5 transition-colors">
+                                <td class="p-6">
+                                    <div class="font-bold text-white text-lg">DISKURSUS</div>
+                                    <div class="text-sm text-white/50 mt-1">Jurnal Filsafat dan Teologi (SINTA 3)</div>
+                                </td>
+                                <td class="p-6 text-white/80">Sekolah Tinggi Filsafat Driyarkara</td>
+                                <td class="p-6 text-right">
+                                    <a href="https://journal.driyarkara.ac.id/index.php/diskursus" target="_blank" class="text-[#facc15] hover:text-white font-medium inline-flex items-center gap-2 transition-colors">
+                                        Buka Jurnal <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
+                                </td>
+                            </tr>
+
+                            <!-- UNPAR -->
+                            <tr class="hover:bg-white/5 transition-colors">
+                                <td class="p-6">
+                                    <div class="font-bold text-white text-lg">MELINTAS</div>
+                                    <div class="text-sm text-white/50 mt-1">An International Journal of Philosophy and Religion</div>
+                                </td>
+                                <td class="p-6 text-white/80">Universitas Katolik Parahyangan (UNPAR)</td>
+                                <td class="p-6 text-right">
+                                    <a href="https://journal.unpar.ac.id/index.php/melintas" target="_blank" class="text-[#facc15] hover:text-white font-medium inline-flex items-center gap-2 transition-colors">
+                                        Buka Jurnal <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
+                                </td>
+                            </tr>
+
+                            <!-- Sanata Dharma -->
+                            <tr class="hover:bg-white/5 transition-colors">
+                                <td class="p-6">
+                                    <div class="font-bold text-white text-lg">Jurnal Teologi</div>
+                                    <div class="text-sm text-white/50 mt-1">Kajian Teologi Akademik</div>
+                                </td>
+                                <td class="p-6 text-white/80">Universitas Sanata Dharma (USD)</td>
+                                <td class="p-6 text-right">
+                                    <a href="https://e-journal.usd.ac.id/index.php/JT" target="_blank" class="text-[#facc15] hover:text-white font-medium inline-flex items-center gap-2 transition-colors">
+                                        Buka Jurnal <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
+                                </td>
+                            </tr>
+
+                            <!-- ATI -->
+                            <tr class="hover:bg-white/5 transition-colors">
+                                <td class="p-6">
+                                    <div class="font-bold text-white text-lg">Indonesian Journal of Theology</div>
+                                    <div class="text-sm text-white/50 mt-1">SINTA 2</div>
+                                </td>
+                                <td class="p-6 text-white/80">Asosiasi Teolog Indonesia (ATI)</td>
+                                <td class="p-6 text-right">
+                                    <a href="https://indonesiantheology.org/" target="_blank" class="text-[#facc15] hover:text-white font-medium inline-flex items-center gap-2 transition-colors">
+                                        Buka Jurnal <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
+                                </td>
+                            </tr>
+
+                            <!-- UPH -->
+                            <tr class="hover:bg-white/5 transition-colors">
+                                <td class="p-6">
+                                    <div class="font-bold text-white text-lg">ARETE</div>
+                                    <div class="text-sm text-white/50 mt-1">Jurnal Filsafat</div>
+                                </td>
+                                <td class="p-6 text-white/80">Universitas Pelita Harapan (UPH)</td>
+                                <td class="p-6 text-right">
+                                    <a href="https://ojs.uph.edu/index.php/ARETE" target="_blank" class="text-[#facc15] hover:text-white font-medium inline-flex items-center gap-2 transition-colors">
+                                        Buka Jurnal <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            
+                             <!-- Undiksha -->
+                             <tr class="hover:bg-white/5 transition-colors">
+                                <td class="p-6">
+                                    <div class="font-bold text-white text-lg">Jurnal Filsafat Indonesia</div>
+                                    <div class="text-sm text-white/50 mt-1">SINTA 3</div>
+                                </td>
+                                <td class="p-6 text-white/80">Universitas Pendidikan Ganesha (UNDIKSHA)</td>
+                                <td class="p-6 text-right">
+                                    <a href="https://ejournal.undiksha.ac.id/index.php/JFI" target="_blank" class="text-[#facc15] hover:text-white font-medium inline-flex items-center gap-2 transition-colors">
+                                        Buka Jurnal <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#1f1311] py-8 text-center text-sm text-white/40 border-t border-white/10">
+        &copy; 2026 Institut Filsafat & Teologi (IMAVI). Hak Cipta Dilindungi.
+    </footer>
+
+</body>
+</html>

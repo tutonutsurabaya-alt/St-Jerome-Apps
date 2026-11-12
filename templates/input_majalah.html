@@ -1,0 +1,716 @@
+{% extends "layout.html" %}
+{% block content %}
+<div x-data="inputMajalah()" x-init="initData()" class="max-w-5xl mx-auto">
+
+    <!-- Navigasi Tab Pilihan Jenis Input -->
+    <div class="mb-5 flex flex-wrap items-center gap-2">
+        <a href="/input_buku" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-stroke text-slate-700 hover:bg-slate-50 text-sm font-semibold shadow-xs transition">
+            <i class="fa-solid fa-book text-slate-500"></i> Input Buku Biasa
+        </a>
+        <a href="/input_majalah" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold shadow-xs transition">
+            <i class="fa-solid fa-newspaper"></i> Pencatatan Majalah / Terbitan Berseri
+        </a>
+    </div>
+
+    <!-- Main Container -->
+    <div class="bg-white rounded-xl shadow-xs border border-stroke overflow-hidden mb-8">
+        <!-- Header -->
+        <div class="bg-primary px-6 py-4 border-b border-stroke flex justify-between items-center text-white">
+            <div>
+                <h2 class="text-lg font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-newspaper text-white/90"></i> Pencatatan Majalah & Terbitan Berseri
+                </h2>
+                <p class="text-xs text-white/80 mt-0.5">Penomoran otomatis sesuai standar berkala (MJLH untuk Majalah Hidup, MJLB untuk Majalah Basis)</p>
+            </div>
+            <a href="/cetak_khusus?mode=barcode" class="text-xs bg-white/15 hover:bg-white/25 text-white font-medium px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 border border-white/20">
+                <i class="fa-solid fa-print"></i> Cetak Barcode
+            </a>
+        </div>
+
+        <div class="p-6">
+            <!-- Alert Notifikasi -->
+            <div x-show="notif.show" x-cloak
+                 :class="notif.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-red-50 text-red-800 border-red-300'"
+                 class="border px-4 py-3 rounded-lg mb-6 flex justify-between items-center transition">
+                <div class="flex items-center gap-3">
+                    <i :class="notif.type === 'success' ? 'fa-solid fa-circle-check text-emerald-500 text-lg' : 'fa-solid fa-triangle-exclamation text-red-500 text-lg'"></i>
+                    <div>
+                        <strong class="font-bold text-sm block" x-text="notif.title"></strong>
+                        <span class="text-sm" x-text="notif.message"></span>
+                    </div>
+                </div>
+                <button type="button" @click="notif.show = false" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- LANGKAH 1: PILIH MAJALAH LANGGANAN (PRESET CEPAT) -->
+            <div class="mb-6">
+                <label class="block text-sm font-bold text-slate-800 mb-3">
+                    1. Pilih Majalah Langganan :
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Preset Majalah Hidup -->
+                    <div @click="selectPreset('hidup')"
+                         :class="form.tipe_majalah === 'hidup' ? 'border-primary ring-2 ring-primary/20 bg-blue-50/50' : 'border-stroke hover:border-slate-300 bg-white'"
+                         class="border-2 rounded-xl p-4 cursor-pointer transition relative">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-blue-100 text-primary flex items-center justify-center text-lg font-bold">
+                                    <i class="fa-solid fa-cross"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 text-sm">Majalah Hidup</h4>
+                                    <p class="text-xs text-slate-500">Warta Mingguan Katolik</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-blue-600 text-white">MJLH</span>
+                        </div>
+                        <div class="mt-3 text-xs text-slate-600 border-t border-slate-100 pt-2 flex justify-between">
+                            <span>Format: <strong class="font-mono text-primary">MJLH 001/26</strong></span>
+                            <span>DDC: <strong>205</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Preset Majalah Basis -->
+                    <div @click="selectPreset('basis')"
+                         :class="form.tipe_majalah === 'basis' ? 'border-indigo-600 ring-2 ring-indigo-600/20 bg-indigo-50/50' : 'border-stroke hover:border-slate-300 bg-white'"
+                         class="border-2 rounded-xl p-4 cursor-pointer transition relative">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-lg font-bold">
+                                    <i class="fa-solid fa-feather-pointed"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 text-sm">Majalah Basis</h4>
+                                    <p class="text-xs text-slate-500">Kebudayaan & Filsafat</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-indigo-600 text-white">MJLB</span>
+                        </div>
+                        <div class="mt-3 text-xs text-slate-600 border-t border-slate-100 pt-2 flex justify-between">
+                            <span>Format: <strong class="font-mono text-indigo-600">MJLB 001/26</strong></span>
+                            <span>DDC: <strong>050</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Preset Majalah Lainnya -->
+                    <div @click="selectPreset('custom')"
+                         :class="form.tipe_majalah === 'custom' ? 'border-emerald-600 ring-2 ring-emerald-600/20 bg-emerald-50/50' : 'border-stroke hover:border-slate-300 bg-white'"
+                         class="border-2 rounded-xl p-4 cursor-pointer transition relative">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg font-bold">
+                                    <i class="fa-solid fa-sliders"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 text-sm">Terbitan Lainnya</h4>
+                                    <p class="text-xs text-slate-500">Kustom Kode & Nama</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-emerald-600 text-white" x-text="form.prefix || 'KUSTOM'"></span>
+                        </div>
+                        <div class="mt-3 text-xs text-slate-600 border-t border-slate-100 pt-2 flex justify-between">
+                            <span>Kode Prefix: <strong class="font-mono text-emerald-600" x-text="form.prefix"></strong></span>
+                            <span>Fleksibel</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HERO BOX: PREVIEW NOMOR INDUK / BARCODE OTOMATIS -->
+            <div class="mb-8 p-5 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-xl shadow-md border border-slate-700">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-barcode text-primary"></i> Preview Nomor Induk / Barcode Terbitan
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-mono text-2xl md:text-3xl font-extrabold tracking-wide text-amber-400 bg-black/40 px-3.5 py-1.5 rounded-lg border border-amber-400/30" x-text="generatedBarcode"></span>
+                            <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium">
+                                <i class="fa-solid fa-check"></i> Siap Didaftarkan
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-300 mt-2">
+                            Struktur: <code class="text-amber-300 font-mono" x-text="form.prefix"></code> (Kode Majalah) +
+                            <code class="text-amber-300 font-mono" x-text="form.serial_str"></code> (Nomor Seri Terbitan 3-digit) +
+                            <code class="text-amber-300 font-mono">/<span x-text="getYearSuffix()"></span></code> (Tahun Terbit)
+                        </p>
+                    </div>
+
+                    <div class="flex flex-col items-start md:items-end gap-1.5">
+                        <button type="button" @click="fetchNextNumber()" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 border border-slate-600">
+                            <i class="fa-solid fa-arrows-rotate" :class="isLoadingNumber ? 'fa-spin' : ''"></i> Cek Nomor Terakhir
+                        </button>
+                        <span class="text-[11px] text-slate-400">Nomor seri diurutkan otomatis oleh sistem</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORM INPUT -->
+            <form @submit.prevent="submitMajalah">
+                <!-- SECTION 2: DETAIL EDISI & PENOMORAN -->
+                <div class="mb-8 border-b border-stroke pb-6">
+                    <h3 class="text-md font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">2</span>
+                        Detail Edisi & Penomoran
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <!-- Prefix Kustom (jika tipe kustom) -->
+                        <div x-show="form.tipe_majalah === 'custom'" class="md:col-span-1">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Prefix Kode *</label>
+                            <input type="text" x-model="form.prefix" @input="updateBarcodePreview()" maxlength="6"
+                                   class="w-full border border-stroke rounded-lg px-3 py-2 uppercase font-mono font-bold text-black focus:border-primary outline-none" placeholder="MJLX">
+                        </div>
+
+                        <!-- Tahun Terbit -->
+                        <div class="md:col-span-1">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Tahun Terbit *</label>
+                            <input type="number" x-model="form.tahun_terbit" @change="onYearChange()" min="1950" max="2099" required
+                                   class="w-full border border-stroke rounded-lg px-3 py-2 font-bold text-black focus:border-primary outline-none">
+                            <span class="text-[11px] text-slate-500">Akhiran kode: /<strong x-text="getYearSuffix()"></strong></span>
+                        </div>
+
+                        <!-- Nomor Seri / Terbitan -->
+                        <div class="md:col-span-1">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Nomor Seri Terbitan (3 Digit) *</label>
+                            <input type="text" x-model="form.serial_str" @input="onSerialInput()" maxlength="4" required
+                                   class="w-full border border-stroke rounded-lg px-3 py-2 font-mono font-bold text-black focus:border-primary outline-none" placeholder="001">
+                            <span class="text-[11px] text-slate-500">Contoh: 001, 002, 015</span>
+                        </div>
+
+                        <!-- Keterangan Edisi / Volume -->
+                        <div :class="form.tipe_majalah === 'custom' ? 'md:col-span-1' : 'md:col-span-2'">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Keterangan Edisi / Volume</label>
+                            <input type="text" x-model="form.edisi"
+                                   class="w-full border border-stroke rounded-lg px-3 py-2 text-black focus:border-primary outline-none"
+                                   placeholder="Cth: No. 01, Tahun ke-80, Minggu I Januari">
+                        </div>
+
+                        <!-- Judul Lengkap -->
+                        <div class="md:col-span-3">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1 flex justify-between">
+                                <span>Judul Majalah / Terbitan *</span>
+                                <button type="button" @click="autoGenerateJudul()" class="text-[11px] text-primary hover:underline">
+                                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Format Judul Otomatis
+                                </button>
+                            </label>
+                            <input type="text" x-model="form.judul" required
+                                   class="w-full border border-stroke rounded-lg px-3 py-2 text-black font-semibold focus:border-primary outline-none bg-slate-50"
+                                   placeholder="Judul lengkap terbitan...">
+                        </div>
+
+                        <!-- ISSN / ISBN -->
+                        <div class="md:col-span-1">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">ISSN / ISBN (Opsional)</label>
+                            <input type="text" x-model="form.isbn"
+                                   class="w-full border border-stroke rounded-lg px-3 py-2 text-black focus:border-primary outline-none"
+                                   placeholder="Cth: 0126-0030">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: METADATA PENERBITAN & KLASIFIKASI -->
+                <div class="mb-8 border-b border-stroke pb-6">
+                    <h3 class="text-md font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">3</span>
+                        Metadata Penerbit & Klasifikasi DDC
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Dewan Redaksi / Pengarang</label>
+                            <input type="text" x-model="form.pengarang"
+                                   class="w-full border border-stroke rounded-lg px-3 py-2 text-black focus:border-primary outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Penerbit</label>
+                            <input type="text" x-model="form.penerbit"
+                                   class="w-full border border-stroke rounded-lg px-3 py-2 text-black focus:border-primary outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Tempat Terbit (Kota)</label>
+                            <input type="text" x-model="form.tempat_terbit"
+                                   class="w-full border border-stroke rounded-lg px-3 py-2 text-black focus:border-primary outline-none">
+                        </div>
+
+                        <!-- Klasifikasi DDC -->
+                        <div class="relative">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1 flex justify-between">
+                                <span>Klasifikasi DDC *</span>
+                                <button type="button" @click="cariDdc()" class="text-[11px] text-primary hover:underline">
+                                    <i class="fa-solid fa-magnifying-glass"></i> Cari DDC
+                                </button>
+                            </label>
+                            <input type="text" x-model="form.klasifikasi" required
+                                   class="w-full border border-stroke rounded-lg px-3 py-2 font-mono font-bold text-black focus:border-primary outline-none">
+                            
+                            <!-- Autocomplete DDC -->
+                            <div x-show="ddcResults.length > 0" @click.away="ddcResults = []" x-cloak
+                                 class="absolute z-20 w-full bg-white border border-stroke mt-1 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+                                <template x-for="d in ddcResults" :key="d.kode">
+                                    <div @click="selectDdc(d.kode)" class="p-2.5 border-b border-stroke hover:bg-slate-50 cursor-pointer flex gap-2 items-center text-xs">
+                                        <span class="font-bold font-mono text-primary w-12" x-text="d.kode"></span>
+                                        <span class="text-slate-800" x-text="d.deskripsi"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">No. Panggil (Cutter)</label>
+                            <input type="text" x-model="form.cutter"
+                                   class="w-full border border-stroke rounded-lg px-3 py-2 font-mono text-black focus:border-primary outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Huruf Judul</label>
+                            <input type="text" x-model="form.huruf_judul"
+                                   class="w-full border border-stroke rounded-lg px-3 py-2 font-mono text-black focus:border-primary outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Subjek / Topik</label>
+                            <input type="text" x-model="form.subjek"
+                                   class="w-full border border-stroke rounded-lg px-3 py-2 text-black focus:border-primary outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Lokasi Rak</label>
+                            <input type="text" x-model="form.lokasi"
+                                   class="w-full border border-stroke rounded-lg px-3 py-2 text-black focus:border-primary outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Status Perolehan</label>
+                            <select x-model="form.status_buku" class="w-full border border-stroke rounded-lg px-3 py-2 text-black focus:border-primary outline-none bg-white">
+                                <option value="BELI">LANGGANAN / BELI</option>
+                                <option value="HADIAH">HADIAH / DONASI</option>
+                                <option value="TUKAR">PERTUKARAN</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 4: COVER SAMPUL (OPSIONAL) -->
+                <div class="mb-8 border-b border-stroke pb-6">
+                    <h3 class="text-md font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">4</span>
+                        Gambar Sampul Majalah (Opsional)
+                    </h3>
+
+                    <div class="flex flex-col md:flex-row gap-6 items-start">
+                        <div class="flex-1">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Unggah Foto Sampul</label>
+                            <div class="flex items-center gap-3">
+                                <input type="file" @change="handleFile" accept="image/*"
+                                       class="border border-stroke rounded-lg px-3 py-2 text-sm text-slate-700 flex-1 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20">
+                                <button type="button" @click="scanCoverAI()" :disabled="isAILoading || !imageFile"
+                                        class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 disabled:opacity-50 shadow-xs whitespace-nowrap">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                    <span x-text="isAILoading ? 'Memindai...' : 'Pindai dgn AI'"></span>
+                                </button>
+                            </div>
+                            <p class="text-[11px] text-slate-500 mt-1">Format: JPG, PNG, WebP. AI dapat membantu mengekstrak judul & nomor edisi dari sampul.</p>
+                        </div>
+
+                        <div x-show="imagePreview" x-cloak class="w-32 h-44 rounded-lg border border-stroke overflow-hidden bg-slate-50 p-1 flex items-center justify-center shadow-xs">
+                            <img :src="imagePreview" class="max-h-full max-w-full object-contain rounded">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOMBOL SIMPAN -->
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <button type="button" @click="resetForm()" class="px-5 py-2.5 rounded-lg border border-stroke text-slate-600 hover:bg-slate-50 font-semibold text-sm transition">
+                        <i class="fa-solid fa-rotate-left mr-1.5"></i> Reset Form
+                    </button>
+
+                    <div class="flex items-center gap-3">
+                        <button type="submit" :disabled="isSubmitting"
+                                class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold text-sm shadow-md transition disabled:opacity-50 flex items-center gap-2">
+                            <span x-show="!isSubmitting"><i class="fa-solid fa-floppy-disk mr-1"></i> Simpan Majalah & Buat Barcode</span>
+                            <span x-show="isSubmitting"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Menyimpan...</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SECTION 5: TABEL RIWAYAT PENCATATAN MAJALAH TERAKHIR -->
+    <div class="bg-white rounded-xl shadow-xs border border-stroke overflow-hidden mb-12">
+        <div class="px-6 py-4 border-b border-stroke flex justify-between items-center bg-slate-50">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-primary"></i> 10 Terbitan Majalah Terakhir yang Dicatat
+            </h3>
+            <button type="button" @click="loadRiwayat()" class="text-xs text-primary hover:underline font-semibold flex items-center gap-1">
+                <i class="fa-solid fa-arrows-rotate" :class="isLoadingRiwayat ? 'fa-spin' : ''"></i> Segarkan Tabel
+            </button>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-slate-100 text-slate-600 border-b border-stroke font-semibold uppercase tracking-wider">
+                        <th class="py-3 px-4 w-12 text-center">Sampul</th>
+                        <th class="py-3 px-4">Nomor Induk (Barcode)</th>
+                        <th class="py-3 px-4">Judul & Keterangan Edisi</th>
+                        <th class="py-3 px-4">Penerbit & Tahun</th>
+                        <th class="py-3 px-4">Tgl Terima</th>
+                        <th class="py-3 px-4 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-stroke">
+                    <template x-if="riwayatList.length === 0">
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-slate-400">
+                                <i class="fa-solid fa-inbox text-3xl mb-2 block"></i>
+                                Belum ada majalah atau terbitan berseri yang dicatat.
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-for="item in riwayatList" :key="item.no_induk">
+                        <tr class="hover:bg-slate-50/80 transition">
+                            <td class="py-2 px-4 text-center">
+                                <template x-if="item.cover_url">
+                                    <img :src="item.cover_url" class="w-8 h-10 object-cover rounded border border-stroke inline-block">
+                                </template>
+                                <template x-if="!item.cover_url">
+                                    <div class="w-8 h-10 bg-slate-100 text-slate-400 rounded border border-stroke inline-flex items-center justify-center text-xs">
+                                        <i class="fa-solid fa-newspaper"></i>
+                                    </div>
+                                </template>
+                            </td>
+                            <td class="py-2 px-4">
+                                <span class="font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded" x-text="item.no_induk"></span>
+                            </td>
+                            <td class="py-2 px-4">
+                                <div class="font-semibold text-slate-900" x-text="item.judul"></div>
+                                <div class="text-[11px] text-slate-500" x-text="item.edisi || '-'"></div>
+                            </td>
+                            <td class="py-2 px-4 text-slate-600">
+                                <span x-text="item.penerbit || '-'"></span> (<span x-text="item.tahun_terbit"></span>)
+                            </td>
+                            <td class="py-2 px-4 text-slate-600" x-text="item.tgl_terima"></td>
+                            <td class="py-2 px-4 text-center">
+                                <a :href="'/cetak_khusus?mode=barcode&search=' + encodeURIComponent(item.no_induk)"
+                                   target="_blank"
+                                   class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-100 hover:bg-primary hover:text-white text-slate-700 font-semibold transition text-[11px] border border-stroke">
+                                    <i class="fa-solid fa-print"></i> Cetak
+                                </a>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('inputMajalah', () => ({
+        form: {
+            tipe_majalah: 'hidup', // hidup, basis, custom
+            prefix: 'MJLH',
+            tahun_terbit: new Date().getFullYear(),
+            serial_str: '001',
+            no_induk: 'MJLH 001/' + (new Date().getFullYear().toString().slice(-2)),
+            judul: '',
+            edisi: '',
+            pengarang: 'Redaksi Majalah Hidup',
+            penerbit: 'PT Obor / Yayasan Hidup Katolik',
+            tempat_terbit: 'Jakarta',
+            klasifikasi: '205',
+            cutter: 'HID',
+            huruf_judul: 'm',
+            subjek: 'Majalah Katolik, Warta Gereja, Spiritualitas',
+            isbn: '0126-0030',
+            deskripsi_fisik: 'hlm. ; 28 cm',
+            bahasa: 'Indonesia',
+            status_buku: 'BELI',
+            lokasi: 'IMAVI',
+            tgl_terima: new Date().toISOString().split('T')[0]
+        },
+
+        generatedBarcode: '',
+        imageFile: null,
+        imagePreview: null,
+        isSubmitting: false,
+        isAILoading: false,
+        isLoadingNumber: false,
+        isLoadingRiwayat: false,
+        riwayatList: [],
+        ddcResults: [],
+        notif: { show: false, type: 'success', title: '', message: '' },
+
+        initData() {
+            this.selectPreset('hidup');
+            this.loadRiwayat();
+        },
+
+        getYearSuffix() {
+            const yr = String(this.form.tahun_terbit || new Date().getFullYear());
+            return yr.slice(-2);
+        },
+
+        selectPreset(tipe) {
+            this.form.tipe_majalah = tipe;
+            const currentYear = this.form.tahun_terbit || new Date().getFullYear();
+
+            if (tipe === 'hidup') {
+                this.form.prefix = 'MJLH';
+                this.form.pengarang = 'Redaksi Majalah Hidup';
+                this.form.penerbit = 'PT Obor / Yayasan Hidup Katolik';
+                this.form.tempat_terbit = 'Jakarta';
+                this.form.klasifikasi = '205';
+                this.form.cutter = 'HID';
+                this.form.huruf_judul = 'm';
+                this.form.subjek = 'Majalah Katolik, Warta Gereja, Spiritualitas';
+                this.form.isbn = '0126-0030';
+            } else if (tipe === 'basis') {
+                this.form.prefix = 'MJLB';
+                this.form.pengarang = 'Redaksi Majalah Basis';
+                this.form.penerbit = 'Yayasan BP Basis / PT Kanisius';
+                this.form.tempat_terbit = 'Yogyakarta';
+                this.form.klasifikasi = '050';
+                this.form.cutter = 'BAS';
+                this.form.huruf_judul = 'm';
+                this.form.subjek = 'Kebudayaan, Filsafat, Sastra, Humaniora';
+                this.form.isbn = '0005-6138';
+            } else {
+                this.form.prefix = this.form.prefix || 'MJLX';
+                this.form.pengarang = '';
+                this.form.penerbit = '';
+                this.form.tempat_terbit = '';
+                this.form.klasifikasi = '050';
+                this.form.cutter = '';
+                this.form.huruf_judul = 'm';
+                this.form.subjek = 'Terbitan Berseri / Majalah';
+                this.form.isbn = '';
+            }
+
+            this.fetchNextNumber();
+        },
+
+        async fetchNextNumber() {
+            this.isLoadingNumber = true;
+            try {
+                const params = new URLSearchParams({
+                    tipe: this.form.tipe_majalah,
+                    prefix: this.form.prefix,
+                    tahun: this.form.tahun_terbit
+                });
+                const res = await fetch('/api/majalah/next_number?' + params.toString());
+                const data = await res.json();
+                if (data.status === 'success') {
+                    this.form.serial_str = data.serial_str;
+                    this.updateBarcodePreview();
+                    this.autoGenerateJudul();
+                }
+            } catch (e) {
+                console.error(e);
+                this.updateBarcodePreview();
+            } finally {
+                this.isLoadingNumber = false;
+            }
+        },
+
+        onYearChange() {
+            this.fetchNextNumber();
+        },
+
+        onSerialInput() {
+            let val = this.form.serial_str.replace(/[^0-9]/g, '');
+            this.form.serial_str = val;
+            this.updateBarcodePreview();
+            this.autoGenerateJudul();
+        },
+
+        updateBarcodePreview() {
+            let serial = this.form.serial_str || '001';
+            if (serial.length < 3 && serial.length > 0) {
+                serial = serial.padStart(3, '0');
+            }
+            const ySuffix = this.getYearSuffix();
+            const prefix = (this.form.prefix || 'MJL').trim().toUpperCase();
+            this.generatedBarcode = `${prefix} ${serial}/${ySuffix}`;
+            this.form.no_induk = this.generatedBarcode;
+        },
+
+        autoGenerateJudul() {
+            const yr = this.form.tahun_terbit;
+            let serial = this.form.serial_str || '001';
+            if (serial.length < 3) serial = serial.padStart(3, '0');
+
+            if (this.form.tipe_majalah === 'hidup') {
+                this.form.judul = `Majalah Hidup Edisi No. ${serial} / ${yr}`;
+                if (!this.form.edisi) {
+                    this.form.edisi = `No. ${serial}, Edisi Tahun ${yr}`;
+                }
+            } else if (this.form.tipe_majalah === 'basis') {
+                this.form.judul = `Majalah Basis No. ${serial} / ${yr}`;
+                if (!this.form.edisi) {
+                    this.form.edisi = `No. ${serial}, Edisi Tahun ${yr}`;
+                }
+            } else {
+                if (!this.form.judul) {
+                    this.form.judul = `Terbitan Berseri No. ${serial} / ${yr}`;
+                }
+            }
+        },
+
+        handleFile(e) {
+            const file = e.target.files[0];
+            if (file) {
+                this.imageFile = file;
+                this.imagePreview = URL.createObjectURL(file);
+            }
+        },
+
+        async cariDdc() {
+            const q = prompt('Ketik kata kunci subjek DDC (cth: agama, filsafat, majalah):');
+            if (!q) return;
+            try {
+                const res = await fetch('/api/ddc/search?q=' + encodeURIComponent(q));
+                this.ddcResults = await res.json();
+            } catch (err) {
+                console.error(err);
+            }
+        },
+
+        selectDdc(kode) {
+            this.form.klasifikasi = kode;
+            this.ddcResults = [];
+        },
+
+        async scanCoverAI() {
+            if (!this.imageFile) {
+                Swal.fire('Perhatian', 'Pilih foto sampul majalah terlebih dahulu!', 'warning');
+                return;
+            }
+            this.isAILoading = true;
+            let formData = new FormData();
+            formData.append('image', this.imageFile);
+
+            try {
+                const res = await fetch('/api/ai/scan_cover', {
+                    method: 'POST',
+                    body: formData
+                });
+                const json = await res.json();
+                if (json.status === 'success') {
+                    if (json.data.judul) this.form.judul = json.data.judul;
+                    if (json.data.penerbit) this.form.penerbit = json.data.penerbit;
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'Teks sampul berhasil dibaca AI!',
+                        showConfirmButton: false,
+                        timer: 2500
+                    });
+                } else {
+                    Swal.fire('Gagal AI', json.message, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'Gagal memindai sampul majalah.', 'error');
+            } finally {
+                this.isAILoading = false;
+            }
+        },
+
+        async submitMajalah() {
+            this.updateBarcodePreview();
+            this.isSubmitting = true;
+            this.notif.show = false;
+
+            try {
+                let formData = new FormData();
+                for (let k in this.form) {
+                    if (this.form[k] !== null && this.form[k] !== '') {
+                        formData.append(k, this.form[k]);
+                    }
+                }
+                if (this.imageFile) {
+                    formData.append('image', this.imageFile);
+                }
+
+                const res = await fetch('/api/majalah/simpan', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil Dicatat!',
+                        html: `
+                            <div class="text-left bg-slate-50 p-4 rounded-lg border border-slate-200 mt-2">
+                                <p class="text-xs text-slate-500 mb-1">Nomor Induk Baru:</p>
+                                <p class="font-mono text-xl font-bold text-primary">${data.barcode}</p>
+                                <p class="text-sm text-slate-700 mt-2 font-semibold">${this.form.judul}</p>
+                            </div>
+                        `,
+                        showCancelButton: true,
+                        confirmButtonText: '<i class="fa-solid fa-print mr-1"></i> Cetak Barcode',
+                        cancelButtonText: '<i class="fa-solid fa-plus mr-1"></i> Lanjut Catat Edisi Lain',
+                        confirmButtonColor: '#2563EB',
+                        cancelButtonColor: '#10B981'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.open('/cetak_khusus?mode=barcode&search=' + encodeURIComponent(data.barcode), '_blank');
+                        }
+                    });
+
+                    // Advance serial number for next issue
+                    if (data.next_serial) {
+                        this.form.serial_str = data.next_serial;
+                    }
+                    this.updateBarcodePreview();
+                    this.autoGenerateJudul();
+                    this.imageFile = null;
+                    this.imagePreview = null;
+                    this.loadRiwayat();
+                } else {
+                    Swal.fire('Gagal Menyimpan', data.message || 'Terjadi kesalahan.', 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', e.message || 'Terjadi kesalahan sistem.', 'error');
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+
+        async loadRiwayat() {
+            this.isLoadingRiwayat = true;
+            try {
+                const res = await fetch('/api/majalah/riwayat');
+                const json = await res.json();
+                if (json.status === 'success') {
+                    this.riwayatList = json.data;
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                this.isLoadingRiwayat = false;
+            }
+        },
+
+        resetForm() {
+            this.selectPreset(this.form.tipe_majalah);
+            this.imageFile = null;
+            this.imagePreview = null;
+        }
+    }));
+});
+</script>
+{% endblock %}

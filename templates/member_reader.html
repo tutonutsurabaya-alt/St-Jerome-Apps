@@ -1,0 +1,119 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruang Baca - St. Jerome</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+        body { font-family: 'Lora', serif; background-color: #e5e0d8; color: #1a1a1a; }
+        .font-sans { font-family: sans-serif; }
+        
+        /* Watermark Styling */
+        .watermark-container { position: relative; }
+        
+        /* Single massive watermark */
+        .watermark-container::after {
+            content: "ST. JEROME LIBRARY - DOKUMEN DILINDUNGI";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-35deg);
+            font-size: 4rem;
+            color: rgba(46, 29, 26, 0.05);
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 1000;
+            font-family: sans-serif;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            user-select: none;
+        }
+
+        /* Repeating Grid Watermark over the paper */
+        .paper-watermark {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 50;
+            display: flex;
+            flex-wrap: wrap;
+            opacity: 0.04;
+            justify-content: center;
+            align-content: center;
+        }
+        .paper-watermark span {
+            font-size: 1.5rem;
+            font-family: sans-serif;
+            font-weight: 800;
+            transform: rotate(-30deg);
+            padding: 3rem 4rem;
+            white-space: nowrap;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-[#e5e0d8]">
+    <!-- E-Reader Toolbar -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-[#2e1d1a]/10 px-6 py-3 flex justify-between items-center z-50 font-sans shadow-sm">
+        <div class="flex items-center gap-4">
+            <a href="/opac/member/dashboard" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-[#E6B325] hover:text-[#2e1d1a] transition-colors text-gray-700" title="Kembali ke Dasbor">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div>
+                <h1 class="text-sm font-bold text-[#2e1d1a]">{{ buku.judul }}</h1>
+                <p class="text-[10px] uppercase tracking-widest text-gray-500">{{ buku.pengarang or "-" }}</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-6">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest hidden md:inline">Hal. 120 / 268</span>
+            <div class="flex gap-2">
+                <button class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 transition-colors" title="Perkecil Teks"><i class="fa-solid fa-minus text-xs"></i></button>
+                <button class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 transition-colors" title="Perbesar Teks"><i class="fa-solid fa-plus text-xs"></i></button>
+                <button class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 transition-colors ml-4 border border-gray-200" title="Mode Gelap"><i class="fa-solid fa-moon text-xs"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Reading Area with Watermarks -->
+    <main class="flex-1 overflow-y-auto relative watermark-container p-4 md:p-12 flex justify-center pb-24">
+        
+        <!-- Document Content (The Paper) -->
+        <article class="max-w-3xl w-full bg-[#faf9f6] shadow-2xl rounded-sm p-10 md:p-20 text-lg leading-loose relative overflow-hidden selection:bg-[#E6B325]/40 text-[#2e1d1a]">
+            
+            <!-- Repeating Watermark specific to the paper -->
+            <div class="paper-watermark">
+                <script>
+                    for(let i=0; i<40; i++) {
+                        document.write('<span>ST. JEROME LIBRARY</span>');
+                    }
+                </script>
+            </div>
+
+            <div class="relative z-10">
+                <h2 class="text-3xl font-bold mb-10 text-center font-serif">Chapter 4: The Kantian Crisis</h2>
+                
+                <p class="mb-6 indent-12 text-justify">It is impossible to overstate the profound crisis that Kant’s philosophy induced in the intellectual circles of late eighteenth-century Germany. The publication of the <i>Critique of Pure Reason</i> in 1781 did not immediately transform the philosophical landscape; in fact, its initial reception was famously tepid and confused. However, as the implications of transcendental idealism began to crystallize—largely through the popularizing efforts of thinkers like Karl Leonhard Reinhold—a deep unease took hold.</p>
+                
+                <p class="mb-6 indent-12 text-justify">At the heart of this unease was the problem of the thing-in-itself (<i>Ding an sich</i>). Kant had argued compellingly that human knowledge is strictly limited to the realm of appearances (phenomena), structured by the <i>a priori</i> categories of the understanding and the forms of sensible intuition (space and time).</p>
+                
+                <p class="mb-6 indent-12 text-justify">Consequently, the ultimate nature of reality—how things are in themselves, independent of our perception—was placed permanently beyond the grasp of speculative reason. For a generation raised on the rationalist optimism of Leibniz and Wolff, who believed that reason could penetrate the very essence of God, the soul, and the cosmos, Kant’s critical turn felt less like a liberation from dogmatism and more like an epistemological prison.</p>
+
+                <p class="mb-6 indent-12 text-justify">Friedrich Heinrich Jacobi was among the first to expose the fragile fault lines within the Kantian edifice. In his famous critique, Jacobi pointed out a devastating paradox: without the assumption of the thing-in-itself, one could not enter Kant’s system (for something must affect our senses to produce appearances), yet with it, one could not remain inside (for Kant explicitly forbade applying categories like causality to the noumenal realm).</p>
+
+                <!-- Dummy pagination controls at bottom of paper -->
+                <div class="mt-20 pt-8 border-t border-[#2e1d1a]/10 flex justify-between items-center text-xs font-sans font-bold uppercase tracking-widest text-gray-400">
+                    <button class="hover:text-[#E6B325] transition-colors"><i class="fa-solid fa-chevron-left mr-2"></i> Hal 119</button>
+                    <span>120</span>
+                    <button class="hover:text-[#E6B325] transition-colors">Hal 121 <i class="fa-solid fa-chevron-right ml-2"></i></button>
+                </div>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

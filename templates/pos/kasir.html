@@ -1,0 +1,1302 @@
+{% extends "layout.html" %}
+{% block content %}
+<div x-data="posKasir()" x-init="initData()" class="max-w-7xl mx-auto pb-12">
+
+    <!-- Top Action Bar & Shortcuts -->
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-stroke shadow-xs">
+        <div class="flex items-center gap-2">
+            <span class="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-lg">
+                <i class="fa-solid fa-cash-register"></i>
+            </span>
+            <div>
+                <h1 class="font-bold text-slate-800 text-base leading-tight">POS Kasir Fotocopy & Print</h1>
+                <p class="text-xs text-slate-500">No. Transaksi Baru: <span class="font-mono font-bold text-primary" x-text="nextNoTrx"></span></p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <a href="/pos/tabungan" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-piggy-bank text-emerald-600"></i> Tabungan Anggota
+            </a>
+            <button type="button" @click="openQueueModal()" :class="queueCount > 0 ? 'bg-blue-600 hover:bg-blue-700 text-white ring-2 ring-blue-400 shadow-md animate-pulse' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'" class="relative px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-print"></i> Antrean Print
+                <span x-show="queueCount > 0" class="w-5 h-5 rounded-full bg-amber-400 text-slate-900 text-[10px] font-black flex items-center justify-center ml-1" x-text="queueCount"></span>
+            </button>
+            <a href="/pos/riwayat" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-clock-rotate-left text-slate-600"></i> Riwayat & Tutup Kas
+            </a>
+        </div>
+    </div>
+
+    <!-- BANNER PEMBERITAHUAN DOKUMEN PRINT MASUK -->
+    <div x-show="queueCount > 0" style="display: none;" class="mb-5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white rounded-2xl p-4 px-6 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3 border border-blue-400/30">
+        <div class="flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-white/20 text-white flex items-center justify-center text-xl shrink-0">
+                <i class="fa-solid fa-print animate-bounce"></i>
+            </div>
+            <div>
+                <div class="font-bold text-sm sm:text-base flex items-center gap-2">
+                    <span>Ada <span class="bg-amber-400 text-slate-900 px-2 py-0.5 rounded-full text-xs font-black" x-text="queueCount"></span> Berkas Print Menunggu Dicetak!</span>
+                </div>
+                <div class="text-xs text-blue-100 mt-0.5">Pemustaka baru saja mengunggah berkas cetak mandiri. Klik tombol di kanan untuk unduh atau langsung cetak.</div>
+            </div>
+        </div>
+        <button type="button" @click="openQueueModal()" class="px-5 py-2.5 bg-white hover:bg-amber-50 text-blue-700 hover:text-blue-800 font-bold rounded-xl text-xs uppercase tracking-wider transition shadow-md flex items-center gap-2 shrink-0">
+            <i class="fa-solid fa-folder-open text-amber-500 text-sm"></i> Buka Antrean & Unduh Dokumen
+        </button>
+    </div>
+
+    <!-- MAIN GRID: KATALOG (LEFT) & KERANJANG (RIGHT) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <!-- KOLOM KIRI: KATALOG LAYANAN CEPAT (7 COLS) -->
+        <div class="lg:col-span-7 flex flex-col gap-4">
+            
+            <!-- Filter Kategori & Search -->
+            <div class="bg-white p-3.5 rounded-xl border border-stroke shadow-xs flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-1.5">
+                    <button type="button" @click="activeKat = 'SEMUA'" :class="activeKat === 'SEMUA' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                        Semua
+                    </button>
+                    <button type="button" @click="activeKat = 'FOTOCOPY'" :class="activeKat === 'FOTOCOPY' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                        Fotocopy
+                    </button>
+                    <button type="button" @click="activeKat = 'PRINT'" :class="activeKat === 'PRINT' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                        Print
+                    </button>
+                    <button type="button" @click="activeKat = 'JILID'" :class="activeKat === 'JILID' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                        Jilid & Lainnya
+                    </button>
+                </div>
+
+                <div class="relative flex-1 min-w-[160px]">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    </span>
+                    <input type="text" x-model="searchQuery" placeholder="Cari jasa..." class="w-full text-xs pl-8 pr-3 py-1.5 border border-stroke rounded-lg outline-none focus:border-primary">
+                </div>
+            </div>
+
+            <!-- Grid Kartu Layanan -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <template x-for="item in filteredLayanan" :key="item.id">
+                    <div @click="addItem(item)" class="bg-white border-2 border-stroke hover:border-primary rounded-xl p-3.5 cursor-pointer shadow-xs hover:shadow-md transition flex flex-col justify-between group relative">
+                        <!-- Header kartu -->
+                        <div>
+                            <div class="flex items-center justify-between gap-1 mb-2">
+                                <span class="font-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600" x-text="item.kode"></span>
+                                <template x-if="item.is_kertas_perpus">
+                                    <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Kertas Perpus</span>
+                                </template>
+                                <template x-if="!item.is_kertas_perpus">
+                                    <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">Kertas Sendiri</span>
+                                </template>
+                            </div>
+                            <h3 class="font-bold text-slate-800 text-xs leading-snug line-clamp-2 group-hover:text-primary transition" x-text="item.nama_layanan"></h3>
+                        </div>
+
+                        <!-- Harga -->
+                        <div class="mt-3 pt-2 border-t border-slate-100 flex items-baseline justify-between">
+                            <span class="text-[11px] text-slate-400 font-medium" x-text="'/' + item.satuan"></span>
+                            <span class="font-extrabold text-sm text-slate-900 group-hover:text-primary transition" x-text="'Rp ' + item.harga.toLocaleString('id-ID')"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Quick Qty Tool -->
+            <div class="bg-white p-3.5 rounded-xl border border-stroke shadow-xs">
+                <div class="text-xs font-semibold text-slate-700 mb-2 flex items-center justify-between">
+                    <span><i class="fa-solid fa-bolt text-amber-500 mr-1"></i> Tambah Cepat Lembar (Klik item di keranjang lalu pilih jumlah):</span>
+                </div>
+                <div class="flex flex-wrap gap-1.5">
+                    <template x-for="n in [1, 2, 5, 10, 20, 25, 50, 100]">
+                        <button type="button" @click="setQtySelected(n)" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-primary hover:text-white text-slate-800 text-xs font-bold transition shadow-2xs">
+                            +<span x-text="n"></span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- KOLOM KANAN: KERANJANG & KASIR CHECKOUT (5 COLS) -->
+        <div class="lg:col-span-5 flex flex-col gap-4">
+
+            <!-- Panel Pelanggan & Scan Kartu -->
+            <div class="bg-white p-4 rounded-xl border border-stroke shadow-xs">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                        <i class="fa-solid fa-id-card text-primary"></i> Pelanggan / Nasabah Tabungan
+                    </label>
+                    <button type="button" @click="resetPelanggan()" x-show="selectedNasabah" class="text-[11px] text-red-500 hover:underline">
+                        Batal Pilih
+                    </button>
+                </div>
+
+                <!-- Input Scan Kartu / Search -->
+                <div class="relative" x-show="!selectedNasabah">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                        <i class="fa-solid fa-barcode text-sm"></i>
+                    </span>
+                    <input type="text" x-model="memberSearchQuery" @keydown.enter.prevent="searchNasabahEnter()" placeholder="Scan Barcode Kartu / Ketik No Rek / Nama..."
+                           class="w-full text-xs pl-9 pr-20 py-2.5 border-2 border-stroke rounded-lg focus:border-primary outline-none font-medium text-black">
+                    <button type="button" @click="searchNasabahEnter()" class="absolute right-1.5 top-1.5 px-2.5 py-1 bg-primary text-white text-xs font-semibold rounded-md">
+                        Cari
+                    </button>
+                </div>
+
+                <!-- Autocomplete Dropdown -->
+                <div x-show="nasabahResults.length > 0 && !selectedNasabah" class="mt-2 border border-stroke rounded-lg bg-white shadow-lg max-h-48 overflow-y-auto divide-y divide-slate-100">
+                    <template x-for="n in nasabahResults" :key="n.no_rekening">
+                        <div @click="selectNasabah(n)" class="p-2.5 hover:bg-blue-50/70 cursor-pointer flex items-center justify-between text-xs">
+                            <div>
+                                <span class="font-bold text-slate-900" x-text="n.nama_nasabah"></span>
+                                <span class="text-slate-500 text-[11px]" x-text="'(Rek: ' + n.no_rekening + ')'"></span>
+                                <div class="text-[10px] text-slate-400" x-text="n.member_id ? 'NIM/NPP: ' + n.member_id : 'Non-Member'"></div>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-mono font-bold text-emerald-600 block" x-text="'Rp ' + n.saldo.toLocaleString('id-ID')"></span>
+                                <span class="text-[10px] text-slate-400">Saldo</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Selected Nasabah Card -->
+                <div x-show="selectedNasabah" class="p-3 rounded-lg border-2 border-emerald-500 bg-emerald-50/40 mt-1">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-800 px-1.5 py-0.5 bg-emerald-200/60 rounded">
+                                Nasabah Tabungan
+                            </span>
+                            <h4 class="font-bold text-slate-900 text-sm mt-1" x-text="selectedNasabah ? selectedNasabah.nama_nasabah : ''"></h4>
+                            <p class="text-xs text-slate-600 font-mono" x-text="'No. Rekening: ' + (selectedNasabah ? selectedNasabah.no_rekening : '')"></p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-500 block">Sisa Saldo:</span>
+                            <span class="font-mono text-lg font-extrabold text-emerald-700" x-text="'Rp ' + (selectedNasabah ? selectedNasabah.saldo.toLocaleString('id-ID') : '0')"></span>
+                        </div>
+                    </div>
+
+                    <!-- Low Balance Warning -->
+                    <div x-show="selectedNasabah && selectedNasabah.saldo < 500" class="mt-2 text-[11px] text-amber-800 bg-amber-100/80 px-2.5 py-1 rounded flex items-center gap-1.5">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                        <span>Saldo kritis! Sarankan nasabah untuk top-up.</span>
+                    </div>
+
+                    <!-- Direct Top-up button for Cashier -->
+                    <div class="mt-2.5 pt-2 border-t border-emerald-200/60 flex items-center justify-between">
+                        <span class="text-[11px] text-emerald-800 font-medium">Tambah saldo langsung di kasir:</span>
+                        <button type="button" @click.stop="openQuickTopup()" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[11px] font-bold shadow-xs transition flex items-center gap-1">
+                            <i class="fa-solid fa-plus-circle"></i> Setor / Top Up
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Default / Pembeli Umum -->
+                <div x-show="!selectedNasabah" class="mt-2 flex items-center justify-between text-xs text-slate-500">
+                    <span>Pelanggan saat ini: <strong class="text-slate-800">UMUM (Non-Tabungan)</strong></span>
+                </div>
+            </div>
+
+            <!-- Tabel Keranjang Belanja -->
+            <div class="bg-white rounded-xl border border-stroke shadow-xs overflow-hidden flex-1 flex flex-col">
+                <div class="p-3 bg-slate-50 border-b border-stroke flex items-center justify-between">
+                    <span class="font-bold text-xs text-slate-700">Keranjang Tagihan (<span x-text="cart.length"></span> item)</span>
+                    <button type="button" @click="clearCart()" x-show="cart.length > 0" class="text-[11px] text-red-500 hover:underline">
+                        Kosongkan
+                    </button>
+                </div>
+
+                <!-- List items -->
+                <div class="flex-1 overflow-y-auto max-h-72 p-2 divide-y divide-slate-100">
+                    <template x-if="cart.length === 0">
+                        <div class="py-12 text-center text-slate-400">
+                            <i class="fa-solid fa-cart-shopping text-3xl mb-2 block"></i>
+                            <span class="text-xs">Keranjang masih kosong.<br>Klik item di katalog untuk menambahkan.</span>
+                        </div>
+                    </template>
+                    <template x-for="(c, idx) in cart" :key="c.id">
+                        <div @click="selectedIndex = idx" :class="selectedIndex === idx ? 'bg-blue-50/60 ring-1 ring-primary/30' : ''" class="py-2 px-2.5 rounded-lg transition cursor-pointer flex items-center justify-between gap-2">
+                            <div class="flex-1 min-w-0">
+                                <div class="font-bold text-xs text-slate-900 truncate" x-text="c.nama_layanan"></div>
+                                <div class="text-[11px] text-slate-500 font-mono" x-text="'@ Rp ' + c.harga.toLocaleString('id-ID')"></div>
+                            </div>
+
+                            <!-- Qty Control -->
+                            <div class="flex items-center gap-1">
+                                <button type="button" @click.stop="decrementQty(idx)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center">-</button>
+                                <input type="number" x-model.number="c.qty" @input="updateSubtotal(idx)" min="1" class="w-12 text-center text-xs font-bold border border-stroke rounded py-0.5 outline-none font-mono">
+                                <button type="button" @click.stop="incrementQty(idx)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center">+</button>
+                            </div>
+
+                            <!-- Subtotal & Hapus -->
+                            <div class="text-right w-20">
+                                <span class="font-mono font-bold text-xs text-slate-900 block" x-text="'Rp ' + c.subtotal.toLocaleString('id-ID')"></span>
+                                <button type="button" @click.stop="removeItem(idx)" class="text-[10px] text-red-500 hover:underline">Hapus</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Footer Tagihan & Checkout -->
+                <div class="p-4 bg-slate-50 border-t border-stroke">
+                    <div class="flex items-baseline justify-between mb-3">
+                        <span class="text-xs font-semibold text-slate-600">TOTAL TAGIHAN:</span>
+                        <span class="font-mono text-2xl font-black text-primary" x-text="'Rp ' + totalTagihan.toLocaleString('id-ID')"></span>
+                    </div>
+
+                    <!-- Tombol Pembayaran -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <!-- Tunai -->
+                        <button type="button" @click.stop="openPayModal('TUNAI')" :disabled="cart.length === 0"
+                                class="py-2.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition disabled:opacity-40 flex flex-col items-center gap-1 shadow-xs">
+                            <i class="fa-solid fa-money-bill-wave text-emerald-400 text-sm"></i>
+                            <span>Tunai</span>
+                        </button>
+
+                        <!-- Tabungan -->
+                        <button type="button" @click.stop="openPayModal('TABUNGAN')" :disabled="cart.length === 0 || !selectedNasabah"
+                                class="py-2.5 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition disabled:opacity-40 flex flex-col items-center gap-1 shadow-xs">
+                            <i class="fa-solid fa-wallet text-sm"></i>
+                            <span>Tabungan</span>
+                        </button>
+
+                        <!-- Split Payment -->
+                        <button type="button" @click.stop="openPayModal('SPLIT')" :disabled="cart.length === 0 || !selectedNasabah || selectedNasabah.saldo <= 0"
+                                class="py-2.5 px-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition disabled:opacity-40 flex flex-col items-center gap-1 shadow-xs">
+                            <i class="fa-solid fa-bolt text-amber-300 text-sm"></i>
+                            <span>Split</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+        <!-- MODAL QUICK TOP-UP NASABAH DI KASIR -->
+    <template x-teleport="body">
+    <div x-show="showQuickTopupModal" x-cloak @click.self="showQuickTopupModal = false" 
+         class="fixed inset-0 z-[99999] bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200 transform transition-all my-auto">
+            
+            <!-- Header with Emerald Gradient -->
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-700 px-6 py-4 text-white flex items-center justify-between shadow-xs">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center text-lg text-white border border-white/20 shadow-xs">
+                        <i class="fa-solid fa-arrow-down-to-line"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base tracking-tight leading-snug">Setor Tunai Saldo Nasabah</h3>
+                        <p class="text-[11px] text-emerald-100/90">Top-up saldo langsung dari meja kasir POS</p>
+                    </div>
+                </div>
+                <button type="button" @click="showQuickTopupModal = false" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <form @submit.prevent="submitQuickTopup()" class="p-6 space-y-4">
+                <!-- Profile Nasabah Card -->
+                <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm font-mono border border-emerald-200 shadow-2xs"
+                             x-text="selectedNasabah ? (selectedNasabah.nama_nasabah || 'N').substring(0, 2).toUpperCase() : 'NA'">
+                        </div>
+                        <div>
+                            <div class="font-extrabold text-slate-800 text-sm leading-tight" x-text="selectedNasabah ? selectedNasabah.nama_nasabah : ''"></div>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-slate-200 font-mono text-[11px] font-bold text-slate-700 shadow-2xs">
+                                    <i class="fa-regular fa-credit-card text-[10px] text-slate-400"></i>
+                                    <span x-text="'Rek: ' + (selectedNasabah ? selectedNasabah.no_rekening : '')"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right pl-3 border-l border-slate-200">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Saldo Saat Ini</span>
+                        <span class="font-mono text-base font-extrabold text-slate-900" x-text="'Rp ' + (selectedNasabah ? selectedNasabah.saldo.toLocaleString('id-ID') : '0')"></span>
+                    </div>
+                </div>
+
+                <!-- Input Nominal Display -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                        <span>Nominal Setoran Tunai <span class="text-red-500">*</span></span>
+                        <span class="text-[11px] font-normal text-slate-400">Min. Rp 500</span>
+                    </label>
+                    
+                    <div class="relative rounded-xl border-2 border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20 bg-white overflow-hidden transition shadow-xs">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-bold font-mono text-sm">
+                            Rp
+                        </span>
+                        <input type="number" x-model.number="quickTopupNominal" min="500" step="500" required
+                               class="w-full pl-11 pr-4 py-2.5 text-2xl font-black font-mono text-emerald-800 placeholder-slate-300 outline-none">
+                    </div>
+                </div>
+
+                <!-- Quick Preset Grid (3 columns, 2 rows) -->
+                <div>
+                    <div class="text-[11px] font-bold text-slate-600 mb-1.5 flex items-center justify-between">
+                        <span>Pilihan Cepat Nominal:</span>
+                        <span class="text-[10px] text-slate-400">Klik untuk langsung pilih</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <template x-for="val in [2000, 5000, 10000, 20000, 50000, 100000]">
+                            <button type="button" 
+                                    @click="quickTopupNominal = val"
+                                    :class="quickTopupNominal === val ? 'bg-emerald-600 text-white font-bold ring-2 ring-emerald-500/30 border-emerald-600 shadow-xs' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 hover:border-slate-300 font-semibold'"
+                                    class="py-2.5 px-3 rounded-xl border text-xs font-mono text-center transition flex flex-col items-center justify-center">
+                                <span class="text-[10px] opacity-75 font-sans">Setor</span>
+                                <span class="text-xs font-bold tracking-tight" x-text="'Rp ' + val.toLocaleString('id-ID')"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Live Calculation / Estimasi Saldo Baru -->
+                <div class="bg-emerald-50/70 rounded-xl p-3.5 border border-emerald-200/80 text-xs">
+                    <div class="flex items-center justify-between text-slate-600 mb-1">
+                        <span>Saldo Sebelum Top-Up:</span>
+                        <span class="font-mono font-medium" x-text="'Rp ' + (selectedNasabah ? selectedNasabah.saldo.toLocaleString('id-ID') : '0')"></span>
+                    </div>
+                    <div class="flex items-center justify-between text-emerald-800 font-semibold mb-2">
+                        <span>Nominal Setoran:</span>
+                        <span class="font-mono font-bold" x-text="'+ Rp ' + (quickTopupNominal || 0).toLocaleString('id-ID')"></span>
+                    </div>
+                    <div class="pt-2 border-t border-emerald-200 flex items-center justify-between">
+                        <span class="font-bold text-slate-900 text-xs uppercase tracking-wide">Estimasi Saldo Baru:</span>
+                        <span class="font-mono text-lg font-black text-emerald-700" 
+                              x-text="'Rp ' + ((selectedNasabah ? selectedNasabah.saldo : 0) + (quickTopupNominal || 0)).toLocaleString('id-ID')">
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Keterangan Tambahan -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Catatan / Keterangan (Opsional)</label>
+                    <input type="text" x-model="quickTopupKeterangan" placeholder="Setor Tunai Kasir POS"
+                           class="w-full text-xs border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-emerald-500 bg-white">
+                </div>
+
+                <!-- Actions -->
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button type="button" @click="showQuickTopupModal = false" 
+                            class="py-2.5 px-4 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 font-bold text-xs transition">
+                        Batal
+                    </button>
+                    <button type="submit" :disabled="isSubmittingTopup || quickTopupNominal <= 0"
+                            class="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50">
+                        <span x-show="!isSubmittingTopup" class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-check"></i> Simpan Setoran
+                        </span>
+                        <span x-show="isSubmittingTopup" class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Memproses...
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </template>
+
+    <!-- MODAL PEMBAYARAN -->
+    <template x-teleport="body">
+    <div x-show="showPayModal" x-cloak @click.self="showPayModal = false" class="fixed inset-0 z-[99999] bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl border border-stroke my-auto">
+            <div class="bg-primary px-6 py-4 text-white flex items-center justify-between">
+                <h3 class="font-bold text-base flex items-center gap-2">
+                    <i class="fa-solid fa-cash-register"></i> Pembayaran: <span x-text="payMethod"></span>
+                </h3>
+                <button type="button" @click="showPayModal = false" class="text-white/80 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6">
+                <!-- Info Pelanggan & Tagihan -->
+                <div class="bg-slate-50 p-3.5 rounded-xl border border-stroke mb-4 text-xs space-y-1.5">
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Pelanggan:</span>
+                        <strong class="text-slate-800" x-text="selectedNasabah ? selectedNasabah.nama_nasabah + ' (Rek: ' + selectedNasabah.no_rekening + ')' : 'UMUM'"></strong>
+                    </div>
+                    <div class="flex justify-between items-baseline pt-1 border-t border-slate-200">
+                        <span class="text-slate-700 font-bold">Total Tagihan:</span>
+                        <strong class="font-mono text-xl text-primary" x-text="'Rp ' + totalTagihan.toLocaleString('id-ID')"></strong>
+                    </div>
+                </div>
+
+                <!-- TABUNGAN MURNI -->
+                <div x-show="payMethod === 'TABUNGAN'" class="space-y-3">
+                    <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-emerald-800">Saldo Saat Ini:</span>
+                            <span class="font-mono font-bold text-emerald-900" x-text="'Rp ' + (selectedNasabah ? selectedNasabah.saldo.toLocaleString('id-ID') : '0')"></span>
+                        </div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-emerald-800">Dipotong:</span>
+                            <span class="font-mono font-bold text-red-600" x-text="'- Rp ' + totalTagihan.toLocaleString('id-ID')"></span>
+                        </div>
+                        <div class="flex justify-between pt-1 border-t border-emerald-200 font-bold">
+                            <span class="text-emerald-900">Sisa Saldo Setelah Transaksi:</span>
+                            <span class="font-mono text-emerald-900" x-text="'Rp ' + (selectedNasabah ? (selectedNasabah.saldo - totalTagihan).toLocaleString('id-ID') : '0')"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SPLIT PAYMENT -->
+                <div x-show="payMethod === 'SPLIT'" class="space-y-3">
+                    <div class="p-3 bg-indigo-50 rounded-xl border border-indigo-200 text-xs space-y-1.5">
+                        <div class="flex justify-between">
+                            <span class="text-indigo-800">Saldo Terpotong Maksimal:</span>
+                            <span class="font-mono font-bold text-indigo-900" x-text="'Rp ' + splitPotongSaldo.toLocaleString('id-ID')"></span>
+                        </div>
+                        <div class="flex justify-between pt-1 border-t border-indigo-200 font-bold">
+                            <span class="text-red-700">Sisa Tagihan Tunai Wajib:</span>
+                            <span class="font-mono text-sm text-red-700" x-text="'Rp ' + splitSisaTunai.toLocaleString('id-ID')"></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Uang Tunai Diterima (Rp) *</label>
+                        <input type="number" x-model.number="uangDiterima" @input="hitungKembalian()" class="w-full text-base font-mono font-bold border-2 border-stroke rounded-xl px-3 py-2 outline-none focus:border-primary">
+                    </div>
+                </div>
+
+                <!-- TUNAI MURNI -->
+                <div x-show="payMethod === 'TUNAI'" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Uang Tunai Diterima (Rp) *</label>
+                        <input type="number" x-model.number="uangDiterima" @input="hitungKembalian()" class="w-full text-lg font-mono font-bold border-2 border-stroke rounded-xl px-3 py-2 outline-none focus:border-primary">
+                    </div>
+
+                    <!-- Tombol Uang Pas / Pecahan Cepat -->
+                    <div class="flex flex-wrap gap-1.5">
+                        <button type="button" @click="uangDiterima = totalTagihan; hitungKembalian()" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded text-xs font-semibold">Uang Pas</button>
+                        <template x-for="p in [2000, 5000, 10000, 20000, 50000, 100000]">
+                            <button type="button" @click="uangDiterima = p; hitungKembalian()" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded text-xs font-semibold" x-text="p.toLocaleString('id-ID')"></button>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Kembalian Display (Tunai / Split) -->
+                <div x-show="payMethod === 'TUNAI' || payMethod === 'SPLIT'" class="mt-4 p-3 bg-slate-100 rounded-xl flex items-baseline justify-between">
+                    <span class="text-xs font-bold text-slate-600">UANG KEMBALIAN:</span>
+                    <span :class="kembalian >= 0 ? 'text-emerald-700' : 'text-red-600'" class="font-mono text-xl font-extrabold" x-text="'Rp ' + (kembalian >= 0 ? kembalian.toLocaleString('id-ID') : '0 (Kurang)')"></span>
+                </div>
+
+                <!-- Tombol Submit Bayar -->
+                <div class="mt-6 flex items-center justify-end gap-2">
+                    <button type="button" @click="showPayModal = false" class="px-4 py-2 rounded-xl border border-stroke text-slate-600 text-xs font-semibold">
+                        Batal
+                    </button>
+                    <button type="button" @click="submitTransaksi()" :disabled="isSubmitting || (payMethod !== 'TABUNGAN' && kembalian < 0)"
+                            class="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-bold transition disabled:opacity-50 flex items-center gap-1.5 shadow-md">
+                        <span x-show="!isSubmitting"><i class="fa-solid fa-check mr-1"></i> Selesaikan Transaksi</span>
+                        <span x-show="isSubmitting"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Memproses...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ANTREAN PRINT MANDIRI -->
+    <div x-show="showQueueModal" x-cloak @click.self="showQueueModal = false" class="fixed inset-0 z-[99999] bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl border border-stroke my-auto">
+            <div class="bg-blue-600 px-6 py-4 text-white flex items-center justify-between">
+                <h3 class="font-bold text-base flex items-center gap-2">
+                    <i class="fa-solid fa-file-arrow-up"></i> Antrean Berkas Cetak Mandiri Mahasiswa
+                </h3>
+                <button type="button" @click="showQueueModal = false" class="text-white/80 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6">
+                <div class="overflow-x-auto max-h-96">
+                    <table class="w-full text-xs text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 border-b border-stroke">
+                                <th class="p-2.5">Antrean</th>
+                                <th class="p-2.5">Pemesan</th>
+                                <th class="p-2.5">Berkas & Hal</th>
+                                <th class="p-2.5">Pilihan Cetak</th>
+                                <th class="p-2.5">Catatan</th>
+                                <th class="p-2.5 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <template x-if="queueList.length === 0">
+                                <tr>
+                                    <td colspan="6" class="py-8 text-center text-slate-400">
+                                        Tidak ada antrean cetak baru saat ini.
+                                    </td>
+                                </tr>
+                            </template>
+                            <template x-for="q in queueList" :key="q.id">
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="p-2.5 font-mono font-bold text-blue-600 whitespace-nowrap" x-text="q.kode_antrean"></td>
+                                    <td class="p-2.5">
+                                        <div class="font-bold text-slate-800" x-text="q.nama_pemesan"></div>
+                                        <div class="text-[10px] text-slate-400 font-mono" x-text="q.no_rekening ? 'Rek: ' + q.no_rekening : ''"></div>
+                                    </td>
+                                    <td class="p-2.5">
+                                        <div class="font-semibold text-slate-700 truncate max-w-[140px]" :title="q.nama_file" x-text="q.nama_file"></div>
+                                        <div class="text-[10px] text-blue-600 font-bold" x-text="q.jumlah_halaman + ' Hal PDF'"></div>
+                                    </td>
+                                    <td class="p-2.5">
+                                        <div class="flex flex-wrap gap-1 max-w-[180px]">
+                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold" 
+                                                  :class="q.mode_sisi === '2_SISI' ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-slate-100 text-slate-700'"
+                                                  x-text="q.mode_sisi === '2_SISI' ? 'Bolak-Balik' : '1 Sisi'"></span>
+                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold" 
+                                                  :class="q.warna === 'WARNA' ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-stone-100 text-stone-700'"
+                                                  x-text="q.warna === 'WARNA' ? 'Warna' : 'B/W'"></span>
+                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold" 
+                                                  :class="q.kertas === 'SENDIRI' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-blue-100 text-blue-800 border border-blue-200'"
+                                                  x-text="q.kertas === 'SENDIRI' ? 'Kertas Sendiri' : 'Kertas Perpus'"></span>
+                                            <template x-if="q.rangkap > 1">
+                                                <span class="bg-emerald-100 text-emerald-800 border border-emerald-200 px-1.5 py-0.5 rounded text-[10px] font-bold" x-text="q.rangkap + 'x'"></span>
+                                            </template>
+                                        </div>
+                                    </td>
+                                    <td class="p-2.5">
+                                        <template x-if="q.catatan && q.catatan.trim()">
+                                            <span class="bg-amber-50 border border-amber-300 text-amber-900 font-medium px-2 py-1 rounded-md text-[11px] block max-w-[140px] truncate" :title="q.catatan" x-text="q.catatan"></span>
+                                        </template>
+                                        <template x-if="!q.catatan || !q.catatan.trim()">
+                                            <span class="text-slate-400">-</span>
+                                        </template>
+                                    </td>
+                                    <td class="p-2.5 text-center flex flex-wrap items-center justify-center gap-1.5">
+                                        <a :href="'/static/uploads/print_queue/' + q.file_path" target="_blank" class="px-2 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-xs font-semibold inline-flex items-center gap-1 shadow-xs" title="Buka berkas di tab baru (Ctrl+P)">
+                                            <i class="fa-solid fa-eye text-blue-600"></i> Buka
+                                        </a>
+                                        <a :href="'/static/uploads/print_queue/' + q.file_path" :download="q.nama_file" class="px-2 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold inline-flex items-center gap-1 shadow-xs" title="Download berkas ke komputer">
+                                            <i class="fa-solid fa-download text-slate-600"></i> Unduh
+                                        </a>
+                                        <button type="button" @click="openPrintConfirm(q)" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold inline-flex items-center gap-1 shadow-xs transition-colors" title="Konfirmasi mode cetak bolak-balik & masukkan ke kasir">
+                                            <i class="fa-solid fa-sliders"></i> Proses Kasir
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL KONFIRMASI & HITUNG CETAK DOKUMEN -->
+    <div x-show="showPrintConfirmModal" x-cloak class="fixed inset-0 z-[99999] overflow-y-auto">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity" @click="showPrintConfirmModal = false"></div>
+        <div class="flex min-h-full items-center justify-center p-4">
+            <div class="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 text-slate-800 border border-slate-200" @click.stop>
+                
+                <!-- Header Modal -->
+                <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-sliders"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-base leading-tight">Konfirmasi & Hitung Cetak</h3>
+                            <span class="text-[11px] text-slate-500 font-mono" x-text="printConfig.kode_antrean + ' • ' + printConfig.nama_pemesan"></span>
+                        </div>
+                    </div>
+                    <button type="button" @click="showPrintConfirmModal = false" class="text-slate-400 hover:text-slate-600 p-1">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Info Berkas & Catatan Pemesan -->
+                <div class="space-y-2.5 mb-4">
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between">
+                        <div class="truncate max-w-[280px]">
+                            <div class="font-bold text-xs text-slate-800 truncate" x-text="printConfig.nama_file"></div>
+                            <div class="text-[11px] text-slate-500 font-mono" x-text="printConfig.no_rekening ? 'Rekening: ' + printConfig.no_rekening : 'Pelanggan Umum'"></div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs font-bold text-blue-700 bg-blue-100/70 px-2 py-1 rounded-lg inline-block" x-text="printConfig.jumlah_halaman + ' Hal. Asli PDF'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Highlight Catatan Khusus Pemesan -->
+                    <template x-if="printConfig.catatan && printConfig.catatan.trim()">
+                        <div class="bg-amber-50 border border-amber-300 rounded-xl p-2.5 text-xs text-amber-900 flex items-start gap-2">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-600 text-sm mt-0.5"></i>
+                            <div>
+                                <span class="font-bold uppercase tracking-wider text-[10px] block text-amber-800">Catatan dari Pemesan:</span>
+                                <span class="font-semibold text-slate-800 text-xs" x-text="printConfig.catatan"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Formulir Pengaturan Cetak -->
+                <div class="space-y-3.5 mb-5 text-xs">
+                    
+                    <!-- 1. Mode Sisi: 1 Sisi vs 2 Sisi Bolak-Balik -->
+                    <div>
+                        <label class="block font-bold text-slate-700 uppercase tracking-wider text-[11px] mb-1.5">
+                            Mode Sisi Kertas <span class="text-red-500">*</span>
+                        </label>
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <button type="button" 
+                                    @click="printConfig.mode_sisi = '1_SISI'; recalculatePrintConfig()"
+                                    :class="printConfig.mode_sisi === '1_SISI' ? 'border-blue-600 bg-blue-50/70 text-blue-900 ring-2 ring-blue-500/30 font-bold' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'"
+                                    class="p-2.5 rounded-xl border text-left transition-all flex items-center gap-2">
+                                <i class="fa-regular fa-file text-base" :class="printConfig.mode_sisi === '1_SISI' ? 'text-blue-600' : 'text-slate-400'"></i>
+                                <div>
+                                    <div class="font-bold">1 Sisi (Biasa)</div>
+                                    <div class="text-[10px] text-slate-500">1 halaman = 1 lembar</div>
+                                </div>
+                            </button>
+                            <button type="button" 
+                                    @click="printConfig.mode_sisi = '2_SISI'; recalculatePrintConfig()"
+                                    :class="printConfig.mode_sisi === '2_SISI' ? 'border-purple-600 bg-purple-50/70 text-purple-900 ring-2 ring-purple-500/30 font-bold' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'"
+                                    class="p-2.5 rounded-xl border text-left transition-all flex items-center gap-2">
+                                <i class="fa-solid fa-arrows-split-up-and-left text-base" :class="printConfig.mode_sisi === '2_SISI' ? 'text-purple-600' : 'text-slate-400'"></i>
+                                <div>
+                                    <div class="font-bold flex items-center gap-1">
+                                        <span>2 Sisi (Bolak-Balik)</span>
+                                        <span class="bg-purple-200 text-purple-800 text-[9px] px-1 rounded font-bold">Duplex</span>
+                                    </div>
+                                    <div class="text-[10px] text-slate-500">Hemat kertas (2 hal/lbr)</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. Warna Tinta & Kertas -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-slate-700 uppercase tracking-wider text-[11px] mb-1.5">
+                                Warna / Tinta
+                            </label>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <button type="button" 
+                                        @click="printConfig.warna = 'BW'; recalculatePrintConfig()"
+                                        :class="printConfig.warna === 'BW' ? 'border-slate-800 bg-slate-100 text-slate-900 font-bold ring-2 ring-slate-400/30' : 'border-slate-200 bg-white text-slate-600'"
+                                        class="py-2 px-1 text-center rounded-lg border text-xs">
+                                    Hitam-Putih
+                                </button>
+                                <button type="button" 
+                                        @click="printConfig.warna = 'WARNA'; recalculatePrintConfig()"
+                                        :class="printConfig.warna === 'WARNA' ? 'border-rose-600 bg-rose-50 text-rose-800 font-bold ring-2 ring-rose-400/30' : 'border-slate-200 bg-white text-slate-600'"
+                                        class="py-2 px-1 text-center rounded-lg border text-xs">
+                                    Warna
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-700 uppercase tracking-wider text-[11px] mb-1.5">
+                                Pilihan Kertas
+                            </label>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <button type="button" 
+                                        @click="printConfig.kertas = 'PERPUS'; recalculatePrintConfig()"
+                                        :class="printConfig.kertas === 'PERPUS' ? 'border-blue-600 bg-blue-50 text-blue-900 font-bold ring-2 ring-blue-400/30' : 'border-slate-200 bg-white text-slate-600'"
+                                        class="py-2 px-1 text-center rounded-lg border text-[11px]">
+                                    Kertas Perpus
+                                </button>
+                                <button type="button" 
+                                        @click="printConfig.kertas = 'SENDIRI'; recalculatePrintConfig()"
+                                        :class="printConfig.kertas === 'SENDIRI' ? 'border-amber-600 bg-amber-50 text-amber-900 font-bold ring-2 ring-amber-400/30' : 'border-slate-200 bg-white text-slate-600'"
+                                        class="py-2 px-1 text-center rounded-lg border text-[11px]">
+                                    Bawa Sendiri
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Rangkap & JUMLAH LEMBAR (EDITABLE) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <!-- Rangkap -->
+                        <div>
+                            <label class="block font-bold text-slate-700 uppercase tracking-wider text-[11px] mb-1.5">
+                                Rangkap (Salinan)
+                            </label>
+                            <div class="flex items-center">
+                                <button type="button" @click="if (printConfig.rangkap > 1) { printConfig.rangkap--; recalculatePrintConfig(); }" 
+                                        class="h-9 px-3 bg-slate-100 hover:bg-slate-200 border border-slate-300 border-r-0 rounded-l-lg font-bold">
+                                    <i class="fa-solid fa-minus text-xs"></i>
+                                </button>
+                                <input type="number" min="1" max="50" x-model.number="printConfig.rangkap" @change="recalculatePrintConfig()"
+                                       class="h-9 w-full text-center bg-white border border-slate-300 text-xs font-bold focus:outline-none">
+                                <button type="button" @click="printConfig.rangkap++; recalculatePrintConfig()" 
+                                        class="h-9 px-3 bg-slate-100 hover:bg-slate-200 border border-slate-300 border-l-0 rounded-r-lg font-bold">
+                                    <i class="fa-solid fa-plus text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Jumlah Lembar Dikenakan Biaya (Editable) -->
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="font-bold text-slate-700 uppercase tracking-wider text-[11px]">
+                                    Jumlah Lembar (Qty) <span class="text-red-500">*</span>
+                                </label>
+                                <template x-if="printConfig.custom_qty">
+                                    <button type="button" @click="resetLembarAuto()" class="text-[10px] text-blue-600 hover:underline font-semibold">
+                                        Reset Otomatis
+                                    </button>
+                                </template>
+                            </div>
+                            <div class="relative">
+                                <input type="number" min="1" x-model.number="printConfig.jumlah_lembar" @input="onLembarEdited()"
+                                       class="h-9 w-full px-3 bg-white border-2 rounded-lg text-sm font-bold text-slate-900 focus:outline-none"
+                                       :class="printConfig.custom_qty ? 'border-amber-500 ring-2 ring-amber-300/40 bg-amber-50/30' : 'border-slate-300 focus:border-blue-500'">
+                                <div class="absolute right-2.5 top-2 text-[11px] font-semibold text-slate-400">
+                                    Lembar
+                                </div>
+                            </div>
+                            <div class="text-[10px] text-slate-500 mt-1">
+                                <template x-if="!printConfig.custom_qty">
+                                    <span>
+                                        Otomatis: <strong x-text="printConfig.jumlah_halaman"></strong> hal 
+                                        <span x-text="printConfig.mode_sisi === '2_SISI' ? '÷ 2 (bolak-balik)' : ''"></span> 
+                                        <span x-text="printConfig.rangkap > 1 ? '× ' + printConfig.rangkap + ' rangkap' : ''"></span>
+                                    </span>
+                                </template>
+                                <template x-if="printConfig.custom_qty">
+                                    <span class="text-amber-700 font-semibold">
+                                        <i class="fa-solid fa-pen-to-square mr-0.5"></i> Qty disesuaikan manual oleh kasir
+                                    </span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Box Layanan Terpilih & Total Biaya -->
+                <div class="bg-slate-100 rounded-xl p-3.5 mb-5 border border-slate-200">
+                    <div class="flex items-center justify-between text-xs mb-1.5">
+                        <span class="text-slate-500">Layanan Otomatis:</span>
+                        <span class="font-bold text-slate-800" x-text="printConfig.selectedService ? printConfig.selectedService.kode + ' - ' + printConfig.selectedService.nama_layanan : '-'"></span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs mb-2">
+                        <span class="text-slate-500">Tarif Satuan:</span>
+                        <span class="font-semibold text-slate-700" x-text="'Rp ' + (printConfig.selectedService ? printConfig.selectedService.harga.toLocaleString('id-ID') : 0) + ' / lembar'"></span>
+                    </div>
+                    <div class="pt-2 border-t border-slate-200 flex items-center justify-between">
+                        <span class="font-bold text-slate-800 text-xs">Total Tagihan:</span>
+                        <span class="text-xl font-black text-emerald-700" x-text="'Rp ' + printConfig.subtotal.toLocaleString('id-ID')"></span>
+                    </div>
+                </div>
+
+                <!-- Modal Actions -->
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" @click="showPrintConfirmModal = false" 
+                            class="py-2.5 px-4 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs transition-colors">
+                        Batal
+                    </button>
+                    <button type="button" @click="submitPrintKeKasir()" 
+                            class="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md">
+                        <i class="fa-solid fa-cart-arrow-down"></i> Masukkan ke Kasir
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    </template>
+
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('posKasir', () => ({
+        layananList: [],
+        filteredLayanan: [],
+        activeKat: 'SEMUA',
+        searchQuery: '',
+        nextNoTrx: '',
+        queueCount: 0,
+        queueList: [],
+
+        // Cart
+        cart: [],
+        selectedIndex: -1,
+        totalTagihan: 0,
+
+        // Member
+        memberSearchQuery: '',
+        nasabahResults: [],
+        selectedNasabah: null,
+
+        // Quick Top-up in Kasir
+        showQuickTopupModal: false,
+        quickTopupNominal: 5000,
+        quickTopupKeterangan: 'Setor Tunai Kasir POS',
+        isSubmittingTopup: false,
+
+        // Payment modal
+        showPayModal: false,
+        payMethod: 'TUNAI',
+        uangDiterima: 0,
+        kembalian: 0,
+        splitPotongSaldo: 0,
+        splitSisaTunai: 0,
+        isSubmitting: false,
+
+        // Queue modal
+        showQueueModal: false,
+        showPrintConfirmModal: false,
+        printConfig: {
+            id: null,
+            kode_antrean: '',
+            nama_pemesan: '',
+            no_rekening: '',
+            nama_file: '',
+            file_path: '',
+            jumlah_halaman: 1,
+            catatan: '',
+            mode_sisi: '1_SISI',
+            warna: 'BW',
+            kertas: 'PERPUS',
+            rangkap: 1,
+            jumlah_lembar: 1,
+            custom_qty: false,
+            selectedService: null,
+            subtotal: 0
+        },
+
+        async initData() {
+            try {
+                const res = await fetch('/api/pos/init_data');
+                const json = await res.json();
+                if (json.status === 'success') {
+                    this.layananList = json.layanan;
+                    this.nextNoTrx = json.next_no_transaksi;
+                    this.queueCount = json.queue_count;
+                    this.applyFilter();
+                    if (window.location.search.includes('antrean=1')) {
+                        this.openQueueModal();
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        },
+
+        applyFilter() {
+            let res = this.layananList;
+            if (this.activeKat !== 'SEMUA') {
+                res = res.filter(x => x.kategori === this.activeKat);
+            }
+            if (this.searchQuery.trim()) {
+                const q = this.searchQuery.toLowerCase();
+                res = res.filter(x => x.nama_layanan.toLowerCase().includes(q) || x.kode.toLowerCase().includes(q));
+            }
+            this.filteredLayanan = res;
+        },
+
+        addItem(item) {
+            const existing = this.cart.find(x => x.id === item.id);
+            if (existing) {
+                existing.qty += 1;
+                existing.subtotal = existing.qty * existing.harga;
+            } else {
+                this.cart.push({
+                    id: item.id,
+                    kode: item.kode,
+                    nama_layanan: item.nama_layanan,
+                    harga: item.harga,
+                    qty: 1,
+                    subtotal: item.harga,
+                    is_kertas_perpus: item.is_kertas_perpus
+                });
+            }
+            this.selectedIndex = this.cart.length - 1;
+            this.hitungTotal();
+        },
+
+        incrementQty(idx) {
+            this.cart[idx].qty += 1;
+            this.cart[idx].subtotal = this.cart[idx].qty * this.cart[idx].harga;
+            this.hitungTotal();
+        },
+
+        decrementQty(idx) {
+            if (this.cart[idx].qty > 1) {
+                this.cart[idx].qty -= 1;
+                this.cart[idx].subtotal = this.cart[idx].qty * this.cart[idx].harga;
+                this.hitungTotal();
+            } else {
+                this.removeItem(idx);
+            }
+        },
+
+        updateSubtotal(idx) {
+            if (this.cart[idx].qty < 1) this.cart[idx].qty = 1;
+            this.cart[idx].subtotal = this.cart[idx].qty * this.cart[idx].harga;
+            this.hitungTotal();
+        },
+
+        removeItem(idx) {
+            this.cart.splice(idx, 1);
+            if (this.selectedIndex >= this.cart.length) {
+                this.selectedIndex = this.cart.length - 1;
+            }
+            this.hitungTotal();
+        },
+
+        clearCart() {
+            this.cart = [];
+            this.selectedIndex = -1;
+            this.hitungTotal();
+        },
+
+        setQtySelected(val) {
+            if (this.selectedIndex >= 0 && this.selectedIndex < this.cart.length) {
+                this.cart[this.selectedIndex].qty += val;
+                this.cart[this.selectedIndex].subtotal = this.cart[this.selectedIndex].qty * this.cart[this.selectedIndex].harga;
+                this.hitungTotal();
+            } else if (this.cart.length > 0) {
+                const last = this.cart.length - 1;
+                this.cart[last].qty += val;
+                this.cart[last].subtotal = this.cart[last].qty * this.cart[last].harga;
+                this.hitungTotal();
+            }
+        },
+
+        hitungTotal() {
+            this.totalTagihan = this.cart.reduce((acc, curr) => acc + curr.subtotal, 0);
+        },
+
+        async searchNasabahEnter() {
+            const q = this.memberSearchQuery.trim();
+            if (!q) return;
+            try {
+                const res = await fetch('/api/pos/cari_nasabah?q=' + encodeURIComponent(q));
+                const json = await res.json();
+                if (json.status === 'success') {
+                    if (json.data.length === 1) {
+                        this.selectNasabah(json.data[0]);
+                    } else {
+                        this.nasabahResults = json.data;
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        },
+
+        selectNasabah(n) {
+            this.selectedNasabah = n;
+            this.nasabahResults = [];
+            this.memberSearchQuery = '';
+        },
+
+        resetPelanggan() {
+            this.selectedNasabah = null;
+            this.nasabahResults = [];
+            this.memberSearchQuery = '';
+        },
+
+        openQuickTopup() {
+            if (!this.selectedNasabah) return;
+            this.quickTopupNominal = 5000;
+            this.quickTopupKeterangan = 'Setor Tunai Kasir POS';
+            this.showQuickTopupModal = true;
+        },
+
+        async submitQuickTopup() {
+            if (!this.selectedNasabah || this.quickTopupNominal <= 0) return;
+            this.isSubmittingTopup = true;
+            try {
+                const res = await fetch('/api/pos/tabungan/setor', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        no_rekening: this.selectedNasabah.no_rekening,
+                        nominal: this.quickTopupNominal,
+                        keterangan: this.quickTopupKeterangan
+                    })
+                });
+                const json = await res.json();
+                if (json.status === 'success') {
+                    this.selectedNasabah.saldo = json.saldo_baru;
+                    this.showQuickTopupModal = false;
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Setoran Berhasil!',
+                        text: 'Saldo baru: Rp ' + Number(json.saldo_baru).toLocaleString('id-ID'),
+                        confirmButtonColor: '#059669'
+                    });
+                } else {
+                    Swal.fire('Gagal', json.message, 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error', 'Gagal memproses setoran: ' + e.message, 'error');
+            } finally {
+                this.isSubmittingTopup = false;
+            }
+        },
+
+        openPayModal(method) {
+            this.payMethod = method;
+            this.hitungTotal();
+            if (method === 'TUNAI') {
+                this.uangDiterima = this.totalTagihan;
+                this.kembalian = 0;
+            } else if (method === 'TABUNGAN') {
+                this.uangDiterima = 0;
+                this.kembalian = 0;
+            } else if (method === 'SPLIT') {
+                const saldo = this.selectedNasabah ? this.selectedNasabah.saldo : 0;
+                this.splitPotongSaldo = Math.min(saldo, this.totalTagihan);
+                this.splitSisaTunai = this.totalTagihan - this.splitPotongSaldo;
+                this.uangDiterima = this.splitSisaTunai;
+                this.kembalian = 0;
+            }
+            this.showPayModal = true;
+        },
+
+        hitungKembalian() {
+            if (this.payMethod === 'TUNAI') {
+                this.kembalian = this.uangDiterima - this.totalTagihan;
+            } else if (this.payMethod === 'SPLIT') {
+                this.kembalian = this.uangDiterima - this.splitSisaTunai;
+            }
+        },
+
+        async submitTransaksi() {
+            this.isSubmitting = true;
+            try {
+                const payload = {
+                    items: this.cart,
+                    total_tagihan: this.totalTagihan,
+                    metode_bayar: this.payMethod,
+                    no_rekening: this.selectedNasabah ? this.selectedNasabah.no_rekening : null,
+                    nama_pelanggan: this.selectedNasabah ? this.selectedNasabah.nama_nasabah : 'UMUM',
+                    bayar_tunai: (this.payMethod === 'TUNAI' || this.payMethod === 'SPLIT') ? this.uangDiterima : 0,
+                    kirim_wa: true
+                };
+
+                const res = await fetch('/api/pos/transaksi', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+
+                if (json.status === 'success') {
+                    this.showPayModal = false;
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Transaksi Berhasil!',
+                        html: `
+                            <div class="text-left bg-slate-50 p-3.5 rounded-lg border border-slate-200 mt-2 text-xs space-y-1">
+                                <p>No. Transaksi: <strong class="font-mono text-primary">${json.no_transaksi}</strong></p>
+                                <p>Total: <strong>Rp ${json.total_tagihan.toLocaleString('id-ID')}</strong> (${json.metode_bayar})</p>
+                                ${json.kembalian > 0 ? `<p class="text-emerald-700 font-bold">Kembalian: Rp ${json.kembalian.toLocaleString('id-ID')}</p>` : ''}
+                                ${json.saldo_sesudah !== null ? `<p class="text-blue-700 font-bold">Sisa Saldo Nasabah: Rp ${json.saldo_sesudah.toLocaleString('id-ID')}</p>` : ''}
+                            </div>
+                        `,
+                        showCancelButton: true,
+                        confirmButtonText: '<i class="fa-solid fa-print mr-1"></i> Cetak Struk',
+                        cancelButtonText: '<i class="fa-solid fa-check mr-1"></i> Selesai',
+                        confirmButtonColor: '#2563EB',
+                        cancelButtonColor: '#10B981'
+                    }).then((r) => {
+                        if (r.isConfirmed) {
+                            window.open('/pos/cetak_struk/' + encodeURIComponent(json.no_transaksi), '_blank');
+                        }
+                    });
+
+                    // Reset form
+                    this.clearCart();
+                    this.resetPelanggan();
+                    this.initData();
+                } else {
+                    Swal.fire('Gagal!', json.message, 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Terjadi kesalahan sistem.', 'error');
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+
+        async openQueueModal() {
+            try {
+                const res = await fetch('/api/pos/antrean_print');
+                const json = await res.json();
+                if (json.status === 'success') {
+                    this.queueList = json.data;
+                    this.showQueueModal = true;
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        },
+
+        openPrintConfirm(q) {
+            this.printConfig = {
+                id: q.id,
+                kode_antrean: q.kode_antrean,
+                nama_pemesan: q.nama_pemesan,
+                no_rekening: q.no_rekening || '',
+                nama_file: q.nama_file,
+                file_path: q.file_path,
+                jumlah_halaman: parseInt(q.jumlah_halaman) || 1,
+                catatan: q.catatan || '',
+                mode_sisi: q.mode_sisi || '1_SISI',
+                warna: q.warna || 'BW',
+                kertas: q.kertas || (q.jenis_print && q.jenis_print.includes('SENDIRI') ? 'SENDIRI' : 'PERPUS'),
+                rangkap: parseInt(q.rangkap) || 1,
+                jumlah_lembar: parseInt(q.jumlah_lembar) || parseInt(q.jumlah_halaman) || 1,
+                custom_qty: false,
+                selectedService: null,
+                subtotal: 0
+            };
+            this.recalculatePrintConfig();
+            this.showPrintConfirmModal = true;
+        },
+
+        recalculatePrintConfig() {
+            const hal = parseInt(this.printConfig.jumlah_halaman) || 1;
+            const copies = parseInt(this.printConfig.rangkap) || 1;
+            let lembarPerDoc = hal;
+            if (this.printConfig.mode_sisi === '2_SISI') {
+                lembarPerDoc = Math.ceil(hal / 2);
+            }
+            
+            // Perbarui jumlah_lembar otomatis kecuali kasir mengubah manual
+            if (!this.printConfig.custom_qty) {
+                this.printConfig.jumlah_lembar = lembarPerDoc * copies;
+            }
+            
+            // Pemetaan ke kode layanan akurat
+            let targetCode = 'FC 001';
+            if (this.printConfig.warna === 'WARNA') {
+                if (this.printConfig.kertas === 'SENDIRI') {
+                    targetCode = 'FC 006'; // PRINT WARNA KERTAS SENDIRI (Rp 700)
+                } else {
+                    targetCode = 'FC 005'; // PRINT WARNA KERTAS PERPUSTAKAAN (Rp 800)
+                }
+            } else {
+                // Hitam-Putih
+                if (this.printConfig.mode_sisi === '2_SISI') {
+                    if (this.printConfig.kertas === 'SENDIRI') {
+                        targetCode = 'FC 004'; // FOTOCOPY 2 SISI KERTAS SENDIRI (Rp 300)
+                    } else {
+                        targetCode = 'FC 002'; // FOTOCOPY 2 SISI KERTAS PERPUSTAKAAN (Rp 400)
+                    }
+                } else {
+                    // 1 Sisi
+                    if (this.printConfig.kertas === 'SENDIRI') {
+                        targetCode = 'FC 003'; // FOTOCOPY 1 SISI KERTAS SENDIRI (Rp 200)
+                    } else {
+                        targetCode = 'FC 001'; // FOTOCOPY 1 SISI KERTAS PERPUSTAKAAN (Rp 300)
+                    }
+                }
+            }
+            
+            const srv = this.layananList.find(x => x.kode === targetCode) || this.layananList[0];
+            this.printConfig.selectedService = srv;
+            const harga = srv ? srv.harga : 0;
+            this.printConfig.subtotal = harga * this.printConfig.jumlah_lembar;
+        },
+
+        onLembarEdited() {
+            this.printConfig.custom_qty = true;
+            if (this.printConfig.jumlah_lembar < 1) this.printConfig.jumlah_lembar = 1;
+            const harga = this.printConfig.selectedService ? this.printConfig.selectedService.harga : 0;
+            this.printConfig.subtotal = harga * this.printConfig.jumlah_lembar;
+        },
+
+        resetLembarAuto() {
+            this.printConfig.custom_qty = false;
+            this.recalculatePrintConfig();
+        },
+
+        async submitPrintKeKasir() {
+            if (!this.printConfig.selectedService) {
+                Swal.fire('Error', 'Layanan tidak valid.', 'error');
+                return;
+            }
+            
+            // 1. Pilih nasabah otomatis jika no_rekening tertera
+            if (this.printConfig.no_rekening) {
+                try {
+                    const res = await fetch('/api/pos/cari_nasabah?q=' + encodeURIComponent(this.printConfig.no_rekening));
+                    const json = await res.json();
+                    if (json.status === 'success' && json.data.length > 0) {
+                        this.selectNasabah(json.data[0]);
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+            
+            // 2. Format rincian nama item
+            const srv = this.printConfig.selectedService;
+            const modeLabel = this.printConfig.mode_sisi === '2_SISI' ? 'Bolak-Balik' : '1 Sisi';
+            const detailLabel = `${srv.nama_layanan} (${this.printConfig.nama_file} - ${this.printConfig.jumlah_lembar} lbr ${modeLabel})`;
+            
+            // 3. Masukkan ke keranjang kasir
+            this.cart.push({
+                id: srv.id,
+                kode: srv.kode,
+                nama_layanan: detailLabel,
+                harga: srv.harga,
+                qty: this.printConfig.jumlah_lembar,
+                subtotal: this.printConfig.subtotal,
+                is_kertas_perpus: srv.is_kertas_perpus
+            });
+            this.selectedIndex = this.cart.length - 1;
+            this.hitungTotal();
+            
+            // 4. Update status antrean ke SELESAI
+            if (this.printConfig.id) {
+                try {
+                    await fetch('/api/pos/antrean_print/status', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({id: this.printConfig.id, status: 'SELESAI'})
+                    });
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+            
+            // 5. Tutup modal & perbarui counter
+            this.showPrintConfirmModal = false;
+            this.showQueueModal = false;
+            this.initData();
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Pesanan Dimasukkan ke Kasir!',
+                html: `
+                    <div class="text-xs text-left bg-slate-50 p-2.5 rounded-lg border border-slate-200 mt-2 space-y-1">
+                        <p><strong>Antrean:</strong> ${this.printConfig.kode_antrean} (${this.printConfig.nama_pemesan})</p>
+                        <p><strong>Berkas:</strong> ${this.printConfig.nama_file}</p>
+                        <p><strong>Rincian:</strong> ${this.printConfig.jumlah_lembar} lembar (${modeLabel})</p>
+                        <p class="text-emerald-700 font-bold"><strong>Total:</strong> Rp ${this.printConfig.subtotal.toLocaleString('id-ID')}</p>
+                    </div>
+                `,
+                timer: 2500,
+                showConfirmButton: false
+            });
+        },
+
+        // Alias for backward compatibility
+        prosesAntreanKeKasir(q) {
+            this.openPrintConfirm(q);
+        }
+    }));
+});
+</script>
+{% endblock %}

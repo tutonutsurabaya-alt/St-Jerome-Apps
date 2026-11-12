@@ -1,0 +1,124 @@
+{% extends "layout.html" %}
+{% block title %}Laporan Buku Dibaca{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <h2 class="text-title-md2 font-bold text-black">
+        Data Buku yang Dibaca (Baca di Tempat)
+    </h2>
+</div>
+
+<div class="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default sm:px-7.5 xl:pb-1" x-data="bukuDibacaApp()">
+    
+    <!-- Filter -->
+    <div class="mb-6 flex flex-col sm:flex-row gap-4 items-end">
+        <div>
+            <label class="mb-2.5 block text-black font-medium">Mulai Tanggal</label>
+            <input type="date" x-model="startDate" class="w-full rounded border-[1.5px] border-stroke bg-transparent py-2 px-4 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter:border-primary">
+        </div>
+        <div>
+            <label class="mb-2.5 block text-black font-medium">Sampai Tanggal</label>
+            <input type="date" x-model="endDate" class="w-full rounded border-[1.5px] border-stroke bg-transparent py-2 px-4 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter:border-primary">
+        </div>
+        <div class="flex gap-2">
+            <button @click="fetchData" class="flex items-center gap-2 justify-center rounded bg-primary py-2 px-6 font-medium text-white hover:bg-opacity-90">
+                <i class="fa-solid fa-filter"></i> Filter
+            </button>
+            <button @click="downloadCsv" class="flex items-center gap-2 justify-center rounded bg-success py-2 px-6 font-medium text-white hover:bg-opacity-90">
+                <i class="fa-solid fa-download"></i> Unduh CSV
+            </button>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="max-w-full overflow-x-auto mb-6">
+        <table class="w-full table-auto">
+            <thead>
+                <tr class="bg-gray-2 text-left">
+                    <th class="py-4 px-4 font-medium text-black">Waktu Baca</th>
+                    <th class="py-4 px-4 font-medium text-black">No. Barcode</th>
+                    <th class="py-4 px-4 font-medium text-black">Judul</th>
+                    <th class="py-4 px-4 font-medium text-black">Pengarang</th>
+                    <th class="py-4 px-4 font-medium text-black">DDC</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="item in data" :key="item.id">
+                    <tr>
+                        <td class="border-b border-[#eee] py-4 px-4">
+                            <p class="text-black" x-text="item.waktu_baca"></p>
+                        </td>
+                        <td class="border-b border-[#eee] py-4 px-4 font-mono">
+                            <p class="text-primary" x-text="item.no_induk"></p>
+                        </td>
+                        <td class="border-b border-[#eee] py-4 px-4">
+                            <p class="text-black font-medium" x-text="item.judul || 'Tidak diketahui'"></p>
+                        </td>
+                        <td class="border-b border-[#eee] py-4 px-4">
+                            <p class="text-sm text-gray-500" x-text="item.pengarang || '-'"></p>
+                        </td>
+                        <td class="border-b border-[#eee] py-4 px-4">
+                            <p class="text-sm font-bold text-success" x-text="item.klasifikasi || '-'"></p>
+                        </td>
+                    </tr>
+                </template>
+                <tr x-show="data.length === 0 && !isLoading">
+                    <td colspan="5" class="border-b border-[#eee] py-4 px-4 text-center">Tidak ada data.</td>
+                </tr>
+                <tr x-show="isLoading">
+                    <td colspan="5" class="border-b border-[#eee] py-4 px-4 text-center">
+                        <i class="fa-solid fa-spinner fa-spin text-primary text-xl"></i> Memuat data...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+    function bukuDibacaApp() {
+        return {
+            startDate: '',
+            endDate: '',
+            data: [],
+            isLoading: false,
+
+            init() {
+                // Set default to this month
+                const today = new Date();
+                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                
+                this.startDate = firstDay.toISOString().split('T')[0];
+                this.endDate = today.toISOString().split('T')[0];
+                
+                this.fetchData();
+            },
+
+            async fetchData() {
+                this.isLoading = true;
+                try {
+                    let url = '/api/buku_dibaca?';
+                    if (this.startDate) url += 'start_date=' + this.startDate + '&';
+                    if (this.endDate) url += 'end_date=' + this.endDate;
+                    
+                    const res = await fetch(url);
+                    const json = await res.json();
+                    this.data = json;
+                } catch(e) {
+                    console.error(e);
+                    alert("Gagal mengambil data");
+                }
+                this.isLoading = false;
+            },
+            
+            downloadCsv() {
+                let url = '/api/buku_dibaca/export?';
+                if (this.startDate) url += 'start_date=' + this.startDate + '&';
+                if (this.endDate) url += 'end_date=' + this.endDate;
+                window.location.href = url;
+            }
+        }
+    }
+</script>
+{% endblock %}

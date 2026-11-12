@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+
+<html lang="id" class="scroll-smooth">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>St. Jerome ILS - Sistem Otomasi Perpustakaan Modern & Siap Akreditasi</title>
+
+    <!-- Tailwind CSS CDN -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome 6 CDN -->
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Google Fonts: Inter & Playfair Display -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+
+    
+
+    <script>
+
+        tailwind.config = {
+
+            theme: {
+
+                extend: {
+
+                    colors: {
+
+                        paper: '#FBF9F5',
+
+                        charcoal: '#1E293B',
+
+                        amberGold: '#D97706',
+
+                        amberHover: '#B45309',
+
+                        emeraldWa: '#059669',
+
+                        emeraldHover: '#047857'
+
+                    },
+
+                    fontFamily: {
+
+                        sans: ['Inter', 'sans-serif'],
+
+                        serif: ['Playfair Display', 'serif']
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    </script>
+
+</head>
+
+<body class="bg-paper text-charcoal font-sans antialiased selection:bg-amberGold selection:text-white">
+
+
+
+    <!-- 1. NAVBAR -->
+
+    <header class="sticky top-0 z-50 bg-paper/95 backdrop-blur-md border-b border-slate-200/80 transition-all">
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+
+            <a href="#" class="flex items-center gap-3 group">
+
+                <div class="w-11 h-11 rounded-xl bg-charcoal text-amberGold flex items-center justify-center text-xl shadow-md group-hover:bg-amberGold group-hover:text-white transition-colors">
+
+                    <i class="fa-solid fa-book-open-reader"></i>
+
+                </div>
+
+                <div>
+
+                    <span class="font-serif font-bold text-xl tracking-tight text-charcoal block leading-none">St. Jerome</span>
+
+                    <span class="text-xs text-slate-500 font-medium tracking-wider uppercase">Library Assistant (ILS)</span>
+
+                </div>
+
+            </a>
+
+
+
+            <!-- Desktop Nav -->
+
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+
+                <a href="#masalah-solusi" class="hover:text-amberGold transition-colors">Keunggulan</a>
+
+                <a href="#fitur" class="hover:text-amberGold transition-colors">Fitur Utama</a>
+
+                <a href="#akreditasi" class="hover:text-amberGold transition-colors">Modul Akreditasi</a>
+
+                <a href="#harga" class="hover:text-amberGold transition-colors">Biaya & Pilot</a>
+
+                <a href="#faq" class="hover:text-amberGold transition-colors">FAQ</a>
+
+            </nav>
+
+
+
+            <!-- CTA Button -->
+
+            <div class="flex items-center gap-3">
+
+                <a href="https://demo.yosefhomeserver.my.id/login" target="_blank" class="inline-flex items-center gap-2 bg-charcoal hover:bg-slate-800 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm transition-all hover:shadow-md">
+
+                    <span>Coba Demo Gratis</span>
+
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs text-amberGold"></i>
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- 2. HERO SECTION -->
+
+    <section class="relative pt-12 pb-20 lg:pt-20 lg:pb-28 overflow-hidden">
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="grid lg:grid-cols-12 gap-12 items-center">
+
+                
+
+                <!-- Left Column: Copywriting -->
+
+                <div class="lg:col-span-7 space-y-6">
+
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100/80 border border-amber-300/60 text-amber-900 text-xs font-semibold">
+
+                        <span class="w-2 h-2 rounded-full bg-amberGold animate-pulse"></span>
+
+                        Standar SNP Perpusnas RI • Terintegrasi SLiMS & Excel
+
+                    </div>
+
+                    
+
+                    <h1 class="font-serif text-4xl sm:text-5xl lg:text-[52px] font-bold text-charcoal leading-[1.15]">
+
+                        Perpustakaan Sekolah Modern, Otomatis, dan <span class="text-amberGold underline decoration-amber-300/60 decoration-wavy underline-offset-4">Siap Akreditasi</span> dalam 30 Hari.
+
+                    </h1>
+
+                    
+
+                    <p class="text-lg text-slate-600 leading-relaxed max-w-2xl">
+
+                        Tinggalkan cara manual yang menguras waktu. Lengkapi perpustakaan sekolah, kampus, atau seminari Anda dengan scanner barcode kilat, notifikasi WhatsApp otomatis ke peminjam, cetak label DDC 1-klik, dan laporan borang akreditasi instan.
+
+                    </p>
+
+
+
+                    <!-- Dual CTA -->
+
+                    <div class="pt-2 flex flex-col sm:flex-row gap-4">
+
+                        <a href="#daftar-pilot" class="inline-flex items-center justify-center gap-3 bg-amberGold hover:bg-amberHover text-white font-semibold px-7 py-4 rounded-xl shadow-lg shadow-amber-600/20 transition-all transform hover:-translate-y-0.5 text-base">
+
+                            <i class="fa-solid fa-rocket"></i>
+
+                            <span>Mulai Uji Coba Gratis 30 Hari</span>
+
+                        </a>
+
+                        <a href="https://demo.yosefhomeserver.my.id/login" target="_blank" class="inline-flex items-center justify-center gap-2.5 bg-white hover:bg-slate-50 text-charcoal border border-slate-300 font-semibold px-7 py-4 rounded-xl shadow-sm transition-all text-base">
+
+                            <i class="fa-solid fa-desktop text-slate-500"></i>
+
+                            <span>Lihat Live Demo Aplikasi</span>
+
+                        </a>
+
+                    </div>
+
+
+
+                    <!-- Trust Badges Micro -->
+
+                    <div class="pt-4 grid grid-cols-3 gap-4 border-t border-slate-200/80 text-xs text-slate-500 font-medium">
+
+                        <div class="flex items-center gap-2">
+
+                            <i class="fa-solid fa-circle-check text-emeraldWa text-base"></i>
+
+                            <span>Tanpa Printer Thermal Mahal</span>
+
+                        </div>
+
+                        <div class="flex items-center gap-2">
+
+                            <i class="fa-solid fa-circle-check text-emeraldWa text-base"></i>
+
+                            <span>1-Klik Migrasi Data Lama</span>
+
+                        </div>
+
+                        <div class="flex items-center gap-2">
+
+                            <i class="fa-solid fa-circle-check text-emeraldWa text-base"></i>
+
+                            <span>Garansi Bebas Risiko 30 Hari</span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- Right Column: Interactive Visual Mockup (Laptop + Phone WA) -->
+
+                <div class="lg:col-span-5 relative">
+
+                    <!-- Laptop Mockup -->
+
+                    <div class="bg-charcoal rounded-2xl p-3 shadow-2xl border border-slate-700">
+
+                        <div class="flex items-center justify-between px-2 pb-2.5 border-b border-slate-700/80">
+
+                            <div class="flex gap-1.5">
+
+                                <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+
+                                <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+
+                                <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+
+                            </div>
+
+                            <span class="text-[11px] text-slate-400 font-mono bg-slate-800 px-3 py-0.5 rounded-md">st-jerome-ils.local/sirkulasi</span>
+
+                            <i class="fa-solid fa-shield-halved text-xs text-emerald-400"></i>
+
+                        </div>
+
+                        <div class="bg-slate-900 rounded-xl p-4 mt-2 text-white space-y-4">
+
+                            <div class="flex items-center justify-between bg-slate-800/90 p-3 rounded-lg border border-slate-700">
+
+                                <div>
+
+                                    <span class="text-[10px] uppercase tracking-wider text-amber-400 font-semibold block">Meja Sirkulasi Kilat</span>
+
+                                    <h4 class="text-sm font-bold">Scan Barcode Buku / Anggota</h4>
+
+                                </div>
+
+                                <span class="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded text-xs font-mono">
+
+                                    <i class="fa-solid fa-bolt mr-1"></i>0.8 detik
+
+                                </span>
+
+                            </div>
+
+
+
+                            <!-- Simulated Book Item -->
+
+                            <div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700/60 flex items-center justify-between text-xs">
+
+                                <div class="space-y-1">
+
+                                    <span class="font-mono text-amber-300">[813 HIR l] • Barcode: B-2026091</span>
+
+                                    <p class="font-semibold text-white">Laskar Pelangi - Andrea Hirata</p>
+
+                                    <p class="text-slate-400">Peminjam: Yohanes Budi (Kelas XI-A)</p>
+
+                                </div>
+
+                                <span class="bg-emerald-600 text-white px-2.5 py-1 rounded font-medium">Dipinjam</span>
+
+                            </div>
+
+
+
+                            <!-- Mini DDC Stats -->
+
+                            <div class="grid grid-cols-3 gap-2 text-center pt-1">
+
+                                <div class="bg-slate-800 p-2.5 rounded-lg">
+
+                                    <span class="text-[10px] text-slate-400 block">Koleksi DDC</span>
+
+                                    <span class="text-sm font-bold text-white">14.280 Eks</span>
+
+                                </div>
+
+                                <div class="bg-slate-800 p-2.5 rounded-lg">
+
+                                    <span class="text-[10px] text-slate-400 block">Rasio SNP</span>
+
+                                    <span class="text-sm font-bold text-emerald-400">Terpenuhi (A)</span>
+
+                                </div>
+
+                                <div class="bg-slate-800 p-2.5 rounded-lg">
+
+                                    <span class="text-[10px] text-slate-400 block">Bot WA Aktif</span>
+
+                                    <span class="text-sm font-bold text-amber-400">99.8% Terkirim</span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- Floating Smartphone WhatsApp Notification Mockup -->
+
+                    <div class="mt-4 sm:mt-0 sm:absolute sm:-bottom-8 sm:-left-8 bg-white rounded-2xl p-4 shadow-2xl border border-slate-200 max-w-xs w-full animate-bounce" style="animation-duration: 4s;">
+
+                        <div class="flex items-start gap-3">
+
+                            <div class="w-10 h-10 rounded-full bg-emeraldWa text-white flex items-center justify-center text-lg shrink-0 shadow">
+
+                                <i class="fa-brands fa-whatsapp"></i>
+
+                            </div>
+
+                            <div class="text-xs space-y-1">
+
+                                <div class="flex items-center justify-between">
+
+                                    <span class="font-bold text-charcoal">Bot Perpustakaan Sekolah</span>
+
+                                    <span class="text-[10px] text-slate-400">Baru saja</span>
+
+                                </div>
+
+                                <p class="text-slate-600 leading-snug bg-emerald-50 p-2.5 rounded-lg border border-emerald-100">
+
+                                    Halo <b>Yohanes</b>! Pengingat ramah H-1: Buku <i>"Laskar Pelangi"</i> jatuh tempo besok (27 Okt). Mohon dikembalikan tepat waktu ya 🙏📚
+
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- 3. PROBLEM VS SOLUTION GRID -->
+
+    <section id="masalah-solusi" class="py-20 bg-white border-y border-slate-200/80">
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="text-center max-w-3xl mx-auto mb-14">
+
+                <span class="text-amberGold font-semibold text-xs uppercase tracking-widest">Transformasi Perpustakaan</span>
+
+                <h2 class="font-serif text-3xl sm:text-4xl font-bold text-charcoal mt-2">
+
+                    Mengapa Banyak Perpustakaan Kewalahan Saat Akreditasi?
+
+                </h2>
+
+                <p class="text-slate-600 mt-3">
+
+                    Kami merancang St. Jerome ILS khusus untuk menghapus 5 kendala terbesar yang menguras tenaga pustakawan setiap harinya.
+
+                </p>
+
+            </div>
+
+
+
+            <div class="grid md:grid-cols-2 gap-8">
+
+                <!-- Cara Lama -->
+
+                <div class="bg-rose-50/60 border border-rose-200/80 rounded-2xl p-7 space-y-5">
+
+                    <div class="flex items-center gap-3 border-b border-rose-200 pb-4">
+
+                        <div class="w-10 h-10 rounded-lg bg-rose-600 text-white flex items-center justify-center text-lg">
+
+                            <i class="fa-solid fa-xmark"></i>
+
+                        </div>
+
+                        <div>
+
+                            <h3 class="font-bold text-lg text-rose-950">Cara Lama & Software Kuno</h3>
+
+                            <p class="text-xs text-rose-700">Melelahkan, rawan hilang, dan bikin lembur</p>
+
+                        </div>
+
+                    </div>
+
+                    <ul class="space-y-4 text-sm text-slate-700">
+
+                        <li class="flex items-start gap-3">
+
+                            <i class="fa-solid fa-circle-xmark text-rose-500 mt-1 shrink-0"></i>
+
+                            <span><b>Buku Sering Hilang / Telat:</b> Siswa lupa mengembalikan, pustakawan tidak sanggup menagih satu per satu ke kelas.</span>
+
+                        </li>
+
+                        <li class="flex items-start gap-3">
+
+                            <i class="fa-solid fa-circle-xmark text-rose-500 mt-1 shrink-0"></i>
+
+                            <span><b>Capek Ketik Label Manual di Word:</b> Bikin nomor panggil (Call Number) & barcode satu-satu memakan waktu berminggu-minggu.</span>
+
+                        </li>
+
+                        <li class="flex items-start gap-3">
+
+                            <i class="fa-solid fa-circle-xmark text-rose-500 mt-1 shrink-0"></i>
+
+                            <span><b>Lembur Rekap Akreditasi:</b> Menghitung manual persentase DDC 000-900 dan rasio buku per siswa yang rumit.</span>
+
+                        </li>
+
+                        <li class="flex items-start gap-3">
+
+                            <i class="fa-solid fa-circle-xmark text-rose-500 mt-1 shrink-0"></i>
+
+                            <span><b>Katalog Sulit Diakses dari HP:</b> Tampilan kuno membuat siswa malas mencari buku di perpustakaan.</span>
+
+                        </li>
+
+                    </ul>
+
+                </div>
+
+
+
+                <!-- Solusi St. Jerome -->
+
+                <div class="bg-emerald-50/60 border border-emerald-200/90 rounded-2xl p-7 space-y-5 shadow-sm">
+
+                    <div class="flex items-center gap-3 border-b border-emerald-200 pb-4">
+
+                        <div class="w-10 h-10 rounded-lg bg-emeraldWa text-white flex items-center justify-center text-lg">
+
+                            <i class="fa-solid fa-check"></i>
+
+                        </div>
+
+                        <div>
+
+                            <h3 class="font-bold text-lg text-emerald-950">Solusi Modern St. Jerome ILS</h3>
+
+                            <p class="text-xs text-emerald-700">Serba otomatis, rapi, dan sesuai SNP Perpusnas</p>
+
+                        </div>
+
+                    </div>
+
+                    <ul class="space-y-4 text-sm text-slate-700">
+
+                        <li class="flex items-start gap-3">
+
+                            <i class="fa-solid fa-circle-check text-emeraldWa mt-1 shrink-0"></i>
+
+                            <span><b>Bot WhatsApp Pengingat Proaktif:</b> Otomatis kirim bukti pinjam, pengingat ramah H-1, Hari-H, hingga rincian denda tanpa perlu ditagih manual.</span>
+
+                        </li>
+
+                        <li class="flex items-start gap-3">
+
+                            <i class="fa-solid fa-circle-check text-emeraldWa mt-1 shrink-0"></i>
+
+                            <span><b>Generator Stiker DDC & Tom & Jerry:</b> Cetak ratusan label punggung buku 3-baris & barcode langsung di kertas stiker standar dalam 1 klik.</span>
+
+                        </li>
+
+                        <li class="flex items-start gap-3">
+
+                            <i class="fa-solid fa-circle-check text-emeraldWa mt-1 shrink-0"></i>
+
+                            <span><b>Laporan Borang Akreditasi 1-Klik:</b> Statistik DDC 000-900, rasio siswa, dan grafik kunjungan siap cetak ke PDF/Excel kapan saja.</span>
+
+                        </li>
+
+                        <li class="flex items-start gap-3">
+
+                            <i class="fa-solid fa-circle-check text-emeraldWa mt-1 shrink-0"></i>
+
+                            <span><b>OPAC Mobile + AI Asisten Riset:</b> Pencarian secepat Google dari HP siswa plus rekomendasi buku otomatis untuk tugas/skripsi.</span>
+
+                        </li>
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- 4. FITUR UNGGULAN (6 CORE MODULES) -->
+
+    <section id="fitur" class="py-20 bg-paper">
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="text-center max-w-3xl mx-auto mb-16">
+
+                <span class="text-amberGold font-semibold text-xs uppercase tracking-widest">Ekosistem Lengkap</span>
+
+                <h2 class="font-serif text-3xl sm:text-4xl font-bold text-charcoal mt-2">
+
+                    6 Modul Inti Penggerak Perpustakaan Modern
+
+                </h2>
+
+                <p class="text-slate-600 mt-3">
+
+                    Dirancang khusus oleh praktisi perpustakaan untuk menjawab seluruh kebutuhan operasional harian hingga evaluasi tahunan.
+
+                </p>
+
+            </div>
+
+
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-7">
+
+                <!-- Box 1 -->
+
+                <div class="bg-white p-7 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+
+                    <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emeraldWa flex items-center justify-center text-2xl mb-5">
+
+                        <i class="fa-brands fa-whatsapp"></i>
+
+                    </div>
+
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-emeraldWa bg-emerald-50 px-2.5 py-1 rounded">Selling Point #1</span>
+
+                    <h3 class="font-bold text-xl text-charcoal mt-3 mb-2">WhatsApp Reminder Bot</h3>
+
+                    <p class="text-sm text-slate-600 leading-relaxed">
+
+                        Kirim tanda terima peminjaman digital, pengingat H-1 jatuh tempo, hingga teguran keterlambatan otomatis beserta hitungan denda harian langsung ke WA siswa.
+
+                    </p>
+
+                </div>
+
+
+
+                <!-- Box 2 -->
+
+                <div class="bg-white p-7 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+
+                    <div class="w-12 h-12 rounded-xl bg-amber-100 text-amberGold flex items-center justify-center text-2xl mb-5">
+
+                        <i class="fa-solid fa-barcode"></i>
+
+                    </div>
+
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-amberGold bg-amber-50 px-2.5 py-1 rounded">Sirkulasi &lt; 3 Detik</span>
+
+                    <h3 class="font-bold text-xl text-charcoal mt-3 mb-2">Sirkulasi Barcode Kilat</h3>
+
+                    <p class="text-sm text-slate-600 leading-relaxed">
+
+                        Peminjaman dan pengembalian buku selesai kurang dari 3 detik menggunakan scanner USB/Wireless maupun kamera HP. Dilengkapi kalkulasi denda & cetak kuitansi.
+
+                    </p>
+
+                </div>
+
+
+
+                <!-- Box 3 -->
+
+                <div class="bg-white p-7 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+
+                    <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-2xl mb-5">
+
+                        <i class="fa-solid fa-tags"></i>
+
+                    </div>
+
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2.5 py-1 rounded">Hemat Biaya Hardware</span>
+
+                    <h3 class="font-bold text-xl text-charcoal mt-3 mb-2">Generator Label DDC & Stiker</h3>
+
+                    <p class="text-sm text-slate-600 leading-relaxed">
+
+                        Otomatis format Call Number 3-baris standar DDC dan barcode yang pas dicetak di kertas stiker Tom & Jerry (No. 107/108) serta cetak Kartu Anggota fisik.
+
+                    </p>
+
+                </div>
+
+
+
+                <!-- Box 4 -->
+
+                <div class="bg-white p-7 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+
+                    <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-2xl mb-5">
+
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+                    </div>
+
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-1 rounded">OPAC Generasi Baru</span>
+
+                    <h3 class="font-bold text-xl text-charcoal mt-3 mb-2">OPAC Mobile & Asisten Riset</h3>
+
+                    <p class="text-sm text-slate-600 leading-relaxed">
+
+                        Katalog ramah HP tanpa instal aplikasi. Siswa cukup mengetik topik makalah/skripsi, sistem otomatis merekomendasikan daftar buku yang tersedia di rak.
+
+                    </p>
+
+                </div>
+
+
+
+                <!-- Box 5 -->
+
+                <div class="bg-white p-7 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+
+                    <div class="w-12 h-12 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center text-2xl mb-5">
+
+                        <i class="fa-solid fa-id-card-clip"></i>
+
+                    </div>
+
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-1 rounded">Mode Kiosk Mandiri</span>
+
+                    <h3 class="font-bold text-xl text-charcoal mt-3 mb-2">Visitor Logger Otomatis</h3>
+
+                    <p class="text-sm text-slate-600 leading-relaxed">
+
+                        Buku tamu digital di pintu masuk. Siswa cukup scan kartu anggota, layar langsung menyapa nama siswa dan merekap grafik kunjungan harian & bulanan.
+
+                    </p>
+
+                </div>
+
+
+
+                <!-- Box 6 -->
+
+                <div class="bg-white p-7 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+
+                    <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center text-2xl mb-5">
+
+                        <i class="fa-solid fa-qrcode"></i>
+
+                    </div>
+
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-rose-700 bg-rose-50 px-2.5 py-1 rounded">Anti Pemalsuan</span>
+
+                    <h3 class="font-bold text-xl text-charcoal mt-3 mb-2">Surat Bebas Pustaka QR</h3>
+
+                    <p class="text-sm text-slate-600 leading-relaxed">
+
+                        Syarat kelulusan & yudisium instan. Validasi otomatis bebas pinjaman dan denda, lalu cetak surat resmi ber-QR Code dalam hitungan detik.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- 5. MODUL AKREDITASI PERPUSNAS (SNP) -->
+
+    <section id="akreditasi" class="py-20 bg-charcoal text-white">
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="grid lg:grid-cols-12 gap-12 items-center">
+
+                <div class="lg:col-span-6 space-y-6">
+
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amberGold/20 border border-amberGold/40 text-amber-300 text-xs font-semibold">
+
+                        <i class="fa-solid fa-award"></i> Sesuai Instrumen Borang SNP Perpusnas RI
+
+                    </div>
+
+                    <h2 class="font-serif text-3xl sm:text-4xl font-bold leading-tight">
+
+                        Hadapi Asesor Akreditasi dengan Data Real-Time, Bukan Lembur Rekap Manual.
+
+                    </h2>
+
+                    <p class="text-slate-300 text-base leading-relaxed">
+
+                        St. Jerome ILS secara otomatis mengelompokkan seluruh koleksi buku ke dalam 10 kelas utama Dewey Decimal Classification (DDC 000–900) dan menghitung rasio kecukupan buku terhadap jumlah siswa.
+
+                    </p>
+
+                    <ul class="space-y-3 text-sm text-slate-200">
+
+                        <li class="flex items-center gap-3">
+
+                            <i class="fa-solid fa-check-double text-amberGold"></i>
+
+                            <span>Rekapitulasi Persentase Koleksi DDC 000 s/d 900 Otomatis</span>
+
+                        </li>
+
+                        <li class="flex items-center gap-3">
+
+                            <i class="fa-solid fa-check-double text-amberGold"></i>
+
+                            <span>Analisis Rasio Judul & Eksemplar terhadap Total Siswa</span>
+
+                        </li>
+
+                        <li class="flex items-center gap-3">
+
+                            <i class="fa-solid fa-check-double text-amberGold"></i>
+
+                            <span>Laporan Turnover Rate Koleksi (Buku Terlaris vs Dead Stock)</span>
+
+                        </li>
+
+                        <li class="flex items-center gap-3">
+
+                            <i class="fa-solid fa-check-double text-amberGold"></i>
+
+                            <span>Ekspor Bukti Fisik Siap Cetak 1-Klik (Format PDF Resmi & Excel)</span>
+
+                        </li>
+
+                    </ul>
+
+                </div>
+
+
+
+                <!-- Visual DDC Chart Simulation -->
+
+                <div class="lg:col-span-6 bg-slate-800/90 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-5">
+
+                    <div class="flex items-center justify-between border-b border-slate-700 pb-4">
+
+                        <div>
+
+                            <h4 class="font-bold text-white text-base">Komposisi Koleksi DDC (000 - 900)</h4>
+
+                            <p class="text-xs text-slate-400">Standar Nasional Perpustakaan (SNP)</p>
+
+                        </div>
+
+                        <span class="bg-amberGold text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+
+                            <i class="fa-solid fa-file-pdf"></i> Cetak Borang
+
+                        </span>
+
+                    </div>
+
+
+
+                    <div class="space-y-3 text-xs">
+
+                        <div>
+
+                            <div class="flex justify-between mb-1">
+
+                                <span>000 - Karya Umum & Ilmu Komputer</span>
+
+                                <span class="font-mono text-amber-300">8.5% (1.210 Eks)</span>
+
+                            </div>
+
+                            <div class="w-full bg-slate-700 h-2.5 rounded-full overflow-hidden">
+
+                                <div class="bg-amberGold h-full rounded-full" style="width: 45%"></div>
+
+                            </div>
+
+                        </div>
+
+                        <div>
+
+                            <div class="flex justify-between mb-1">
+
+                                <span>100 & 200 - Filsafat, Psikologi & Agama</span>
+
+                                <span class="font-mono text-amber-300">18.2% (2.598 Eks)</span>
+
+                            </div>
+
+                            <div class="w-full bg-slate-700 h-2.5 rounded-full overflow-hidden">
+
+                                <div class="bg-emerald-500 h-full rounded-full" style="width: 72%"></div>
+
+                            </div>
+
+                        </div>
+
+                        <div>
+
+                            <div class="flex justify-between mb-1">
+
+                                <span>300 - Ilmu Sosial & Pendidikan</span>
+
+                                <span class="font-mono text-amber-300">22.4% (3.198 Eks)</span>
+
+                            </div>
+
+                            <div class="w-full bg-slate-700 h-2.5 rounded-full overflow-hidden">
+
+                                <div class="bg-blue-400 h-full rounded-full" style="width: 84%"></div>
+
+                            </div>
+
+                        </div>
+
+                        <div>
+
+                            <div class="flex justify-between mb-1">
+
+                                <span>500 & 600 - Sains Murni & Teknologi Terapan</span>
+
+                                <span class="font-mono text-amber-300">26.0% (3.712 Eks)</span>
+
+                            </div>
+
+                            <div class="w-full bg-slate-700 h-2.5 rounded-full overflow-hidden">
+
+                                <div class="bg-purple-400 h-full rounded-full" style="width: 90%"></div>
+
+                            </div>
+
+                        </div>
+
+                        <div>
+
+                            <div class="flex justify-between mb-1">
+
+                                <span>800 & 900 - Kesusastraan, Sejarah & Geografi</span>
+
+                                <span class="font-mono text-amber-300">24.9% (3.562 Eks)</span>
+
+                            </div>
+
+                            <div class="w-full bg-slate-700 h-2.5 rounded-full overflow-hidden">
+
+                                <div class="bg-teal-400 h-full rounded-full" style="width: 86%"></div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- 6. PRICING & PILOT OFFER -->
+
+    <section id="harga" class="py-20 bg-paper">
+
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="text-center max-w-2xl mx-auto mb-14">
+
+                <span class="text-amberGold font-semibold text-xs uppercase tracking-widest">Investasi Sekali, Manfaat Tahunan</span>
+
+                <h2 class="font-serif text-3xl sm:text-4xl font-bold text-charcoal mt-2">
+
+                    Penawaran Spesial & Program Pilot 30 Hari Tanpa Risiko
+
+                </h2>
+
+                <p class="text-slate-600 mt-3">
+
+                    Kami bantu perpustakaan Anda bermigrasi dari data Excel atau SLiMS lama sampai seluruh staf mahir menggunakannya.
+
+                </p>
+
+            </div>
+
+
+
+            <div class="grid md:grid-cols-12 gap-8 items-stretch">
+
+                <!-- Pilot Gratis Card -->
+
+                <div class="md:col-span-5 bg-white border-2 border-emeraldWa rounded-2xl p-7 flex flex-col justify-between shadow-md">
+
+                    <div class="space-y-4">
+
+                        <span class="bg-emerald-100 text-emeraldWa text-xs font-bold px-3 py-1 rounded-full uppercase">Bebas Risiko 100%</span>
+
+                        <h3 class="font-serif text-2xl font-bold text-charcoal">Program Pilot Gratis</h3>
+
+                        <div class="text-3xl font-extrabold text-emeraldWa">Rp 0 <span class="text-sm font-normal text-slate-500">/ 30 Hari Pertama</span></div>
+
+                        <p class="text-sm text-slate-600">
+
+                            Uji coba langsung menggunakan data buku asli sekolah Anda selama 1 bulan penuh sebelum memutuskan anggaran.
+
+                        </p>
+
+                        <ul class="space-y-3 text-sm text-slate-700 pt-2">
+
+                            <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emeraldWa"></i> Akses Penuh Seluruh 7 Modul</li>
+
+                            <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emeraldWa"></i> Bantuan Impor Data Excel / SLiMS</li>
+
+                            <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emeraldWa"></i> Uji Coba Bot WhatsApp Aktif</li>
+
+                            <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emeraldWa"></i> Tanpa Kewajiban Membeli</li>
+
+                        </ul>
+
+                    </div>
+
+                    <a href="#daftar-pilot" class="mt-8 w-full inline-flex items-center justify-center gap-2 bg-emeraldWa hover:bg-emeraldHover text-white font-semibold py-3.5 px-5 rounded-xl transition-all shadow">
+
+                        <span>Ambil Kuota Pilot Gratis</span>
+
+                        <i class="fa-solid fa-arrow-right"></i>
+
+                    </a>
+
+                </div>
+
+
+
+                <!-- Turnkey Full Package Card -->
+
+                <div class="md:col-span-7 bg-charcoal text-white rounded-2xl p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden">
+
+                    <div class="space-y-5">
+
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+
+                            <span class="bg-amberGold text-white text-xs font-bold px-3 py-1 rounded-full uppercase">Paket Turnkey Terima Beres</span>
+
+                            <span class="text-xs text-slate-300">Cocok untuk Dana BOS / Yayasan</span>
+
+                        </div>
+
+                        <h3 class="font-serif text-2xl sm:text-3xl font-bold">Lisensi Institusi Lengkap</h3>
+
+                        <div class="flex items-baseline gap-2">
+
+                            <span class="text-4xl font-extrabold text-amberGold">Rp 7.500.000</span>
+
+                            <span class="text-xs text-slate-300">/ Paket Implementasi Penuh</span>
+
+                        </div>
+
+                        <p class="text-sm text-slate-300">
+
+                            Solusi terima beres dari instalasi server (Lokal/Cloud), pembersihan & migrasi ribuan data buku lama, hingga pelatihan pustakawan.
+
+                        </p>
+
+                        <div class="grid sm:grid-cols-2 gap-3 text-sm text-slate-200 pt-2">
+
+                            <div class="flex items-center gap-2.5"><i class="fa-solid fa-circle-check text-amberGold"></i> Instalasi Server Lokal / Cloud</div>
+
+                            <div class="flex items-center gap-2.5"><i class="fa-solid fa-circle-check text-amberGold"></i> Migrasi Penuh Excel / SLiMS</div>
+
+                            <div class="flex items-center gap-2.5"><i class="fa-solid fa-circle-check text-amberGold"></i> Integrasi Resmi Bot WhatsApp</div>
+
+                            <div class="flex items-center gap-2.5"><i class="fa-solid fa-circle-check text-amberGold"></i> Pelatihan Staf & Pustakawan</div>
+
+                            <div class="flex items-center gap-2.5"><i class="fa-solid fa-circle-check text-amberGold"></i> Backup Otomatis 3-2-1</div>
+
+                            <div class="flex items-center gap-2.5"><i class="fa-solid fa-circle-check text-amberGold"></i> Garansi & Dukungan Teknis</div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mt-8 pt-5 border-t border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+
+                        <span class="text-xs text-slate-300"><i class="fa-solid fa-file-invoice mr-1 text-amberGold"></i> Tersedia dokumen SPJ, Faktur & Proposal Resmi</span>
+
+                        <a href="https://demo.yosefhomeserver.my.id/login" target="_blank" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-amberGold hover:bg-amberHover text-white font-semibold py-3.5 px-6 rounded-xl transition-all">
+
+                            <span>Coba Live Demo Dulu</span>
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- 7. FAQ INTERAKTIF (ACCORDION) -->
+
+    <section id="faq" class="py-16 bg-white border-t border-slate-200/80">
+
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="text-center mb-12">
+
+                <h2 class="font-serif text-3xl font-bold text-charcoal">Pertanyaan yang Sering Diajukan</h2>
+
+                <p class="text-sm text-slate-600 mt-2">Jawaban jelas untuk Kepala Sekolah, Kepala Perpustakaan, dan Tim IT</p>
+
+            </div>
+
+
+
+            <div class="space-y-4">
+
+                <details class="group bg-paper border border-slate-200 rounded-xl p-5 cursor-pointer" open>
+
+                    <summary class="flex items-center justify-between font-bold text-charcoal list-none">
+
+                        <span>Apakah bisa menggunakan data buku lama kami di Excel atau SLiMS?</span>
+
+                        <i class="fa-solid fa-chevron-down text-amberGold group-open:rotate-180 transition-transform"></i>
+
+                    </summary>
+
+                    <p class="text-sm text-slate-600 mt-3 leading-relaxed">
+
+                        <b>Sangat bisa dan 100% gratis biaya migrasi.</b> Anda tidak perlu mengetik ulang ribuan koleksi buku. Cukup berikan file Excel lama atau file backup database SLiMS Anda, fitur <i>Zero-Friction Import</i> kami akan memigrasikan seluruh katalog beserta nomor panggilnya dalam hitungan detik.
+
+                    </p>
+
+                </details>
+
+
+
+                <details class="group bg-paper border border-slate-200 rounded-xl p-5 cursor-pointer">
+
+                    <summary class="flex items-center justify-between font-bold text-charcoal list-none">
+
+                        <span>Bagaimana jika koneksi internet sekolah kami kadang lambat?</span>
+
+                        <i class="fa-solid fa-chevron-down text-amberGold group-open:rotate-180 transition-transform"></i>
+
+                    </summary>
+
+                    <p class="text-sm text-slate-600 mt-3 leading-relaxed">
+
+                        St. Jerome ILS mendukung arsitektur <b>Offline-First di Jaringan Lokal (LAN/Wi-Fi Sekolah)</b> maupun Cloud. Artinya, transaksi peminjaman, pengembalian, dan pencarian OPAC tetap berjalan secepat kilat meskipun internet sekolah sedang mati, serta menggunakan <i>SQLite WAL Concurrency</i> agar database tidak pernah terkunci.
+
+                    </p>
+
+                </details>
+
+
+
+                <details class="group bg-paper border border-slate-200 rounded-xl p-5 cursor-pointer">
+
+                    <summary class="flex items-center justify-between font-bold text-charcoal list-none">
+
+                        <span>Apakah aman dari salah kirim WhatsApp atau nomor terblokir?</span>
+
+                        <i class="fa-solid fa-chevron-down text-amberGold group-open:rotate-180 transition-transform"></i>
+
+                    </summary>
+
+                    <p class="text-sm text-slate-600 mt-3 leading-relaxed">
+
+                        Sangat aman. Sistem menggunakan antrean pesan cerdas berjeda (anti-spam) dan hanya mengirimkan pesan transaksional resmi kepada siswa yang sedang meminjam buku (bukti pinjam, H-1 jatuh tempo, dan pengingat keterlambatan).
+
+                    </p>
+
+                </details>
+
+
+
+                <details class="group bg-paper border border-slate-200 rounded-xl p-5 cursor-pointer">
+
+                    <summary class="flex items-center justify-between font-bold text-charcoal list-none">
+
+                        <span>Apakah sekolah harus membeli printer khusus untuk cetak barcode dan label buku?</span>
+
+                        <i class="fa-solid fa-chevron-down text-amberGold group-open:rotate-180 transition-transform"></i>
+
+                    </summary>
+
+                    <p class="text-sm text-slate-600 mt-3 leading-relaxed">
+
+                        <b>Tidak perlu.</b> Modul cetak label St. Jerome sudah dikalibrasi agar pas dengan kertas stiker label yang mudah dibeli di toko alat tulis (seperti Tom & Jerry No. 107/108) menggunakan printer tinta biasa (Epson/Canon/HP) yang sudah ada di sekolah.
+
+                    </p>
+
+                </details>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- 8. AUTO-PILOT LEAD CAPTURE & FOOTER -->
+
+    <section id="daftar-pilot" class="py-20 bg-charcoal text-white">
+
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="bg-slate-800 border border-slate-700 rounded-3xl p-8 sm:p-12 shadow-2xl">
+
+                <div class="text-center max-w-2xl mx-auto mb-8">
+
+                    <span class="bg-amberGold/20 text-amber-300 border border-amberGold/40 text-xs font-bold px-3 py-1 rounded-full uppercase">Penawaran Terbatas</span>
+
+                    <h2 class="font-serif text-3xl sm:text-4xl font-bold mt-3">
+
+                        Jadwalkan Demo & Klaim Uji Coba Gratis 30 Hari Sekarang
+
+                    </h2>
+
+                    <p class="text-slate-300 text-sm mt-2">
+
+                        Isi data singkat di bawah ini. Sistem akan langsung menghubungkan Anda ke WhatsApp Konsultan Implementasi kami.
+
+                    </p>
+
+                </div>
+
+
+
+                <!-- Auto-Pilot WhatsApp Lead Generator Form -->
+
+                <form id="leadForm" onsubmit="kirimKeWhatsApp(event)" class="grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+
+                    <div>
+
+                        <label class="block text-xs text-slate-300 mb-1 font-medium">Nama Lengkap Bapak/Ibu *</label>
+
+                        <input type="text" id="nama" required placeholder="Contoh: Bpk. Antonius / Ibu Sari" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-amberGold">
+
+                    </div>
+
+                    <div>
+
+                        <label class="block text-xs text-slate-300 mb-1 font-medium">Jabatan *</label>
+
+                        <select id="jabatan" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-amberGold">
+
+                            <option value="Kepala Perpustakaan / Pustakawan">Kepala Perpustakaan / Pustakawan</option>
+
+                            <option value="Kepala Sekolah / Wakil Kepala">Kepala Sekolah / Wakil Kepala</option>
+
+                            <option value="Tim IT / Operator Sekolah">Tim IT / Operator Sekolah</option>
+
+                            <option value="Pengurus Yayasan / Kampus">Pengurus Yayasan / Kampus</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="sm:col-span-2">
+
+                        <label class="block text-xs text-slate-300 mb-1 font-medium">Nama Sekolah / Kampus / Instansi *</label>
+
+                        <input type="text" id="instansi" required placeholder="Contoh: SMA Katolik St. Louis / Kampus / Seminari..." class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-amberGold">
+
+                    </div>
+
+                    <div class="sm:col-span-2 pt-2">
+
+                        <button type="submit" class="w-full bg-emeraldWa hover:bg-emeraldHover text-white font-bold py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 text-base transition-all">
+
+                            <i class="fa-brands fa-whatsapp text-xl"></i>
+
+                            <span>Klaim Pilot Gratis 30 Hari via WhatsApp</span>
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+
+
+            <!-- Footer Info -->
+
+            <footer class="mt-14 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4">
+
+                <div class="flex items-center gap-3">
+
+                    <i class="fa-solid fa-book-open-reader text-amberGold text-lg"></i>
+
+                    <span>© 2026 <b>St. Jerome Integrated Library System (SJLA)</b>. All rights reserved.</span>
+
+                </div>
+
+                <div class="flex items-center gap-6">
+
+                    <a href="https://demo.yosefhomeserver.my.id/login" target="_blank" class="hover:text-amberGold transition-colors">Portal Demo</a>
+
+                    <a href="#fitur" class="hover:text-amberGold transition-colors">Katalog Fitur</a>
+
+                    <a href="#harga" class="hover:text-amberGold transition-colors">Lisensi</a>
+
+                </div>
+
+            </footer>
+
+        </div>
+
+    </section>
+
+
+
+    <script>
+
+        function kirimKeWhatsApp(e) {
+
+            e.preventDefault();
+
+            const nama = document.getElementById('nama').value;
+
+            const jabatan = document.getElementById('jabatan').value;
+
+            const instansi = document.getElementById('instansi').value;
+
+            
+
+            // Ganti nomor WA di bawah ini dengan nomor WhatsApp bisnis Anda (awali dengan 62)
+
+            const nomorWA = "6281234567890"; 
+
+            
+
+            const pesan = `Halo Tim St. Jerome ILS,%0A%0ASaya *${nama}* (${jabatan}) dari *${instansi}*.%0A%0ASaya tertarik untuk mencoba *Program Pilot Gratis 30 Hari* dan ingin berkonsultasi mengenai migrasi katalog perpustakaan kami. Mohon informasi lebih lanjut. Terima kasih!`;
+
+            
+
+            window.open(`https://wa.me/${nomorWA}?text=${pesan}`, '_blank');
+
+        }
+
+    </script>
+
+</body>
+
+</html>

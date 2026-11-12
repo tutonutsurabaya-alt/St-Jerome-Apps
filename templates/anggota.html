@@ -28,7 +28,11 @@
                 <i class="fa-solid fa-print"></i> Cetak Kartu
             </button>
             
-            <button type="button" class="flex items-center gap-2 rounded bg-success py-2 px-4 font-medium text-white hover:bg-opacity-90 transition" onclick="document.getElementById('importModal').showModal()">
+            
+            <button type="button" class="flex items-center gap-2 rounded bg-primary py-2 px-4 font-medium text-white hover:bg-opacity-90 transition" onclick="document.getElementById('tambahModal').showModal()">
+                <i class="fa-solid fa-plus"></i> Tambah Anggota
+            </button>
+<button type="button" class="flex items-center gap-2 rounded bg-success py-2 px-4 font-medium text-white hover:bg-opacity-90 transition" onclick="document.getElementById('importModal').showModal()">
                 <i class="fa-solid fa-download"></i> Import SLiMS
             </button>
         </div>
@@ -74,10 +78,14 @@
     data-tipe="{{ anggota['tipe_anggota'] }}"
     data-tgl="{{ anggota['tanggal_input'] or '' }}"
     data-masa="{{ anggota['masa_berlaku'] or '' }}"
+      data-tesis="{{ anggota['is_tesis'] }}"
                                 data-telepon="{{ anggota['telepon'] or '' }}"
                                 onclick="openEditModal(this)">
     Edit
 </button>
+                            <a href="/sirkulasi/bebas_pustaka/{{ anggota['member_id'] }}" target="_blank" class="ml-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300 transition shadow-2xs" title="Cetak Surat Bebas Pustaka (Lampiran 8 IMAVI)">
+                                <i class="fa-solid fa-file-circle-check text-emerald-600"></i> Bebas Pustaka
+                            </a>
                         </td>
                     </tr>
                     {% else %}
@@ -122,6 +130,13 @@
             <label class="mb-1 block text-sm font-medium text-black">Nomor WhatsApp (Contoh: 08123456789)</label>
             <input type="text" name="telepon" id="edit_telepon" class="w-full rounded border border-stroke bg-transparent py-2.5 px-4 outline-none transition focus:border-primary active:border-primary">
         </div>
+        <div class="mb-5 mt-4">
+            <label class="mb-1 block text-sm font-medium text-black">Status Akademik</label>
+            <select name="is_tesis" id="edit_is_tesis" class="w-full rounded border border-stroke bg-transparent py-2.5 px-4 outline-none transition focus:border-primary active:border-primary">
+                <option value="0">Reguler (Maks 1 Perpanjangan)</option>
+                <option value="1">Sedang Skripsi / Tesis (Tanpa Batas)</option>
+            </select>
+        </div>
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-2">
             <button type="button" onclick="perpanjangHariIni()" class="w-full sm:w-auto rounded bg-success/10 border border-success/30 py-2 px-4 font-bold text-success hover:bg-success hover:text-white transition flex items-center justify-center gap-2">
                 <i class="fa-solid fa-clock-rotate-left"></i> Perpanjang Hari Ini
@@ -130,6 +145,52 @@
                 <button type="button" onclick="document.getElementById('editModal').close()" class="flex-1 sm:flex-none rounded border border-stroke py-2 px-6 font-medium text-black hover:bg-slate-100 transition">Batal</button>
                 <button type="submit" class="flex-1 sm:flex-none rounded bg-primary py-2 px-6 font-medium text-white hover:bg-opacity-90 transition">Simpan</button>
             </div>
+        </div>
+    </form>
+</dialog>
+
+
+<!-- Modal Tambah Anggota -->
+<dialog id="tambahModal" class="rounded-sm border border-stroke bg-white p-6 shadow-default w-full max-w-lg fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999]">
+    <div class="flex justify-between items-center mb-5">
+        <h3 class="text-xl font-semibold text-black">Tambah Anggota</h3>
+        <button type="button" onclick="document.getElementById('tambahModal').close()" class="text-slate-400 hover:text-slate-700 text-2xl">&times;</button>
+    </div>
+    <form method="POST" action="/tambah_anggota">
+        <div class="mb-4">
+            <label class="mb-2 block text-sm font-medium text-black">Member ID / NIM</label>
+            <input type="text" name="member_id" required class="w-full rounded border border-stroke bg-transparent py-2.5 px-4 outline-none transition focus:border-primary active:border-primary">
+        </div>
+        <div class="mb-4">
+            <label class="mb-2 block text-sm font-medium text-black">Nama Lengkap</label>
+            <input type="text" name="nama" required class="w-full rounded border border-stroke bg-transparent py-2.5 px-4 outline-none transition focus:border-primary active:border-primary">
+        </div>
+        <div class="mb-4">
+            <label class="mb-2 block text-sm font-medium text-black">Tipe Anggota</label>
+            <input type="text" name="tipe_anggota" value="Reguler" required class="w-full rounded border border-stroke bg-transparent py-2.5 px-4 outline-none transition focus:border-primary active:border-primary">
+        </div>
+        <div class="mb-4">
+            <label class="mb-2 block text-sm font-medium text-black">Tanggal Input (Pendaftaran)</label>
+            <input type="date" name="tanggal_input" required class="w-full rounded border border-stroke bg-transparent py-2.5 px-4 outline-none transition focus:border-primary active:border-primary">
+        </div>
+        <div class="mb-5">
+            <label class="mb-1 block text-sm font-medium text-black">Masa Berlaku</label>
+            <input type="date" name="masa_berlaku" required class="w-full rounded border border-stroke bg-transparent py-2.5 px-4 outline-none transition focus:border-primary active:border-primary">
+        </div>
+        <div class="mb-5 mt-4">
+            <label class="mb-1 block text-sm font-medium text-black">Nomor WhatsApp</label>
+            <input type="text" name="telepon" class="w-full rounded border border-stroke bg-transparent py-2.5 px-4 outline-none transition focus:border-primary active:border-primary">
+        </div>
+        <div class="mb-5 mt-4">
+            <label class="mb-1 block text-sm font-medium text-black">Status Akademik</label>
+            <select name="is_tesis" class="w-full rounded border border-stroke bg-transparent py-2.5 px-4 outline-none transition focus:border-primary active:border-primary">
+                <option value="0">Reguler (Maks 1 Perpanjangan)</option>
+                <option value="1">Sedang Skripsi / Tesis (Tanpa Batas)</option>
+            </select>
+        </div>
+        <div class="flex justify-end gap-3 mt-4">
+            <button type="button" onclick="document.getElementById('tambahModal').close()" class="rounded border border-stroke py-2 px-6 font-medium text-black hover:bg-slate-100 transition">Batal</button>
+            <button type="submit" class="rounded bg-primary py-2 px-6 font-medium text-white hover:bg-opacity-90 transition">Simpan</button>
         </div>
     </form>
 </dialog>

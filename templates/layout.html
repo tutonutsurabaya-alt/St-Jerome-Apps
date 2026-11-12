@@ -4,28 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>St. Jerome Library Assistant</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
-              boxdark: '#3E2723',
-              boxdark2: '#4E342E',
-              bodydark: '#A1887F',
-              bodydark2: '#A1887F',
-              stroke: '#D7CCC8',
+              boxdark: '#1C1917',
+              boxdark2: '#292524',
+              bodydark: '#78716C',
+              bodydark2: '#A8A29E',
+              stroke: '#E7E5E4',
               primary: '#6D4C41',
               success: '#10B981',
               danger: '#EF4444',
               warning: '#F59E0B',
             },
             fontFamily: {
-              sans: ['Inter', 'sans-serif'],
+              sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+              mono: ['"JetBrains Mono"', 'monospace'],
             },
             spacing: {
               '2.5': '0.625rem',
@@ -37,9 +36,6 @@
               '9.5': '2.375rem',
               '10.5': '2.625rem',
               '11.5': '2.875rem',
-            },
-            zIndex: {
-              '99999': '99999',
             }
           }
         }
@@ -48,301 +44,580 @@
     <style type="text/tailwindcss">
         @layer utilities {
             .shadow-default {
-                box-shadow: 0px 8px 13px -3px rgba(0, 0, 0, 0.07);
+                box-shadow: 0px 8px 13px -3px rgba(0, 0, 0, 0.05);
             }
-            .text-title-xl2 {
-                font-size: 28px;
-                line-height: 35px;
-            }
-            .text-title-md {
-                font-size: 24px;
-                line-height: 30px;
-            }
-            .text-title-sm {
-                font-size: 20px;
-                line-height: 28px;
-            }
-        }
-        /* Custom scrollbar for sidebar */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        /* Dialog polyfill/reset for Tailwind */
-        dialog::backdrop {
-            background: rgba(0,0,0,0.5);
+            .text-title-xl2 { font-size: 28px; line-height: 35px; }
+            .text-title-md { font-size: 24px; line-height: 30px; }
+            .text-title-sm { font-size: 20px; line-height: 28px; }
+            .no-scrollbar::-webkit-scrollbar { display: none; }
+            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         }
     </style>
-    <!-- View Transitions API untuk Animasi Pindah Halaman Mulus -->
     <meta name="view-transition" content="same-origin">
     <style>
-        /* Animasi Fallback / Custom */
-        @keyframes fade-in {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         main {
-            animation: fade-in 0.3s ease-out forwards;
+            animation: fadeIn 0.15s ease-out;
         }
-        /* Menggunakan View Transitions API bawaan Chrome (smooth crossfade) */
         ::view-transition-old(root),
         ::view-transition-new(root) {
-            animation-duration: 0.3s;
+            animation-duration: 0.2s;
         }
-    </style>
-    <!-- Favicon -->
-    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='img/logo.jpg') }}">
-
-    <style>
         @media print {
-            aside, header, nav, .print\:hidden {
+            aside, header, nav, #sidebar-backdrop, .print\:hidden {
                 display: none !important;
             }
-            .max-h-96 {
-                max-height: none !important;
-                overflow: visible !important;
-            }
-            .max-h-48 {
-                max-height: none !important;
-                overflow: visible !important;
-            }
-            body {
-                background-color: white !important;
-            }
-            .bg-white {
-                box-shadow: none !important;
-                border: 1px solid #ddd !important;
-            }
-            main {
-                padding: 0 !important;
-                margin: 0 !important;
-            }
+            body { background: white !important; }
+            main { padding: 0 !important; margin: 0 !important; }
         }
     </style>
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='img/logo.jpg') }}">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="bg-slate-50 text-slate-600 text-sm font-sans antialiased overflow-hidden">
-    <!-- Flash Messages (Silent in background, or show as toasts later) -->
+<body class="bg-[#F8F9FA] text-stone-700 text-sm font-sans antialiased overflow-hidden">
 
-    <div class="flex h-screen w-full overflow-hidden">
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="sidebar-backdrop" class="fixed inset-0 z-40 bg-stone-900/40 backdrop-blur-xs lg:hidden hidden transition-opacity duration-200"></div>
+
+    <!-- Full-bleed Workspace Container (Flush, Clean, Edge-to-Edge) -->
+    <div class="flex h-screen w-screen overflow-hidden">
         
-        <!-- ===== SIDEBAR ===== -->
-        <aside id="sidebar" class="absolute left-0 top-0 z-[9999] flex h-screen w-72 flex-col overflow-y-hidden bg-boxdark duration-300 ease-linear lg:static lg:translate-x-0 -translate-x-full">
+        <!-- ===== ULTRA-CLEAN SIDEBAR ===== -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col border-r border-stone-200 bg-white text-stone-700 transition-transform duration-200 ease-out lg:static lg:translate-x-0 -translate-x-full">
             
-            <!-- Sidebar Header -->
-            <div class="flex items-center justify-between gap-2 px-6 py-6 lg:py-8 border-b border-boxdark2">
-                <a href="/" class="flex items-center gap-3 text-white">
-                    {% set cur_lokasi = request.args.get('lokasi', '') %}
-                    {% if cur_lokasi == 'IMAVI' %}
-                        <img src="{{ url_for('static', filename='img/logo_imavi.png') }}" alt="IMAVI Logo" onerror="this.src='{{ url_for('static', filename='img/logo.jpg') }}'" class="w-12 h-12 rounded-full border-2 border-boxdark2 bg-white object-contain">
-                    {% elif cur_lokasi == 'STPD' %}
-                        <img src="{{ url_for('static', filename='img/logo_stpd.png') }}" alt="STPD Logo" onerror="this.src='{{ url_for('static', filename='img/logo.jpg') }}'" class="w-12 h-12 rounded-full border-2 border-boxdark2 bg-white object-contain">
-                    {% else %}
-                        <img src="{{ url_for('static', filename='img/logo.jpg') }}" alt="Logo" class="w-12 h-12 rounded-full border-2 border-boxdark2 object-cover">
-                    {% endif %}
+            <!-- Brand / Logo Area -->
+            <div class="flex items-center justify-between gap-3 px-5 py-4 border-b border-stone-150 bg-stone-50/50">
+                <a href="/" class="flex items-center gap-3 group min-w-0">
+                    {% set cur_lokasi = request.args.get('lokasi', branding.default_lokasi) %}
+                    <div class="relative shrink-0">
+                        {% if cur_lokasi == 'IMAVI' %}
+                            <img src="{{ url_for('static', filename='img/logo_imavi.png') }}" alt="IMAVI Logo" onerror="this.src='{{ url_for('static', filename='img/logo.jpg') }}'" class="w-9 h-9 rounded-lg border border-stone-200 bg-white object-contain p-0.5 shadow-2xs">
+                        {% elif cur_lokasi == 'STPD' %}
+                            <img src="{{ url_for('static', filename='img/logo_stpd.png') }}" alt="STPD Logo" onerror="this.src='{{ url_for('static', filename='img/logo.jpg') }}'" class="w-9 h-9 rounded-lg border border-stone-200 bg-white object-contain p-0.5 shadow-2xs">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='img/logo.jpg') }}" alt="Logo" class="w-9 h-9 rounded-lg border border-stone-200 object-cover shadow-2xs">
+                        {% endif %}
+                    </div>
                     
-                    <div>
-                        <span class="block text-base font-bold">St. Jerome</span>
-                        <span class="block text-[11px] font-normal text-bodydark">Library Assistant {% if cur_lokasi %}({{ cur_lokasi }}){% endif %}</span>
+                    <div class="overflow-hidden min-w-0">
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-bold text-stone-900 text-sm tracking-tight truncate">{{ branding.app_name }}</span>
+                            {% if cur_lokasi %}
+                                <span class="px-1.5 py-0.2 text-[9px] font-bold rounded bg-stone-100 text-stone-700 border border-stone-200 uppercase shrink-0">{{ cur_lokasi }}</span>
+                            {% endif %}
+                        </div>
+                        <span class="block text-[11px] text-stone-600 font-medium truncate">{{ branding.library_name }}</span>
                     </div>
                 </a>
-                <button id="sidebar-close" class="lg:hidden text-bodydark hover:text-white">
-                    <i class="fa-solid fa-times text-xl"></i>
+                
+                <button id="sidebar-close" class="lg:hidden text-stone-400 hover:text-stone-700 p-1.5 rounded-lg hover:bg-stone-100 transition-colors">
+                    <i class="fa-solid fa-times text-base"></i>
                 </button>
             </div>
 
-            <!-- Sidebar Nav -->
-            <div class="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
-                <nav class="mt-5 py-4 px-4 lg:mt-6 lg:px-6">
-                    <ul class="flex flex-col gap-1.5">
-                        
-                        <!-- Menu Beranda -->
+            <!-- Navigation Links Scroll Area -->
+            <div class="no-scrollbar flex-1 overflow-y-auto px-3 py-3 space-y-4">
+                
+                <!-- SECTION: OPERASIONAL & SIRKULASI -->
+                <div>
+                    <div class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-stone-600">
+                        Operasional & Sirkulasi
+                    </div>
+                    <ul class="mt-1 space-y-0.5">
+                        <!-- Beranda Utama -->
                         <li>
-                            <a href="/" class="group relative flex items-center gap-3 rounded-md px-4 py-3 font-medium duration-300 ease-in-out {% if request.path == '/' %}bg-primary text-white{% else %}text-bodydark hover:bg-boxdark2 hover:text-white{% endif %}">
-                                <i class="fa-solid fa-home w-5 text-center"></i> Beranda Utama
+                            <a href="/" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <i class="fa-solid fa-house w-4 text-center {% if request.path == '/' %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
+                                <span class="truncate">Beranda Utama</span>
                             </a>
                         </li>
 
-                        <!-- Menu Sirkulasi Tunggal -->
+                        {% if has_perm('sirkulasi') %}
+                        <!-- Meja Sirkulasi -->
                         <li>
-                            <a href="/sirkulasi" class="group relative flex items-center gap-3 rounded-md px-4 py-3 font-medium duration-300 ease-in-out {% if request.path == '/sirkulasi' %}bg-primary text-white{% else %}text-bodydark hover:bg-boxdark2 hover:text-white{% endif %}">
-                                <i class="fa-solid fa-cash-register w-5 text-center"></i> Sirkulasi
+                            <a href="/sirkulasi" class="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/sirkulasi' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <div class="flex items-center gap-2.5 truncate">
+                                    <i class="fa-solid fa-cash-register w-4 text-center {% if request.path == '/sirkulasi' %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
+                                    <span class="truncate">Meja Sirkulasi</span>
+                                </div>
+                                <span class="px-1.5 py-0.2 text-[9px] font-mono rounded font-semibold {% if request.path == '/sirkulasi' %}bg-stone-800 text-stone-300{% else %}bg-stone-100 text-stone-500 border border-stone-200{% endif %}">F2</span>
                             </a>
                         </li>
 
-                        <!-- Menu Pengolahan Bahan Pustaka -->
-                        {% set pengolahan_active = request.path.startswith('/koleksi') or request.path == '/input_buku' or request.path == '/kelola_sampul' or request.path == '/cetak_khusus' or request.path == '/cetak_sirkulasi' %}
-                        <li x-data="{ expanded: {{ 'true' if pengolahan_active else 'false' }} }">
-                            <a href="#" @click.prevent="expanded = !expanded" class="group relative flex items-center gap-3 rounded-md px-4 py-3 font-medium duration-300 ease-in-out {% if pengolahan_active %}text-white bg-boxdark2{% else %}text-bodydark hover:bg-boxdark2 hover:text-white{% endif %}">
-                                <i class="fa-solid fa-book w-5 text-center"></i> Pengolahan Bahan Pustaka
-                                <i class="fa-solid fa-chevron-down absolute right-4 transition-transform duration-200" :class="{ 'rotate-180': expanded }"></i>
+                        <!-- Monitoring Jatuh Tempo & Keterlambatan -->
+                        <li>
+                            <a href="/sirkulasi/keterlambatan" class="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/sirkulasi/keterlambatan' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <div class="flex items-center gap-2.5 truncate">
+                                    <i class="fa-solid fa-clock w-4 text-center {% if request.path == '/sirkulasi/keterlambatan' %}text-stone-200{% else %}text-amber-600{% endif %}"></i>
+                                    <span class="truncate">Monitoring Jatuh Tempo</span>
+                                </div>
+                                <span class="px-1.5 py-0.2 text-[9px] font-mono rounded font-semibold {% if request.path == '/sirkulasi/keterlambatan' %}bg-amber-500 text-stone-950{% else %}bg-amber-100 text-amber-800 border border-amber-200{% endif %}">TELAT</span>
                             </a>
-                            <div x-show="expanded" style="display: none;" x-transition>
-                                <ul class="mt-2 flex flex-col gap-1 pl-10 pr-2 pb-2">
-                                    <li><a href="/koleksi" class="flex rounded-md px-3 py-2 text-sm {% if request.path.startswith('/koleksi') %}text-white font-medium{% else %}text-bodydark2 hover:text-white{% endif %}">Daftar Koleksi</a></li>
-                                    <li><a href="/input_buku" class="flex rounded-md px-3 py-2 text-sm {% if request.path == '/input_buku' %}text-white font-medium{% else %}text-bodydark2 hover:text-white{% endif %}">Input Buku Baru</a></li>
-                                    <li><a href="/kelola_sampul" class="flex rounded-md px-3 py-2 text-sm {% if request.path == '/kelola_sampul' %}text-white font-medium{% else %}text-bodydark2 hover:text-white{% endif %}">Kelola Sampul Manual</a></li>
-                                    <li><a href="/cetak_sirkulasi" class="flex rounded-md px-3 py-2 text-sm {% if request.path == '/cetak_sirkulasi' %}text-white font-medium{% else %}text-bodydark2 hover:text-white{% endif %}">Kartu & Kantong Buku</a></li>
-                                    <li><a href="/cetak_khusus?mode=identitas" class="flex rounded-md px-3 py-2 text-sm {% if request.path == '/cetak_khusus' and request.args.get('mode') == 'identitas' %}text-white font-medium{% else %}text-bodydark2 hover:text-white{% endif %}">Cetak Label Identitas</a></li>
-                                    <li><a href="/cetak_khusus?mode=punggung" class="flex rounded-md px-3 py-2 text-sm {% if request.path == '/cetak_khusus' and request.args.get('mode') == 'punggung' %}text-white font-medium{% else %}text-bodydark2 hover:text-white{% endif %}">Cetak Label Punggung</a></li>
-                                    <li><a href="/cetak_khusus?mode=barcode" class="flex rounded-md px-3 py-2 text-sm {% if request.path == '/cetak_khusus' and request.args.get('mode') == 'barcode' %}text-white font-medium{% else %}text-bodydark2 hover:text-white{% endif %}">Cetak Barcode Eksemplar</a></li>
-                                    <li><a href="/cetak_stiker_tas" target="_blank" class="flex rounded-md px-3 py-2 text-sm text-bodydark2 hover:text-white">Cetak Stiker Tas</a></li>
+                        </li>
+                        {% endif %}
+
+                        {% if has_perm('pos') and is_feature('ENABLE_POS_FOTOCOPY') %}
+                        <!-- Layanan Kasir POS -->
+                        {% set pos_active = request.path.startswith('/pos') %}
+                        <li x-data="{ expanded: {{ 'true' if pos_active else 'false' }} }">
+                            <button @click="expanded = !expanded" class="w-full flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if pos_active %}text-stone-900 bg-stone-100 font-semibold{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <div class="flex items-center gap-2.5 truncate">
+                                    <i class="fa-solid fa-calculator w-4 text-center text-emerald-600"></i>
+                                    <span class="truncate">Layanan Kasir POS</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
+                            </button>
+                            <div x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
+                                <ul class="ml-4 pl-3 border-l border-stone-200 space-y-0.5 text-[11px]">
+                                    <li><a href="/pos" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/pos' and not request.args.get('antrean') %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Kasir POS (FC & Print)</a></li>
+                                    <li>
+                                        <a href="/pos?antrean=1" class="flex items-center justify-between rounded-md px-2 py-1 transition-colors {% if request.args.get('antrean') == '1' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">
+                                            <span>Antrean Print</span>
+                                            <span class="px-1.5 py-0.2 rounded bg-blue-100 text-blue-700 text-[9px] font-bold">Upload</span>
+                                        </a>
+                                    </li>
+                                    <li><a href="/pos/tabungan" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/pos/tabungan' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Tabungan Anggota</a></li>
+                                    <li><a href="/pos/riwayat" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/pos/riwayat' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Riwayat & Tutup Kas</a></li>
+                                    <li><a href="/pos/layanan" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/pos/layanan' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Tarif & Layanan</a></li>
+                                    <li><a href="/pos/laporan_keuangan" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/pos/laporan_keuangan' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}"><i class="fa-solid fa-file-invoice-dollar mr-1 text-amber-700"></i> Laporan Kas Bulanan</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                {% if has_perm('koleksi') %}
+                <!-- SECTION: PENGOLAHAN KOLEKSI -->
+                <div>
+                    <div class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-stone-600">
+                        Pengolahan Koleksi
+                    </div>
+                    <ul class="mt-1 space-y-0.5">
+                        <!-- Daftar Koleksi -->
+                        <li>
+                            <a href="/koleksi" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path.startswith('/koleksi') %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <i class="fa-solid fa-book w-4 text-center {% if request.path.startswith('/koleksi') %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
+                                <span class="truncate">Daftar Koleksi</span>
+                            </a>
+                        </li>
+
+                        <!-- Input Buku Baru -->
+                        <li>
+                            <a href="/input_buku" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/input_buku' or request.path == '/input_majalah' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <i class="fa-solid fa-plus-circle w-4 text-center {% if request.path == '/input_buku' or request.path == '/input_majalah' %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
+                                <span class="truncate">Input Buku Baru</span>
+                            </a>
+                        </li>
+
+                        <!-- Kelola Sampul -->
+                        <li>
+                            <a href="/kelola_sampul" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/kelola_sampul' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <i class="fa-solid fa-images w-4 text-center {% if request.path == '/kelola_sampul' %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
+                                <span class="truncate">Kelola Sampul Buku</span>
+                            </a>
+                        </li>
+
+                        <!-- Dapur Pengadaan Kurikulum -->
+                        <li>
+                            <a href="/pengadaan_kurikulum" class="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path.startswith('/pengadaan_kurikulum') %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <div class="flex items-center gap-2.5 truncate">
+                                    <i class="fa-solid fa-graduation-cap w-4 text-center {% if request.path.startswith('/pengadaan_kurikulum') %}text-stone-200{% else %}text-amber-600{% endif %}"></i>
+                                    <span class="truncate">Dapur Pengadaan</span>
+                                </div>
+                                <span class="px-1.5 py-0.2 text-[9px] font-mono rounded font-semibold {% if request.path.startswith('/pengadaan_kurikulum') %}bg-amber-500 text-stone-950{% else %}bg-amber-100 text-amber-800 border border-amber-200{% endif %}">{{ branding.default_lokasi | default('IMAVI') }}</span>
+                            </a>
+                        </li>
+
+                        <!-- Cetak Label Submenu -->
+                        {% set cetak_active = request.path == '/cetak_khusus' or request.path == '/cetak_sirkulasi' %}
+                        <li x-data="{ expanded: {{ 'true' if cetak_active else 'false' }} }">
+                            <button @click="expanded = !expanded" class="w-full flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if cetak_active %}text-stone-900 bg-stone-100 font-semibold{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <div class="flex items-center gap-2.5 truncate">
+                                    <i class="fa-solid fa-tags w-4 text-center text-stone-400"></i>
+                                    <span class="truncate">Cetak Label & Barcode</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
+                            </button>
+                            <div x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
+                                <ul class="ml-4 pl-3 border-l border-stone-200 space-y-0.5 text-[11px]">
+                                    <li><a href="/cetak_khusus?mode=punggung" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/cetak_khusus' and request.args.get('mode') == 'punggung' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Label Punggung (DDC)</a></li>
+                                    <li><a href="/cetak_khusus?mode=barcode" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/cetak_khusus' and request.args.get('mode') == 'barcode' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Barcode Eksemplar</a></li>
+                                    <li><a href="/cetak_khusus?mode=identitas" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/cetak_khusus' and request.args.get('mode') == 'identitas' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Label Identitas</a></li>
+                                    <li><a href="/cetak_sirkulasi" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/cetak_sirkulasi' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Kartu & Kantong Buku</a></li>
                                 </ul>
                             </div>
                         </li>
 
-                        <!-- Menu Stock Opname -->
+                        <!-- Stock Opname -->
                         <li>
-                            <a href="/audit_rak" class="group relative flex items-center gap-3 rounded-md px-4 py-3 font-medium duration-300 ease-in-out {% if request.path == '/audit_rak' %}bg-primary text-white{% else %}text-bodydark hover:bg-boxdark2 hover:text-white{% endif %}">
-                                <i class="fa-solid fa-boxes-packing w-5 text-center"></i> Stock Opname (Audit)
+                            <a href="/audit_rak" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/audit_rak' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <i class="fa-solid fa-boxes-packing w-4 text-center {% if request.path == '/audit_rak' %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
+                                <span class="truncate">Stock Opname (Audit)</span>
                             </a>
                         </li>
+                    </ul>
+                </div>
+                {% endif %}
 
-                        <!-- Menu Keanggotaan & Kunjungan -->
-                        {% set anggota_active = request.path.startswith('/anggota') or request.path == '/scan' or request.path == '/analitik_kunjungan' %}
+                {% if has_perm('baca') or has_perm('anggota') or has_perm('laporan') %}
+                <!-- SECTION: PEMUSTAKA & RISET -->
+                <div>
+                    <div class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-stone-600">
+                        Pemustaka & Riset
+                    </div>
+                    <ul class="mt-1 space-y-0.5">
+{% if has_perm('baca') %}
+                        <!-- Buku yang Dibaca -->
+                        {% set baca_active = request.path == '/scan' or request.path.startswith('/scan_baca') or request.path == '/laporan_buku_dibaca' or request.path == '/analisis_kecenderungan_dampak' %}
+                        <li x-data="{ expanded: {{ 'true' if baca_active else 'false' }} }">
+                            <button @click="expanded = !expanded" class="w-full flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if baca_active %}text-stone-900 bg-stone-100 font-semibold{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <div class="flex items-center gap-2.5 truncate">
+                                    <i class="fa-solid fa-book-open-reader w-4 text-center text-amber-600"></i>
+                                    <span class="truncate">Buku yang Dibaca</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
+                            </button>
+                            <div x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
+                                <ul class="ml-4 pl-3 border-l border-stone-200 space-y-0.5 text-[11px]">
+                                    <li><a href="/scan" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/scan' or request.path.startswith('/scan_baca') %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Catat Buku Dibaca</a></li>
+                                    <li><a href="/laporan_buku_dibaca" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/laporan_buku_dibaca' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Rekapitulasi Baca</a></li>
+                                    <li><a href="/analisis_kecenderungan_dampak" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/analisis_kecenderungan_dampak' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Analisis Kecenderungan</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                        {% endif %}
+
+{% if has_perm('anggota') %}
+                        <!-- Anggota & Kunjungan -->
+                        {% set anggota_active = request.path.startswith('/anggota') or request.path == '/analitik_kunjungan' %}
                         <li x-data="{ expanded: {{ 'true' if anggota_active else 'false' }} }">
-                            <a href="#" @click.prevent="expanded = !expanded" class="group relative flex items-center gap-3 rounded-md px-4 py-3 font-medium duration-300 ease-in-out {% if anggota_active %}text-white bg-boxdark2{% else %}text-bodydark hover:bg-boxdark2 hover:text-white{% endif %}">
-                                <i class="fa-solid fa-users w-5 text-center"></i> Anggota & Kunjungan
-                                <i class="fa-solid fa-chevron-down absolute right-4 transition-transform duration-200" :class="{ 'rotate-180': expanded }"></i>
-                            </a>
-                            <div x-show="expanded" style="display: none;" x-transition>
-                                <ul class="mt-2 flex flex-col gap-1 pl-10 pr-2 pb-2">
-                                    <li><a href="/anggota" class="flex rounded-md px-3 py-2 text-sm {% if request.path.startswith('/anggota') %}text-white font-medium{% else %}text-bodydark2 hover:text-white{% endif %}">Daftar Keanggotaan</a></li>
-                                    <li><a href="/scan" class="flex rounded-md px-3 py-2 text-sm {% if request.path == '/scan' %}text-white font-medium{% else %}text-bodydark2 hover:text-white{% endif %}">Buku Yang Telah Dibaca</a></li>
-                                    <li><a href="/analitik_kunjungan" class="flex rounded-md px-3 py-2 text-sm {% if request.path == '/analitik_kunjungan' %}text-white font-medium{% else %}text-bodydark2 hover:text-white{% endif %}">Analitik Kunjungan</a></li>
+                            <button @click="expanded = !expanded" class="w-full flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if anggota_active %}text-stone-900 bg-stone-100 font-semibold{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <div class="flex items-center gap-2.5 truncate">
+                                    <i class="fa-solid fa-users w-4 text-center text-stone-400"></i>
+                                    <span class="truncate">Anggota & Kunjungan</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
+                            </button>
+                            <div x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
+                                <ul class="ml-4 pl-3 border-l border-stone-200 space-y-0.5 text-[11px]">
+                                    <li><a href="/anggota" class="block rounded-md px-2 py-1 transition-colors {% if request.path.startswith('/anggota') %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Daftar Keanggotaan</a></li>
+                                    <li><a href="/analitik_kunjungan" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/analitik_kunjungan' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Analitik Kunjungan</a></li>
                                 </ul>
                             </div>
                         </li>
+                        {% endif %}
 
-                        <!-- Menu Laporan & Analisis -->
-                        {% set lapor_active = request.path == '/dashboard' or request.path == '/analisis_lanjutan' or request.path == '/anomali' %}
+{% if has_perm('laporan') %}
+                        <!-- Laporan & Analisis -->
+                        {% set lapor_active = request.path == '/dashboard' or request.path == '/analisis_lanjutan' or request.path == '/analisis_peminjaman_dampak' or request.path == '/analisis_strategis_terpadu' or request.path == '/laporan_ddc' or request.path == '/laporan_pertumbuhan' or request.path == '/anomali' or request.path == '/usulan_buku' %}
                         <li x-data="{ expanded: {{ 'true' if lapor_active else 'false' }} }">
-                            <a href="#" @click.prevent="expanded = !expanded" class="group relative flex items-center gap-3 rounded-md px-4 py-3 font-medium duration-300 ease-in-out {% if lapor_active %}text-white bg-boxdark2{% else %}text-bodydark hover:bg-boxdark2 hover:text-white{% endif %}">
-                                <i class="fa-solid fa-chart-pie w-5 text-center"></i> Laporan & Analisis
-                                <i class="fa-solid fa-chevron-down absolute right-4 transition-transform duration-200" :class="{ 'rotate-180': expanded }"></i>
-                            </a>
-                            <div x-show="expanded" style="display: none;" x-transition>
-                                <ul class="mt-2 flex flex-col gap-1 pl-10 pr-2 pb-2">
-                                    <li><a href="/dashboard" class="flex rounded-md px-3 py-2 text-sm {% if request.path == '/dashboard' %}text-white font-medium{% else %}text-bodydark2 hover:text-white{% endif %}">Dasbor Analitik</a></li>
-                                    <li><a href="/analisis_lanjutan" class="flex rounded-md px-3 py-2 text-sm {% if request.path == '/analisis_lanjutan' %}text-white font-medium{% else %}text-bodydark2 hover:text-white{% endif %}">Data Eksemplar</a></li>
-                                    <li><a href="/laporan_ddc" class="flex rounded-md px-3 py-2 text-sm {% if request.path == '/laporan_ddc' %}text-white font-medium{% else %}text-bodydark2 hover:text-white{% endif %}">Laporan Klasifikasi DDC</a></li>
-                                      <li><a href="/laporan_pertumbuhan" class="flex rounded-md px-3 py-2 text-sm {% if request.path == '/laporan_pertumbuhan' %}text-white font-medium{% else %}text-bodydark2 hover:text-white{% endif %}">Grafik Pertumbuhan</a></li>
-                                    <li><a href="/anomali" class="flex rounded-md px-3 py-2 text-sm {% if request.path == '/anomali' %}text-white font-medium{% else %}text-bodydark2 hover:text-white{% endif %}">Deteksi Anomali Data</a></li>
+                            <button @click="expanded = !expanded" class="w-full flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if lapor_active %}text-stone-900 bg-stone-100 font-semibold{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <div class="flex items-center gap-2.5 truncate">
+                                    <i class="fa-solid fa-chart-pie w-4 text-center text-stone-400"></i>
+                                    <span class="truncate">Laporan & Analisis</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
+                            </button>
+                            <div x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
+                                <ul class="ml-4 pl-3 border-l border-stone-200 space-y-0.5 text-[11px]">
+                                    <li><a href="/dashboard" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/dashboard' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Dasbor Analitik</a></li>
+                                    <li><a href="/analisis_strategis_terpadu" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/analisis_strategis_terpadu' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Grand Sintesis</a></li>
+                                    <li><a href="/analisis_peminjaman_dampak" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/analisis_peminjaman_dampak' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Peminjaman & Dampak</a></li>
+                                    <li><a href="/analisis_lanjutan" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/analisis_lanjutan' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Analisis Strategis</a></li>
+                                    <li><a href="/laporan_ddc" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/laporan_ddc' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Laporan Klasifikasi DDC</a></li>
+                                    <li><a href="/laporan_pertumbuhan" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/laporan_pertumbuhan' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Grafik Pertumbuhan</a></li>
+                                    <li><a href="/anomali" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/anomali' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Deteksi Anomali Data</a></li>
+                                    <li><a href="/usulan_buku" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/usulan_buku' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Usulan Buku Baru</a></li>
                                 </ul>
                             </div>
                         </li>
+                        {% endif %}
+                    </ul>
+                </div>
 
-                        <!-- Menu Tampilan Publik -->
+                {% endif %}
+
+                <!-- SECTION: PUBLIK & SISTEM -->
+                <div>
+                    <div class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-stone-600">
+                        Akses Publik & Sistem
+                    </div>
+                    <ul class="mt-1 space-y-0.5">
+                        <!-- Tampilan Publik -->
                         <li x-data="{ expanded: false }">
-                            <a href="#" @click.prevent="expanded = !expanded" class="group relative flex items-center gap-3 rounded-md px-4 py-3 font-medium duration-300 ease-in-out text-bodydark hover:bg-boxdark2 hover:text-white">
-                                <i class="fa-solid fa-globe w-5 text-center"></i> Tampilan Publik
-                                <i class="fa-solid fa-chevron-down absolute right-4 transition-transform duration-200" :class="{ 'rotate-180': expanded }"></i>
-                            </a>
-                            <div x-show="expanded" style="display: none;" x-transition>
-                                <ul class="mt-2 flex flex-col gap-1 pl-10 pr-2 pb-2">
-                                    <li><a href="/opac" target="_blank" class="flex rounded-md px-3 py-2 text-sm text-bodydark2 hover:text-white">Katalog Publik (OPAC) <i class="fa-solid fa-external-link-alt ml-2 mt-1 text-[10px]"></i></a></li>
-                                    <li><a href="/kiosk" target="_blank" class="flex rounded-md px-3 py-2 text-sm text-bodydark2 hover:text-white">Buku Tamu / Kiosk <i class="fa-solid fa-external-link-alt ml-2 mt-1 text-[10px]"></i></a></li>
-                                    <li><a href="/kiosk_sirkulasi" target="_blank" class="flex rounded-md px-3 py-2 text-sm text-bodydark2 hover:text-white">Kiosk Cek Peminjaman <i class="fa-solid fa-external-link-alt ml-2 mt-1 text-[10px]"></i></a></li>
+                            <button @click="expanded = !expanded" class="w-full flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors">
+                                <div class="flex items-center gap-2.5 truncate">
+                                    <i class="fa-solid fa-globe w-4 text-center text-stone-400"></i>
+                                    <span class="truncate">Tampilan Publik</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
+                            </button>
+                            <div x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
+                                <ul class="ml-4 pl-3 border-l border-stone-200 space-y-0.5 text-[11px]">
+                                    <li><a href="/opac" target="_blank" class="flex items-center justify-between rounded-md px-2 py-1 text-stone-600 hover:text-stone-900 hover:bg-stone-100/70 transition-colors"><span>Katalog OPAC</span> <i class="fa-solid fa-arrow-up-right-from-square text-[9px] text-stone-400"></i></a></li>
+                                    <li><a href="/kiosk" target="_blank" class="flex items-center justify-between rounded-md px-2 py-1 text-stone-600 hover:text-stone-900 hover:bg-stone-100/70 transition-colors"><span>Buku Tamu / Kiosk</span> <i class="fa-solid fa-arrow-up-right-from-square text-[9px] text-stone-400"></i></a></li>
+                                    <li><a href="/kiosk_sirkulasi" target="_blank" class="flex items-center justify-between rounded-md px-2 py-1 text-stone-600 hover:text-stone-900 hover:bg-stone-100/70 transition-colors"><span>Kiosk Cek Mandiri</span> <i class="fa-solid fa-arrow-up-right-from-square text-[9px] text-stone-400"></i></a></li>
                                 </ul>
                             </div>
                         </li>
 
-                        
-                        
-                        <!-- Menu Laporan Koleksi -->
+{% if has_perm('laporan') %}
+                        <!-- Laporan Koleksi -->
                         <li>
-                            <a href="/laporan_koleksi" class="group relative flex items-center gap-3 rounded-md px-4 py-3 font-medium duration-300 ease-in-out {% if request.path == '/laporan_koleksi' %}bg-primary text-white{% else %}text-bodydark hover:bg-boxdark2 hover:text-white{% endif %}">
-                                <i class="fa-solid fa-chart-bar w-5 text-center text-warning"></i> Laporan Koleksi
+                            <a href="/laporan_koleksi" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/laporan_koleksi' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <i class="fa-solid fa-chart-bar w-4 text-center {% if request.path == '/laporan_koleksi' %}text-stone-200{% else %}text-amber-600{% endif %}"></i>
+                                <span class="truncate">Laporan Koleksi</span>
+                            </a>
+                        </li>
+                        {% endif %}
+
+{% if has_perm('pengaturan') and is_feature('ENABLE_WA_BOT') %}
+                        <!-- WA Broadcast -->
+                        <li>
+                            <a href="/wa_broadcast" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/wa_broadcast' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <i class="fa-brands fa-whatsapp w-4 text-center text-emerald-600"></i>
+                                <span class="truncate">WA Broadcast</span>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <!-- Profil & Akun -->
+                        <li>
+                            <a href="/profil" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/profil' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <i class="fa-regular fa-user w-4 text-center {% if request.path == '/profil' %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
+                                <span class="truncate">Profil & Akun Saya</span>
                             </a>
                         </li>
 
-                        <!-- Menu WA Broadcast -->
+{% if has_perm('users') %}
+                        <!-- Kelola Pengguna (Master Admin) -->
                         <li>
-                            <a href="/wa_broadcast" class="group relative flex items-center gap-3 rounded-md px-4 py-3 font-medium duration-300 ease-in-out {% if request.path == '/wa_broadcast' %}bg-primary text-white{% else %}text-bodydark hover:bg-boxdark2 hover:text-white{% endif %}">
-                                <i class="fa-brands fa-whatsapp w-5 text-center text-success"></i> WA Broadcast
+                            <a href="/pengguna" class="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/pengguna' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <div class="flex items-center gap-2.5 truncate">
+                                    <i class="fa-solid fa-users-gear w-4 text-center {% if request.path == '/pengguna' %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
+                                    <span class="truncate">Kelola Pengguna</span>
+                                </div>
+                                <span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[9px] font-bold border border-amber-200">Admin</span>
                             </a>
                         </li>
+                        {% endif %}
 
-                        <!-- Menu Settings -->
+{% if has_perm('pengaturan') %}
+                        <!-- Pengaturan -->
                         <li>
-                            <a href="/settings" class="group relative flex items-center gap-3 rounded-md px-4 py-3 font-medium duration-300 ease-in-out {% if request.path == '/settings' %}bg-primary text-white{% else %}text-bodydark hover:bg-boxdark2 hover:text-white{% endif %}">
-                                <i class="fa-solid fa-gear w-5 text-center"></i> Pengaturan
+                            <a href="/settings" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/settings' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+                                <i class="fa-solid fa-gear w-4 text-center {% if request.path == '/settings' %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
+                                <span class="truncate">Pengaturan Sistem</span>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <!-- Keluar -->
+                        <li class="pt-2">
+                            <a href="/logout" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors">
+                                <i class="fa-solid fa-power-off w-4 text-center"></i>
+                                <span class="truncate">Keluar Sesi</span>
                             </a>
                         </li>
                     </ul>
+                </div>
 
-                    <ul class="mt-8 flex flex-col gap-1.5 border-t border-boxdark2 pt-4">
-                        <li>
-                            <a href="/logout" class="group relative flex items-center gap-3 rounded-md px-4 py-3 font-medium text-danger duration-300 ease-in-out hover:bg-boxdark2 hover:text-white">
-                                <i class="fa-solid fa-power-off w-5 text-center text-danger"></i> Keluar
-                            </a>
-                        </li>
-                    </ul>
-
-                </nav>
             </div>
             
-            <!-- Footer Sidebar (Kredit) -->
-            <div class="mt-auto px-6 py-4 border-t border-boxdark2">
-                <p class="text-xs text-bodydark2 text-center">Dibuat oleh<br><strong class="text-white">Yosef Paskah</strong></p>
+            <!-- Sidebar System Footer -->
+            <div class="px-4 py-3 border-t border-stone-200 bg-stone-50/60 text-xs">
+                <div class="flex items-center justify-between text-stone-500">
+                    <span class="flex items-center gap-1.5 font-medium text-[11px]">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <span>St. Jerome v2.6</span>
+                    </span>
+                    <span class="text-[11px] text-stone-400 font-semibold tracking-wide">{{ branding.default_lokasi }}</span>
+                </div>
             </div>
         </aside>
 
-        <!-- ===== MAIN WRAPPER ===== -->
-        <div class="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+        <!-- ===== MAIN CONTENT BODY CONTAINER ===== -->
+        <div class="relative flex flex-1 flex-col h-full overflow-hidden bg-[#F8F9FA]">
             
-            <!-- ===== HEADER ===== -->
-            <header class="sticky top-0 z-[999] flex w-full bg-white shadow-sm border-b border-stroke">
-                <div class="flex flex-grow items-center justify-between px-4 py-4 md:px-6 2xl:px-11">
-                    <div class="flex items-center gap-2 sm:gap-4">
-                        <button id="sidebar-toggle" class="lg:hidden z-99999 block rounded-sm border border-stroke bg-white p-1.5 shadow-sm">
-                            <i class="fa-solid fa-bars text-xl"></i>
+            <!-- ===== TOP HEADER (CLEAN & MINIMAL) ===== -->
+            <header class="sticky top-0 z-30 flex w-full items-center justify-between px-5 py-3 bg-white border-b border-stone-200">
+                
+                <!-- Left: Mobile Menu Toggle & Title -->
+                <div class="flex items-center gap-3">
+                    <button id="sidebar-toggle" class="lg:hidden p-1.5 rounded-lg border border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100 transition-colors">
+                        <i class="fa-solid fa-bars text-sm"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-base font-bold text-stone-900 tracking-tight leading-tight">{% block page_title %}Beranda Utama{% endblock %}</h1>
+                        <p class="text-xs text-stone-500 font-normal hidden sm:block">{% block page_subtitle %}Sistem Asisten Perpustakaan St. Jerome{% endblock %}</p>
+                    </div>
+                </div>
+
+                <!-- Right: Live Date & Time + User Chip -->
+                <div class="flex items-center gap-3">
+                    
+                    <!-- Live Date & Clock Pill -->
+                    <div class="flex items-center gap-2.5 bg-stone-50 text-stone-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-stone-200">
+                        <span class="flex items-center gap-1.5 text-stone-700">
+                            <i class="fa-regular fa-calendar-days text-amber-700"></i>
+                            <span id="header-live-date">--/--/----</span>
+                        </span>
+                        <span class="text-stone-300">|</span>
+                        <span class="flex items-center gap-1.5 text-stone-900 font-mono">
+                            <i class="fa-regular fa-clock text-amber-700"></i>
+                            <span id="header-live-time">--:--:-- WIB</span>
+                        </span>
+                    </div>
+
+                    <!-- User Profile Dropdown -->
+                    <div class="relative" x-data="{ userMenuOpen: false }" @click.outside="userMenuOpen = false">
+                        <button @click="userMenuOpen = !userMenuOpen" class="flex items-center gap-2 pl-2 border-l border-stone-200 hover:opacity-80 transition-opacity focus:outline-none cursor-pointer">
+                            <div class="w-7 h-7 rounded-full bg-stone-900 text-white flex items-center justify-center font-bold text-xs shadow-2xs">
+                                {{ session.username[:1] | upper | default('Y') }}
+                            </div>
+                            <span class="text-xs font-semibold text-stone-800 hidden sm:inline">{{ session.nama_lengkap | default(session.username | capitalize | default('Yosef')) }}</span>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': userMenuOpen }"></i>
                         </button>
-                        <div class="hidden sm:block">
-                            <h1 class="text-2xl font-bold text-slate-800">{% block page_title %}Dashboard{% endblock %}</h1>
-                            <p class="text-sm font-medium text-slate-500 mt-1">{% block page_subtitle %}Sistem Asisten Perpustakaan{% endblock %}</p>
+
+                        <!-- Dropdown Menu -->
+                        <div x-show="userMenuOpen" 
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             style="display: none;"
+                             class="absolute right-0 mt-2 w-56 rounded-2xl bg-white border border-stone-200 shadow-xl py-1.5 z-50">
+                            
+                            <!-- Header Info -->
+                            <div class="px-4 py-2.5 border-b border-stone-150 bg-stone-50/50">
+                                <p class="text-xs font-bold text-stone-900 truncate">{{ session.nama_lengkap | default(session.username | capitalize | default('Yosef Paskah')) }}</p>
+                                <div class="flex items-center gap-1.5 mt-0.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                    <span class="text-[10px] text-stone-500 font-medium truncate">@{{ session.username | default('yosef') }} • {{ session.role | default('Administrator') }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Menu Options -->
+                            <div class="py-1 text-xs">
+                                <a href="/profil" class="flex items-center gap-2.5 px-4 py-2 text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors">
+                                    <i class="fa-regular fa-user text-stone-400 w-4 text-center"></i>
+                                    <span>Profil Saya</span>
+                                </a>
+                                <a href="/profil?tab=password" class="flex items-center gap-2.5 px-4 py-2 text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors">
+                                    <i class="fa-solid fa-key text-stone-400 w-4 text-center"></i>
+                                    <span>Ganti Kata Sandi</span>
+                                </a>
+{% if has_perm('users') %}
+                                <a href="/pengguna" class="flex items-center justify-between px-4 py-2 text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors font-medium">
+                                    <div class="flex items-center gap-2.5">
+                                        <i class="fa-solid fa-users-gear text-amber-600 w-4 text-center"></i>
+                                        <span>Kelola Pengguna & Akses</span>
+                                    </div>
+                                    <span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[9px] font-bold">Admin</span>
+                                </a>
+                                {% endif %}
+                                <a href="/profil?tab=otoritas" class="flex items-center gap-2.5 px-4 py-2 text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors">
+                                    <i class="fa-solid fa-shield-halved text-stone-400 w-4 text-center"></i>
+                                    <span>Hak Akses & Otoritas</span>
+                                </a>
+{% if has_perm('pengaturan') %}
+                                <a href="/settings" class="flex items-center gap-2.5 px-4 py-2 text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors">
+                                    <i class="fa-solid fa-gear text-stone-400 w-4 text-center"></i>
+                                    <span>Pengaturan Sistem</span>
+                                </a>
+                                {% endif %}
+                            </div>
+
+                            <!-- Logout -->
+                            <div class="pt-1 border-t border-stone-150">
+                                <a href="/logout" class="flex items-center gap-2.5 px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors">
+                                    <i class="fa-solid fa-power-off text-rose-500 w-4 text-center"></i>
+                                    <span>Keluar Sesi</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-3 2x:gap-7">
-                        <div class="flex items-center gap-2 bg-blue-50 text-primary px-3 py-1.5 rounded-full text-sm font-semibold border border-blue-100">
-                            <i class="fa-solid fa-server"></i> SLiMS 9 Bulian
-                        </div>
-                    </div>
                 </div>
             </header>
 
-            <!-- ===== MAIN CONTENT ===== -->
-            <main>
-                <div class="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
+            <!-- ===== MAIN SCROLLABLE CONTENT ===== -->
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+                <div class="mx-auto max-w-screen-2xl">
+                    <!-- Global Flashed Messages / Alerts -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <div class="mb-5 space-y-2">
+                                {% for category, message in messages %}
+                                    <div class="flex items-center justify-between p-3.5 rounded-xl border text-xs font-semibold shadow-2xs {% if category == 'error' %}bg-rose-50 border-rose-200 text-rose-800{% elif category == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800{% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}">
+                                        <div class="flex items-center gap-2.5">
+                                            <i class="fa-solid {% if category == 'error' %}fa-circle-exclamation text-rose-600{% elif category == 'success' %}fa-circle-check text-emerald-600{% else %}fa-circle-info text-blue-600{% endif %} text-sm"></i>
+                                            <span>{{ message }}</span>
+                                        </div>
+                                        <button onclick="this.parentElement.remove()" class="text-stone-400 hover:text-stone-700 p-1">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
                     {% block content %}{% endblock %}
                 </div>
             </main>
+
         </div>
     </div>
 
-    <!-- Script for mobile sidebar toggle -->
+    <!-- Mobile Drawer & Clock Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
             const toggleBtn = document.getElementById('sidebar-toggle');
             const closeBtn = document.getElementById('sidebar-close');
 
-            if(toggleBtn) {
-                toggleBtn.addEventListener('click', () => {
-                    sidebar.classList.toggle('-translate-x-full');
-                });
+            function openSidebar() {
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
             }
-            
-            if(closeBtn) {
-                closeBtn.addEventListener('click', () => {
-                    sidebar.classList.add('-translate-x-full');
-                });
+
+            function closeSidebar() {
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
             }
+
+            if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+            if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+            if (backdrop) backdrop.addEventListener('click', closeSidebar);
+
+            // Live Date & Time Updater (Format: dd-mm-yyyy and HH:mm:ss WIB)
+            function updateHeaderLiveClock() {
+                const now = new Date();
+                const d = String(now.getDate()).padStart(2, '0');
+                const m = String(now.getMonth() + 1).padStart(2, '0');
+                const y = now.getFullYear();
+                const dateStr = `${d}-${m}-${y}`;
+
+                const hh = String(now.getHours()).padStart(2, '0');
+                const mm = String(now.getMinutes()).padStart(2, '0');
+                const ss = String(now.getSeconds()).padStart(2, '0');
+                const timeStr = `${hh}:${mm}:${ss} WIB`;
+
+                const dateEl = document.getElementById('header-live-date');
+                const timeEl = document.getElementById('header-live-time');
+                if (dateEl) dateEl.textContent = dateStr;
+                if (timeEl) timeEl.textContent = timeStr;
+            }
+            updateHeaderLiveClock();
+            setInterval(updateHeaderLiveClock, 1000);
         });
     </script>
 </body>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - St. Jerome Library</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #1a1a1a; color: #FDFBF7; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col relative" x-data="adminApp()">
+    <div class="fixed inset-0 z-[-1]">
+        <div class="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] to-[#2a0800] opacity-95 z-10"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-black/50 backdrop-blur-md border-b border-red-900/30 px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-user-shield text-2xl text-red-600"></i>
+            <span class="font-serif font-bold text-xl text-white">St. Jerome <span class="text-red-500">Admin</span></span>
+        </div>
+        <a href="/opac/admin/logout" class="text-white/60 hover:text-red-400 font-bold text-sm transition-colors flex items-center gap-2">
+            <i class="fa-solid fa-power-off"></i> Keluar
+        </a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 w-full max-w-5xl mx-auto px-6 py-12 flex flex-col relative z-10 gap-8">
+        
+        <!-- Notifikasi -->
+        <div x-show="notif.show" x-transition class="fixed top-24 right-6 p-4 rounded-lg shadow-xl max-w-sm flex items-start gap-3 border z-50" 
+             :class="notif.type === 'success' ? 'bg-green-900/80 border-green-500 text-green-100' : 'bg-red-900/80 border-red-500 text-red-100'">
+            <i class="fa-solid mt-1" :class="notif.type === 'success' ? 'fa-check-circle' : 'fa-circle-xmark'"></i>
+            <p x-text="notif.message" class="text-sm font-medium leading-tight"></p>
+            <button @click="notif.show = false" class="ml-auto text-white/50 hover:text-white"><i class="fa-solid fa-times"></i></button>
+        </div>
+
+        <!-- Section 1: Upload PDF -->
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 rounded-full bg-red-900/50 flex items-center justify-center border border-red-500/30">
+                    <i class="fa-solid fa-file-pdf text-red-400 text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-serif font-bold text-white">Upload Dokumen Digital (PDF)</h2>
+                    <p class="text-white/50 text-sm">Lampirkan file PDF Skripsi/Jurnal ke dalam koleksi katalog.</p>
+                </div>
+            </div>
+            
+            <form @submit.prevent="uploadPdf" class="flex flex-col gap-5">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-white/50 mb-2">Pilih Judul Buku / Skripsi</label>
+                    <select x-model="pdfForm.biblio_id" required class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-red-500 transition-colors">
+                        <option value="">-- Cari dan Pilih Judul --</option>
+                        {% for b in biblio_list %}
+                        <option value="{{ b.id }}">{{ b.judul }} ({{ b.pengarang }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-white/50 mb-2">File PDF</label>
+                    <input type="file" accept=".pdf" @change="pdfForm.file = $event.target.files[0]" required class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-red-700 file:text-white hover:file:bg-red-600 transition-all cursor-pointer">
+                </div>
+                <button type="submit" :disabled="pdfLoading" class="self-start mt-2 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white font-bold py-3 px-8 rounded-lg transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up" x-show="!pdfLoading"></i>
+                    <i class="fa-solid fa-spinner fa-spin" x-show="pdfLoading"></i>
+                    <span x-text="pdfLoading ? 'Mengunggah...' : 'Unggah & Sambungkan'"></span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Section 2: Sync Telegram Backup -->
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 rounded-full bg-blue-900/50 flex items-center justify-center border border-blue-500/30">
+                    <i class="fa-brands fa-telegram text-blue-400 text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-serif font-bold text-white">Sinkronisasi Backup SLiMS (.zip)</h2>
+                    <p class="text-white/50 text-sm">Unggah file ZIP dari bot Telegram untuk memperbarui database katalog.</p>
+                </div>
+            </div>
+            
+            <form @submit.prevent="uploadZip" class="flex flex-col gap-5">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-white/50 mb-2">File ZIP Backup</label>
+                    <input type="file" accept=".zip" @change="zipForm.file = $event.target.files[0]" required class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-700 file:text-white hover:file:bg-blue-600 transition-all cursor-pointer">
+                </div>
+                <button type="submit" :disabled="zipLoading" class="self-start mt-2 bg-blue-700 hover:bg-blue-600 disabled:opacity-50 text-white font-bold py-3 px-8 rounded-lg transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-rotate" x-show="!zipLoading"></i>
+                    <i class="fa-solid fa-spinner fa-spin" x-show="zipLoading"></i>
+                    <span x-text="zipLoading ? 'Menganalisis ZIP...' : 'Mulai Sinkronisasi'"></span>
+                </button>
+            </form>
+        </div>
+
+    </main>
+
+    <script>
+        function adminApp() {
+            return {
+                notif: { show: false, message: '', type: 'success' },
+                pdfForm: { biblio_id: '', file: null },
+                zipForm: { file: null },
+                pdfLoading: false,
+                zipLoading: false,
+
+                showNotif(msg, type) {
+                    this.notif.message = msg;
+                    this.notif.type = type;
+                    this.notif.show = true;
+                    setTimeout(() => { this.notif.show = false; }, 5000);
+                },
+
+                async uploadPdf() {
+                    if(!this.pdfForm.biblio_id || !this.pdfForm.file) return;
+                    this.pdfLoading = true;
+                    let formData = new FormData();
+                    formData.append('biblio_id', this.pdfForm.biblio_id);
+                    formData.append('pdf_file', this.pdfForm.file);
+
+                    try {
+                        const res = await fetch('/opac/admin/upload_pdf', { method: 'POST', body: formData });
+                        const data = await res.json();
+                        this.showNotif(data.message, data.status);
+                        if(data.status === 'success') {
+                            this.pdfForm.file = null; // reset
+                        }
+                    } catch (e) {
+                        this.showNotif("Gagal menghubungi server.", "error");
+                    }
+                    this.pdfLoading = false;
+                },
+
+                async uploadZip() {
+                    if(!this.zipForm.file) return;
+                    this.zipLoading = true;
+                    let formData = new FormData();
+                    formData.append('zip_file', this.zipForm.file);
+
+                    try {
+                        const res = await fetch('/opac/admin/upload_zip', { method: 'POST', body: formData });
+                        const data = await res.json();
+                        this.showNotif(data.message, data.status);
+                    } catch (e) {
+                        this.showNotif("Gagal menghubungi server.", "error");
+                    }
+                    this.zipLoading = false;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

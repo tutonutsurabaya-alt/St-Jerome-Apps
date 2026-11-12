@@ -1,0 +1,19 @@
+{
+  "name": "St. Jerome Librarian Pocket",
+  "short_name": "St. Jerome",
+  "description": "Aplikasi Mobile Operasional & Sirkulasi Perpustakaan IMAVI",
+  "start_url": "/static/mobile_preview.html",
+  "scope": "/static/",
+  "display": "standalone",
+  "background_color": "#180D0B",
+  "theme_color": "#180D0B",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/static/img/logo.jpg",
+      "sizes": "192x192 512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

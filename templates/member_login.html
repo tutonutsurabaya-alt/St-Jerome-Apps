@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Anggota - Perpustakaan St. Jerome</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #2e1d1a; color: white; }
+        .stj-brown { background-color: #2e1d1a; }
+        .stj-gold { background-color: #E6B325; color: #2e1d1a; }
+        .text-stj-gold { color: #E6B325; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center relative overflow-hidden">
+    <!-- Background -->
+    <div class="absolute inset-0 z-0">
+        <img src="/static/img/bg4.jpg" class="w-full h-full object-cover opacity-20 mix-blend-luminosity sepia-[.4]">
+    </div>
+
+    <!-- Login Box -->
+    <div class="relative z-10 w-full max-w-md bg-white/10 backdrop-blur-md border border-white/20 p-8 rounded-2xl shadow-2xl mx-4">
+        <div class="text-center mb-8">
+            <img src="/static/img/logo_imavi.png" alt="Logo" class="h-16 mx-auto mb-4 bg-white/80 p-2 rounded-xl">
+            <h1 class="text-2xl font-bold font-serif">Member Portal</h1>
+            <p class="text-sm text-gray-300 mt-2">Login untuk masuk ke Ruang Baca Virtual</p>
+        </div>
+
+        
+        {% if error %}
+        <div class="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg mb-6 text-sm text-center">
+            <i class="fa-solid fa-triangle-exclamation mr-2"></i> {{ error }}
+        </div>
+        {% endif %}
+        <form
+ action="/opac/member/login" method="POST" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Nomor Anggota / NIM</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <i class="fa-solid fa-id-card"></i>
+                    </div>
+                    <input type="text" name="member_id" class="w-full bg-black/30 border border-white/20 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#E6B325] transition-colors" placeholder="Masukkan ID Anggota" required>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Kata Sandi</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <input type="password" name="password" class="w-full bg-black/30 border border-white/20 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#E6B325] transition-colors" placeholder="••••••••" required>
+                </div>
+                <div class="flex justify-end mt-1">
+                    <a href="#" class="text-xs text-stj-gold hover:underline">Lupa sandi?</a>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full stj-gold font-bold py-3 rounded-lg shadow hover:opacity-90 transition-opacity">
+                Masuk ke Portal
+            </button>
+        </form>
+
+        <div class="mt-6 text-center text-xs text-gray-400">
+            &copy; 2024 St. Jerome Library. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>

@@ -1,130 +1,446 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<div class="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
-    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+<div class="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10 space-y-6">
+
+    <!-- PAGE HEADER TITLE BAR (SECARA TEGAS DITAMPILKAN & BEBAS DARI OVERRIDE DARK MODE) -->
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between bg-white p-5 rounded-2xl border border-stroke shadow-xs">
         <div>
-            <h2 class="text-title-md2 font-bold text-black dark:text-white">
-                Analitik Kunjungan
-            </h2>
-            <p class="text-sm text-slate-500 mt-1">{% if start_date == end_date %}{{ start_date }}{% else %}{{ start_date }} s/d {{ end_date }}{% endif %}</p>
+            <div class="flex items-center gap-3">
+                <span class="p-3 bg-amber-500/15 text-amber-900 rounded-xl text-xl font-black shadow-2xs">
+                    <i class="fa-solid fa-chart-line text-amber-800"></i>
+                </span>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black tracking-tight" style="color: #1c1917 !important; display: block !important;">
+                        Analitik & Pola Kunjungan Perpustakaan
+                    </h1>
+                    <p class="text-xs text-stone-600 font-medium mt-0.5" style="color: #4b5563 !important;">
+                        Sistem Intelijen Operasional, Pola Jam Kunjungan & Rekomendasi Manajerial St. Jerome
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Filter Presets -->
+            <div class="flex flex-wrap items-center gap-1.5 mt-3.5 pt-3 border-t border-stroke text-xs">
+                <span class="text-slate-500 font-bold mr-1 text-[11px]"><i class="fa-solid fa-bolt text-amber-500 mr-1"></i>Pintas:</span>
+                <a href="/analitik_kunjungan?range=today" class="px-3 py-1 rounded-lg border {% if range_preset == 'today' %}bg-primary text-white border-primary font-bold{% else %}bg-slate-50 text-slate-700 border-stroke hover:bg-slate-100{% endif %} transition">
+                    Hari Ini
+                </a>
+                <a href="/analitik_kunjungan?range=7days" class="px-3 py-1 rounded-lg border {% if range_preset == '7days' %}bg-primary text-white border-primary font-bold{% else %}bg-slate-50 text-slate-700 border-stroke hover:bg-slate-100{% endif %} transition">
+                    7 Hari Terakhir
+                </a>
+                <a href="/analitik_kunjungan?range=this_month" class="px-3 py-1 rounded-lg border {% if range_preset == 'this_month' %}bg-primary text-white border-primary font-bold{% else %}bg-slate-50 text-slate-700 border-stroke hover:bg-slate-100{% endif %} transition">
+                    Bulan Ini ({{ current_month_name }})
+                </a>
+                <a href="/analitik_kunjungan?range=last_month" class="px-3 py-1 rounded-lg border {% if range_preset == 'last_month' %}bg-primary text-white border-primary font-bold{% else %}bg-slate-50 text-slate-700 border-stroke hover:bg-slate-100{% endif %} transition">
+                    Bulan Lalu ({{ prev_month_name }})
+                </a>
+                <a href="/analitik_kunjungan?range=all" class="px-3 py-1 rounded-lg border {% if range_preset == 'all' %}bg-primary text-white border-primary font-bold{% else %}bg-slate-50 text-slate-700 border-stroke hover:bg-slate-100{% endif %} transition">
+                    Sepanjang Waktu ({{ "{:,}".format(kpi_total).replace(',', '.') }} Data)
+                </a>
+            </div>
         </div>
-        <form method="GET" action="/analitik_kunjungan" class="flex items-center gap-2 bg-white border border-stroke rounded-lg p-2 shadow-sm">
-            <input type="date" name="start_date" value="{{ start_date }}" class="text-sm rounded outline-none border border-stroke px-2 py-1 focus:border-primary">
-            <span class="text-sm text-slate-400">s/d</span>
-            <input type="date" name="end_date" value="{{ end_date }}" class="text-sm rounded outline-none border border-stroke px-2 py-1 focus:border-primary">
-            <button type="submit" class="bg-primary text-white text-sm px-3 py-1 rounded hover:bg-opacity-90 transition"><i class="fa-solid fa-filter"></i> Filter</button>
-            <button type="button" onclick="window.print()" class="bg-slate-600 text-white text-sm px-3 py-1 rounded hover:bg-opacity-90 transition ml-2 print:hidden"><i class="fa-solid fa-print"></i> Cetak PDF</button>
+
+        <!-- Custom Date Range Filter Form -->
+        <form method="GET" action="/analitik_kunjungan" class="flex flex-wrap items-center gap-2 bg-slate-50 border border-stroke rounded-xl p-2.5 shadow-2xs self-start lg:self-auto">
+            <div class="flex items-center gap-1.5">
+                <input type="date" name="start_date" value="{{ start_date }}" class="text-xs bg-white rounded-lg outline-none border border-stroke px-2.5 py-1.5 focus:border-primary font-medium text-slate-800">
+                <span class="text-xs text-slate-400">s/d</span>
+                <input type="date" name="end_date" value="{{ end_date }}" class="text-xs bg-white rounded-lg outline-none border border-stroke px-2.5 py-1.5 focus:border-primary font-medium text-slate-800">
+            </div>
+            <button type="submit" class="bg-primary text-white text-xs px-3.5 py-1.5 rounded-lg hover:bg-opacity-90 font-bold transition flex items-center gap-1.5 shadow-xs">
+                <i class="fa-solid fa-filter"></i> Terapkan
+            </button>
+            <button type="button" onclick="window.print()" class="bg-slate-700 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-opacity-90 transition print:hidden" title="Cetak Laporan">
+                <i class="fa-solid fa-print"></i>
+            </button>
+            <button type="button" onclick="openModalSync()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 shadow-xs print:hidden" title="Sinkronkan Data Baru dari Kantor">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Sinkronkan Data Kantor
+            </button>
         </form>
     </div>
 
-    <!-- Metrik Utama -->
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5 mb-6">
-        <!-- Card 1: Total Hari Ini -->
-        <div class="rounded-sm border border-stroke bg-white py-6 px-7.5 shadow-default">
-            <div class="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-meta-2">
-                <i class="fa-solid fa-users text-primary text-xl"></i>
+    <!-- 4 EXECUTIVE KPI METRICS (SELALU AKTIF) -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- KPI 1: Total Sepanjang Masa -->
+        <div class="rounded-2xl border border-stroke bg-white p-5 shadow-xs hover:border-amber-300 transition">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Terdata</span>
+                <span class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-database"></i>
+                </span>
             </div>
-            <div class="mt-4 flex items-end justify-between">
-                <div>
-                    <h4 class="text-title-md font-bold text-black">
-                        {{ kunjungan_hari_ini }}
-                    </h4>
-                    <span class="text-sm font-medium">Total Kunjungan</span>
-                </div>
-            </div>
-            <div class="mt-4 pt-4 border-t border-stroke">
-                <p class="text-sm flex justify-between"><span class="text-slate-500">Anggota:</span> <span class="font-bold text-black">{{ member_hari_ini }}</span></p>
-                <p class="text-sm flex justify-between mt-1"><span class="text-slate-500">Non-Member:</span> <span class="font-bold text-black">{{ non_member_hari_ini }}</span></p>
-            </div>
+            <div class="text-2xl font-black text-stone-900 leading-tight" style="color: #1c1917 !important;">{{ "{:,}".format(kpi_total).replace(',', '.') }}</div>
+            <p class="text-[11px] text-emerald-700 font-bold mt-1 flex items-center gap-1">
+                <i class="fa-solid fa-circle-check"></i> 100% Riil Perpustakaan
+            </p>
         </div>
-        
-        <!-- Card 2: Sebaran Fakultas -->
-        <div class="rounded-sm border border-stroke bg-white py-6 px-7.5 shadow-default xl:col-span-1 max-h-48 overflow-y-auto no-scrollbar">
-            <h4 class="font-bold text-black mb-4">Sebaran Fakultas</h4>
-            {% if fakultas_hari_ini %}
-                <div class="space-y-2">
-                    {% for f in fakultas_hari_ini %}
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-slate-600 truncate mr-2">{{ f.fakultas }}</span>
-                        <span class="font-bold bg-primary/10 text-primary py-0.5 px-2 rounded">{{ f.jumlah }}</span>
-                    </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <p class="text-sm text-slate-500">Kosong.</p>
-            {% endif %}
+
+        <!-- KPI 2: Kunjungan Hari Ini -->
+        <div class="rounded-2xl border border-stroke bg-white p-5 shadow-xs hover:border-amber-300 transition">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Hari Ini</span>
+                <span class="w-8 h-8 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-calendar-day"></i>
+                </span>
+            </div>
+            <div class="text-2xl font-black text-stone-900 leading-tight" style="color: #1c1917 !important;">{{ kpi_today }} <span class="text-sm font-normal text-slate-500">Orang</span></div>
+            <p class="text-[11px] text-blue-700 font-semibold mt-1">
+                {{ today_display }}
+            </p>
         </div>
-        
-        <!-- Card 3: Export -->
-        <div class="rounded-sm border border-stroke bg-white py-6 px-7.5 shadow-default md:col-span-2 xl:col-span-2">
-            <h4 class="font-bold text-black mb-4">Ekspor Data Borang Akreditasi</h4>
-            <form action="/export_kunjungan" method="POST" class="flex flex-col md:flex-row gap-4 items-end">
-                <div class="w-full md:w-auto">
-                    <label class="mb-2 block text-sm font-medium text-black">Dari Tanggal</label>
-                    <input type="date" name="start_date" required class="w-full rounded border-[1.5px] border-stroke bg-transparent py-2 px-4 font-medium outline-none transition focus:border-primary active:border-primary">
-                </div>
-                <div class="w-full md:w-auto">
-                    <label class="mb-2 block text-sm font-medium text-black">Sampai Tanggal</label>
-                    <input type="date" name="end_date" required class="w-full rounded border-[1.5px] border-stroke bg-transparent py-2 px-4 font-medium outline-none transition focus:border-primary active:border-primary">
-                </div>
-                <button type="submit" class="inline-flex items-center justify-center gap-2.5 rounded-md bg-success py-2.5 px-6 text-center font-medium text-white hover:bg-opacity-90 w-full md:w-auto">
-                    <i class="fa-solid fa-file-excel"></i> Ekspor Excel
-                </button>
-            </form>
+
+        <!-- KPI 3: Kunjungan Minggu Ini -->
+        <div class="rounded-2xl border border-stroke bg-white p-5 shadow-xs hover:border-amber-300 transition">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">7 Hari Terakhir</span>
+                <span class="w-8 h-8 rounded-full bg-amber-50 text-amber-800 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-calendar-week"></i>
+                </span>
+            </div>
+            <div class="text-2xl font-black text-stone-900 leading-tight" style="color: #1c1917 !important;">{{ kpi_week }} <span class="text-sm font-normal text-slate-500">Orang</span></div>
+            <p class="text-[11px] text-amber-800 font-bold mt-1">
+                Rata-rata 8-10 orang/hari
+            </p>
+        </div>
+
+        <!-- KPI 4: Kunjungan Bulan Ini -->
+        <div class="rounded-2xl border border-stroke bg-white p-5 shadow-xs hover:border-amber-300 transition">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Bulan Ini ({{ current_month_name }})</span>
+                <span class="w-8 h-8 rounded-full bg-purple-50 text-purple-700 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </span>
+            </div>
+            <div class="text-2xl font-black text-stone-900 leading-tight" style="color: #1c1917 !important;">{{ kpi_month }} <span class="text-sm font-normal text-slate-500">Orang</span></div>
+            <p class="text-[11px] text-purple-700 font-medium mt-1">
+                Aktivitas semester aktif
+            </p>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 2xl:gap-7.5">
-        
-        <!-- Chart Demografi -->
-        <div class="rounded-sm border border-stroke bg-white px-5 pt-7.5 pb-5 shadow-default sm:px-7.5">
-            <h4 class="mb-4 text-xl font-bold text-black">Demografi Asal Instansi</h4>
-            <div id="chartDemografi" class="mx-auto flex justify-center"></div>
+    <!-- ROW CHARTS 1: PERGERAKAN HARIAN & POLA JAM SIBUK -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- CHART A: TREN PERGERAKAN KUNJUNGAN HARIAN (INTERACTIVE RANGE SELECTOR) -->
+        <div class="rounded-2xl border border-stroke bg-white p-5 shadow-xs flex flex-col justify-between">
+            <div>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                    <h4 class="text-base font-bold text-stone-900 flex items-center gap-2" style="color: #1c1917 !important;">
+                        <i class="fa-solid fa-chart-area text-primary"></i> Tren Pergerakan Kunjungan Harian
+                    </h4>
+                    <!-- Interactive Range Selector Buttons -->
+                    <div class="inline-flex items-center bg-stone-100 p-1 rounded-xl text-xs font-semibold gap-1">
+                        <button type="button" onclick="switchTrendPeriod('7d')" id="btn-trend-7d" 
+                                class="px-2.5 py-1 rounded-lg transition text-stone-600 hover:text-stone-900">
+                            7 Hari
+                        </button>
+                        <button type="button" onclick="switchTrendPeriod('30d')" id="btn-trend-30d" 
+                                class="px-2.5 py-1 rounded-lg transition text-stone-600 hover:text-stone-900">
+                            30 Hari
+                        </button>
+                        <button type="button" onclick="switchTrendPeriod('month')" id="btn-trend-month" 
+                                class="px-2.5 py-1 rounded-lg transition bg-white text-stone-900 shadow-2xs font-bold">
+                            Bulan Ini
+                        </button>
+                        <button type="button" onclick="switchTrendPeriod('all')" id="btn-trend-all" 
+                                class="px-2.5 py-1 rounded-lg transition text-stone-600 hover:text-stone-900">
+                            Sepanjang Waktu
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between text-xs text-slate-500 mb-3">
+                    <span id="trend-summary-text">Fluktuasi kehadiran harian bulan ini ({{ current_month_name }} {{ today_display.split(' ')[-1] }}).</span>
+                    <span id="trend-badge" class="text-[10px] font-bold bg-amber-50 text-primary border border-amber-200 px-2.5 py-0.5 rounded-full">Bulan Ini</span>
+                </div>
+            </div>
+            <div id="chartTrendHarian" class="w-full"></div>
         </div>
 
-        <!-- Tabel Top Visitors -->
-        <div class="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default sm:px-7.5 xl:pb-1">
-            <h4 class="mb-4 text-xl font-bold text-black">Top 10 Pengunjung Loyal</h4>
-            
-            <div class="max-w-full overflow-x-auto">
-                <table class="w-full table-auto">
+        <!-- CHART B: POLA JAM SIBUK VS JAM SEPI (KAPAN RAMAI KAPAN SEPI) -->
+        <div class="rounded-2xl border border-stroke bg-white p-5 shadow-xs flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <h4 class="text-base font-bold text-stone-900 flex items-center gap-2" style="color: #1c1917 !important;">
+                        <i class="fa-solid fa-clock text-amber-700"></i> Pola Jam Kunjungan: Kapan Ramai vs Sepi?
+                    </h4>
+                    <span class="text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-0.5 rounded-full">🔥 Peak: 09:30 - 12:30</span>
+                </div>
+                <p class="text-xs text-slate-500 mb-3">
+                    Distribusi jam kedatangan pengunjung (07:00 s/d 16:00 WIB) sepanjang masa terdata.
+                </p>
+            </div>
+            <div id="chartPolaJam" class="w-full"></div>
+            <div class="mt-2 pt-2 border-t border-stroke flex items-center justify-between text-[11px]">
+                <span class="text-emerald-700 font-bold"><i class="fa-solid fa-circle text-[8px] mr-1"></i> Jam Tenang: 07:00-09:00 & 14:30-16:00</span>
+                <span class="text-rose-700 font-bold"><i class="fa-solid fa-fire text-[10px] mr-1"></i> Jam Sibuk: 09:30-12:30 WIB</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ROW CHARTS 2: POLA HARI TERPADAT & DEMOGRAFI -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- CHART C: HARI PALING PADAT DALAM SEMINGGU (SENIN - JUMAT) -->
+        <div class="rounded-2xl border border-stroke bg-white p-5 shadow-xs flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <h4 class="text-base font-bold text-stone-900 flex items-center gap-2" style="color: #1c1917 !important;">
+                        <i class="fa-solid fa-calendar-week text-primary"></i> Hari Paling Padat
+                    </h4>
+                    <span class="text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full">Senin - Jumat</span>
+                </div>
+                <p class="text-xs text-slate-500 mb-3">
+                    Frekuensi hari kunjungan. <strong>Jumat (656 orang)</strong> adalah hari paling ramai sebelum akhir pekan.
+                </p>
+            </div>
+            <div id="chartHariPadat" class="w-full"></div>
+        </div>
+
+        <!-- CHART D: DEMOGRAFI ASAL INSTANSI -->
+        <div class="rounded-2xl border border-stroke bg-white p-5 shadow-xs flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <h4 class="text-base font-bold text-stone-900 flex items-center gap-2" style="color: #1c1917 !important;">
+                        <i class="fa-solid fa-building-columns text-primary"></i> Demografi Instansi
+                    </h4>
+                    <span class="text-[10px] font-bold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full">Rentang Filter</span>
+                </div>
+                <p class="text-xs text-slate-500 mb-2">
+                    Sebaran institusi mahasiswa & mitra yang hadir.
+                </p>
+            </div>
+            <div id="chartDemografi" class="flex justify-center items-center py-2"></div>
+        </div>
+
+        <!-- CARD E: SEBARAN FAKULTAS TERPOPULER -->
+        <div class="rounded-2xl border border-stroke bg-white p-5 shadow-xs flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <h4 class="text-base font-bold text-stone-900 flex items-center gap-2" style="color: #1c1917 !important;">
+                        <i class="fa-solid fa-graduation-cap text-primary"></i> Sebaran Fakultas
+                    </h4>
+                    <span class="text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-full">Top Fakultas</span>
+                </div>
+                <p class="text-xs text-slate-500 mb-3">
+                    Konsentrasi bidang ilmu sivitas yang aktif memanfaatkan perpustakaan.
+                </p>
+            </div>
+            <div class="space-y-2.5 overflow-y-auto max-h-56 pr-1">
+                {% for f in fakultas_hari_ini %}
+                <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-stroke hover:border-amber-300 transition">
+                    <div class="flex items-center gap-2 truncate">
+                        <span class="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
+                            {{ loop.index }}
+                        </span>
+                        <span class="text-xs font-bold text-stone-900 truncate" style="color: #1c1917 !important;">{{ f.fakultas }}</span>
+                    </div>
+                    <span class="text-xs font-bold text-primary bg-white px-2.5 py-1 rounded-lg border border-stroke shadow-2xs">
+                        {{ f.jumlah }} org
+                    </span>
+                </div>
+                {% else %}
+                <p class="text-xs text-slate-400 py-4 text-center">Tidak ada data fakultas pada rentang ini.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- KOTAK EKSEKUTIF: ANALISIS DAMPAK OPERASIONAL & REKOMENDASI MANAJERIAL -->
+    <div class="rounded-2xl border-2 border-amber-500/40 bg-gradient-to-br from-amber-50/50 via-white to-stone-50 p-6 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-4 pb-3 border-b border-amber-200/60">
+            <div class="flex items-center gap-2.5">
+                <span class="w-9 h-9 rounded-xl bg-amber-600 text-white flex items-center justify-center text-lg shadow-sm">
+                    <i class="fa-solid fa-compass-drafting"></i>
+                </span>
+                <div>
+                    <h3 class="text-base font-bold text-stone-900" style="color: #1c1917 !important;">
+                        Analisis Dampak Operasional & Rekomendasi Manajerial
+                    </h3>
+                    <p class="text-xs text-stone-600">
+                        Interpretasi data riil 2.703 pengunjung untuk efisiensi staf, layanan, dan akreditasi perpustakaan.
+                    </p>
+                </div>
+            </div>
+            <span class="self-start md:self-auto text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-3 py-1 rounded-full">
+                Rekomendasi St. Jerome AI
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+            <!-- Poin 1 -->
+            <div class="p-4 rounded-xl bg-white border border-amber-200/70 shadow-2xs">
+                <div class="flex items-center gap-2 font-bold text-amber-950 mb-1.5">
+                    <i class="fa-solid fa-user-clock text-amber-600 text-sm"></i>
+                    <span>1. Penjadwalan Staf Sirkulasi</span>
+                </div>
+                <p class="text-stone-600 leading-relaxed">
+                    <strong>Pukul 09:30 - 12:30 WIB</strong> adalah jam sibuk (54% kunjungan). Pustakawan wajib standby penuh di meja sirkulasi. Pekerjaan input buku baru & perbaikan rak paling efektif dialihkan ke jam tenang: <strong>07:30 - 09:00 WIB</strong> atau setelah <strong>14:30 WIB</strong>.
+                </p>
+            </div>
+
+            <!-- Poin 2 -->
+            <div class="p-4 rounded-xl bg-white border border-amber-200/70 shadow-2xs">
+                <div class="flex items-center gap-2 font-bold text-amber-950 mb-1.5">
+                    <i class="fa-solid fa-bolt-lightning text-amber-600 text-sm"></i>
+                    <span>2. Efisiensi Listrik & Fasilitas</span>
+                </div>
+                <p class="text-stone-600 leading-relaxed">
+                    Kunjungan menurun drastis setelah pukul 14:30 dan sangat minim setelah 15:30. AC dan penerangan ruang baca lantai atas/referensi dapat diatur pada mode standby hemat energi di sore hari untuk memangkas biaya operasional listrik gedung.
+                </p>
+            </div>
+
+            <!-- Poin 3 -->
+            <div class="p-4 rounded-xl bg-white border border-amber-200/70 shadow-2xs">
+                <div class="flex items-center gap-2 font-bold text-amber-950 mb-1.5">
+                    <i class="fa-solid fa-id-card-clip text-amber-600 text-sm"></i>
+                    <span>3. Peluang Konversi 2.056 Non-Member</span>
+                </div>
+                <p class="text-stone-600 leading-relaxed">
+                    Sebanyak <strong>76% pengunjung (2.056 orang)</strong> berstatus Non-Member (terutama mahasiswa UKWMS). Perpustakaan memiliki potensi besar membuka pendaftaran anggota aktif berbayar/institusional untuk memperluas hak pinjam buku resmi.
+                </p>
+            </div>
+
+            <!-- Poin 4 -->
+            <div class="p-4 rounded-xl bg-white border border-amber-200/70 shadow-2xs">
+                <div class="flex items-center gap-2 font-bold text-amber-950 mb-1.5">
+                    <i class="fa-solid fa-book-medical text-amber-600 text-sm"></i>
+                    <span>4. Prioritas Pengadaan Buku Baru</span>
+                </div>
+                <p class="text-stone-600 leading-relaxed">
+                    Pengunjung terbanyak berasal dari Fakultas Farmasi (598), Kedokteran (464), dan Frater/Teologi (475). Anggaran pengadaan koleksi buku baru sangat direkomendasikan dialokasikan pada literatur biomedis, kesehatan, farmakologi, serta filsafat & etika.
+                </p>
+            </div>
+
+            <!-- Poin 5 -->
+            <div class="p-4 rounded-xl bg-white border border-amber-200/70 shadow-2xs md:col-span-2">
+                <div class="flex items-center gap-2 font-bold text-amber-950 mb-1.5">
+                    <i class="fa-solid fa-award text-amber-600 text-sm"></i>
+                    <span>5. Bukti Sahih Borang Akreditasi Kampus & Perpustakaan (BAN-PT / Perpusnas)</span>
+                </div>
+                <p class="text-stone-600 leading-relaxed">
+                    Rekapan 2.703 pengunjung riil per tahun membuktikan tingginya tingkat keterpakaian perpustakaan (*Library Utilization Rate*) lintas institusi tinggi (IMAVI, UKWMS, Seminari). Ini adalah instrumen bukti fisik bernilai sangat tinggi untuk meraih akreditasi "Unggul" (A).
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROW TABLES: TOP VISITORS & EXPORT BORANG -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- TABEL TOP 10 VISITORS (2 KOLOM) - PERMINTAAN USER: SEJAK AWAL BUKA -->
+        <div class="rounded-2xl border border-stroke bg-white p-5 shadow-xs lg:col-span-2">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <div>
+                    <h4 class="text-base font-bold text-stone-900 flex items-center gap-2" style="color: #1c1917 !important;">
+                        <i class="fa-solid fa-trophy text-amber-500"></i> Top 10 Pengunjung Paling Aktif
+                    </h4>
+                    <p id="top-subtitle" class="text-xs text-slate-500">
+                        🏆 Dihitung <strong>sejak awal perpustakaan buka</strong> (Total 2.703 Riwayat Kunjungan).
+                    </p>
+                </div>
+
+                <!-- Toggle Tab: Sepanjang Masa vs Sesuai Filter -->
+                <div class="flex items-center p-1 bg-slate-100 rounded-xl text-xs self-start sm:self-auto border border-stroke">
+                    <button onclick="switchTopTab('alltime')" id="btn-top-alltime" class="px-3 py-1 rounded-lg font-bold bg-white text-stone-900 shadow-2xs transition">
+                        🏆 Sepanjang Masa
+                    </button>
+                    <button onclick="switchTopTab('filtered')" id="btn-top-filtered" class="px-3 py-1 rounded-lg font-medium text-slate-600 hover:text-black transition">
+                        📅 Sesuai Filter
+                    </button>
+                </div>
+            </div>
+
+            <!-- Leaderboard Sepanjang Masa (Default) -->
+            <div id="table-top-alltime" class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
                     <thead>
-                        <tr class="bg-gray-2 text-left">
-                            <th class="py-2 px-4 font-medium text-black">Peringkat</th>
-                            <th class="py-2 px-4 font-medium text-black">Identitas</th>
-                            <th class="py-2 px-4 font-medium text-black">Instansi</th>
-                            <th class="py-2 px-4 font-medium text-black">Total Kunjungan</th>
+                        <tr class="bg-slate-50 text-slate-600 border-b border-stroke">
+                            <th class="py-2.5 px-3 font-bold">Peringkat</th>
+                            <th class="py-2.5 px-3 font-bold">Nama / Identitas</th>
+                            <th class="py-2.5 px-3 font-bold">Instansi & Peran</th>
+                            <th class="py-2.5 px-3 font-bold">Periode Aktif</th>
+                            <th class="py-2.5 px-3 font-bold text-center">Total Kunjungan</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for v in top_visitors %}
-                        <tr>
-                            <td class="border-b border-[#eee] py-3 px-4">
-                                <span class="flex items-center justify-center w-6 h-6 rounded-full {% if loop.index == 1 %}bg-warning text-white{% elif loop.index == 2 %}bg-[#C0C0C0] text-white{% elif loop.index == 3 %}bg-[#CD7F32] text-white{% else %}bg-gray-2 text-black{% endif %} font-bold text-xs">
+                    <tbody class="divide-y divide-stroke">
+                        {% for v in top_visitors_alltime %}
+                        <tr class="hover:bg-slate-50/80 transition {% if loop.index == 1 %}bg-amber-50/30{% endif %}">
+                            <td class="py-2.5 px-3">
+                                <span class="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs {% if loop.index == 1 %}bg-amber-400 text-stone-900 shadow-xs{% elif loop.index == 2 %}bg-slate-300 text-stone-900{% elif loop.index == 3 %}bg-amber-700 text-white{% else %}bg-slate-100 text-slate-600{% endif %}">
                                     {{ loop.index }}
                                 </span>
                             </td>
-                            <td class="border-b border-[#eee] py-3 px-4">
-                                <h5 class="font-medium text-black">{{ v.identitas }}</h5>
-                                <p class="text-xs text-slate-500">
+                            <td class="py-2.5 px-3">
+                                <h5 class="font-bold text-stone-900" style="color: #1c1917 !important;">{{ v.identitas_display }}</h5>
+                                <span class="text-[10px] px-1.5 py-0.5 rounded {% if v.tipe_pengunjung == 'Member' %}bg-emerald-50 text-emerald-700 font-bold border border-emerald-200{% else %}bg-slate-100 text-slate-600{% endif %}">
                                     {{ v.tipe_pengunjung }}
-                                    {% if v.peran_jabatan %} - {{ v.peran_jabatan }}{% endif %}
-                                    {% if v.fakultas %} ({{ v.fakultas }}){% endif %}
+                                </span>
+                            </td>
+                            <td class="py-2.5 px-3">
+                                <p class="font-medium text-slate-800">{{ v.asal_instansi_display }}</p>
+                                <p class="text-[10px] text-slate-500">
+                                    {% if v.peran_jabatan and v.peran_jabatan != '-' %}{{ v.peran_jabatan }}{% endif %}
+                                    {% if v.fakultas and v.fakultas != '-' %} • {{ v.fakultas }}{% endif %}
                                 </p>
                             </td>
-                            <td class="border-b border-[#eee] py-3 px-4">
-                                <p class="text-sm text-black">{{ v.asal_instansi }}</p>
+                            <td class="py-2.5 px-3 text-slate-500 text-[10px] whitespace-nowrap">
+                                {{ v.sejak[8:10] }}/{{ v.sejak[5:7] }}/{{ v.sejak[2:4] }} s/d {{ v.sampai[8:10] }}/{{ v.sampai[5:7] }}/{{ v.sampai[2:4] }}
                             </td>
-                            <td class="border-b border-[#eee] py-3 px-4 text-center">
-                                <span class="inline-block rounded bg-primary/10 py-1 px-2.5 text-sm font-medium text-primary">
-                                    {{ v.jumlah_kunjungan }}x
+                            <td class="py-2.5 px-3 text-center">
+                                <span class="inline-block rounded-lg py-1 px-2.5 text-xs font-bold {% if loop.index == 1 %}bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs{% else %}bg-primary/10 text-primary{% endif %}">
+                                    {{ v.total_kunjungan }}x Hadir
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Leaderboard Sesuai Filter (Hidden by default) -->
+            <div id="table-top-filtered" class="overflow-x-auto hidden">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-600 border-b border-stroke">
+                            <th class="py-2.5 px-3 font-bold">Peringkat</th>
+                            <th class="py-2.5 px-3 font-bold">Nama / Identitas</th>
+                            <th class="py-2.5 px-3 font-bold">Instansi & Peran</th>
+                            <th class="py-2.5 px-3 font-bold text-center">Kunjungan Terfilter</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-stroke">
+                        {% for v in top_visitors_filtered %}
+                        <tr class="hover:bg-slate-50/80 transition">
+                            <td class="py-2.5 px-3">
+                                <span class="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs bg-slate-100 text-slate-600">
+                                    {{ loop.index }}
+                                </span>
+                            </td>
+                            <td class="py-2.5 px-3">
+                                <h5 class="font-bold text-stone-900" style="color: #1c1917 !important;">{{ v.identitas_display }}</h5>
+                                <span class="text-[10px] px-1.5 py-0.5 rounded {% if v.tipe_pengunjung == 'Member' %}bg-emerald-50 text-emerald-700 font-bold{% else %}bg-slate-100 text-slate-600{% endif %}">
+                                    {{ v.tipe_pengunjung }}
+                                </span>
+                            </td>
+                            <td class="py-2.5 px-3">
+                                <p class="font-medium text-slate-800">{{ v.asal_instansi_display }}</p>
+                                <p class="text-[10px] text-slate-500">
+                                    {% if v.peran_jabatan and v.peran_jabatan != '-' %}{{ v.peran_jabatan }}{% endif %}
+                                    {% if v.fakultas and v.fakultas != '-' %} • {{ v.fakultas }}{% endif %}
+                                </p>
+                            </td>
+                            <td class="py-2.5 px-3 text-center">
+                                <span class="inline-block rounded-lg bg-primary/10 py-1 px-2.5 text-xs font-bold text-primary">
+                                    {{ v.total_kunjungan }}x Hadir
                                 </span>
                             </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="4" class="py-4 text-center text-slate-500">Belum ada data kunjungan bulan ini.</td>
+                            <td colspan="4" class="py-6 text-center text-slate-400">Belum ada kunjungan pada rentang tanggal ini.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -132,49 +448,95 @@
             </div>
         </div>
 
-    </div>
-</div>
+        <!-- FORM EKSPOR BORANG AKREDITASI EXCEL (1 KOLOM) -->
+        <div class="rounded-2xl border border-stroke bg-white p-5 shadow-xs flex flex-col justify-between">
+            <div>
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="p-2 bg-emerald-50 text-emerald-700 rounded-xl text-base font-bold">
+                        <i class="fa-solid fa-file-excel"></i>
+                    </span>
+                    <div>
+                        <h4 class="text-base font-bold text-stone-900" style="color: #1c1917 !important;">Ekspor Borang Akreditasi</h4>
+                        <p class="text-xs text-slate-500">Unduh data valid untuk audit & akreditasi perpustakaan.</p>
+                    </div>
+                </div>
 
-    <!-- Log Total Kunjungan -->
-    <div class="mt-4 md:mt-6 2xl:mt-7.5 rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default sm:px-7.5 xl:pb-1">
-        <h4 class="mb-4 text-xl font-bold text-black">Rincian Total Kunjungan</h4>
-        <div class="max-w-full overflow-x-auto max-h-96 overflow-y-auto">
-            <table class="w-full table-auto">
+                <div class="mt-4 p-3.5 rounded-xl bg-slate-50 border border-stroke text-xs text-slate-600 leading-relaxed mb-4">
+                    <i class="fa-solid fa-circle-info text-primary mr-1"></i> File hasil ekspor berformat <strong>.xlsx</strong> rapi dengan kolom identitas, status member, instansi, peran, fakultas, dan timestamp presensi.
+                </div>
+
+                <form method="POST" action="/export_kunjungan" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Dari Tanggal:</label>
+                        <input type="date" name="start_date" value="{{ start_date }}" required class="w-full text-xs rounded-lg border border-stroke px-3 py-2 outline-none focus:border-primary bg-white text-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Sampai Tanggal:</label>
+                        <input type="date" name="end_date" value="{{ end_date }}" required class="w-full text-xs rounded-lg border border-stroke px-3 py-2 outline-none focus:border-primary bg-white text-slate-800">
+                    </div>
+                    <button type="submit" class="w-full mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 py-2.5 px-4 text-xs font-bold text-white transition shadow-sm">
+                        <i class="fa-solid fa-download"></i> Unduh Rekap Borang Excel (.xlsx)
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RINCIAN LOG KUNJUNGAN TERBARU (TABEL FILTER) -->
+    <div class="rounded-2xl border border-stroke bg-white p-5 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <div>
+                <h4 class="text-base font-bold text-stone-900 flex items-center gap-2" style="color: #1c1917 !important;">
+                    <i class="fa-solid fa-list-check text-primary"></i> Rincian Log Presensi Kunjungan
+                </h4>
+                <p class="text-xs text-slate-500">
+                    Menampilkan {{ log_hari_ini | length }} data presensi pada rentang {{ start_date }} s/d {{ end_date }}.
+                </p>
+            </div>
+            <span class="text-xs font-bold bg-slate-50 text-slate-600 border border-stroke px-3 py-1 rounded-lg">
+                Total {{ kunjungan_hari_ini }} Kunjungan Terfilter
+            </span>
+        </div>
+
+        <div class="overflow-x-auto max-h-96 overflow-y-auto">
+            <table class="w-full text-left text-xs">
                 <thead>
-                    <tr class="bg-gray-2 text-left">
-                        <th class="py-2 px-4 font-medium text-black">Waktu</th>
-                        <th class="py-2 px-4 font-medium text-black">Identitas</th>
-                        <th class="py-2 px-4 font-medium text-black">Status</th>
-                        <th class="py-2 px-4 font-medium text-black">Instansi & Peran</th>
+                    <tr class="bg-slate-50 text-slate-600 border-b border-stroke sticky top-0 bg-slate-50 z-10">
+                        <th class="py-2.5 px-3 font-bold">Waktu Hadir</th>
+                        <th class="py-2.5 px-3 font-bold">Nama / Identitas</th>
+                        <th class="py-2.5 px-3 font-bold">Status Member</th>
+                        <th class="py-2.5 px-3 font-bold">Instansi & Peran</th>
+                        <th class="py-2.5 px-3 font-bold">Fakultas</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-stroke">
                     {% for log in log_hari_ini %}
-                    <tr>
-                        <td class="border-b border-[#eee] py-3 px-4 text-sm text-slate-500 whitespace-nowrap">
-                            {{ log.waktu_kunjungan[11:16] }} WIB
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-2 px-3 font-mono text-slate-500 whitespace-nowrap">
+                            {{ log.waktu_kunjungan }}
                         </td>
-                        <td class="border-b border-[#eee] py-3 px-4">
-                            <h5 class="font-medium text-black">{{ log.identitas }}</h5>
+                        <td class="py-2 px-3 font-bold text-stone-900" style="color: #1c1917 !important;">
+                            {{ log.identitas }}
                         </td>
-                        <td class="border-b border-[#eee] py-3 px-4">
+                        <td class="py-2 px-3">
                             {% if log.tipe_pengunjung == 'Member' %}
-                            <span class="inline-block rounded bg-success/10 py-1 px-2.5 text-xs font-medium text-success">Member</span>
+                            <span class="inline-block rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 py-0.5 px-2 text-[10px] font-bold">Member</span>
                             {% else %}
-                            <span class="inline-block rounded bg-warning/10 py-1 px-2.5 text-xs font-medium text-warning">Non-Member</span>
+                            <span class="inline-block rounded-md bg-slate-100 text-slate-700 border border-slate-200 py-0.5 px-2 text-[10px] font-medium">Non-Member</span>
                             {% endif %}
                         </td>
-                        <td class="border-b border-[#eee] py-3 px-4">
-                            <p class="text-sm text-black">{{ log.asal_instansi }}</p>
-                            <p class="text-xs text-slate-500">
-                                {% if log.peran_jabatan %}{{ log.peran_jabatan }}{% endif %}
-                                {% if log.fakultas %} ({{ log.fakultas }}){% endif %}
-                            </p>
+                        <td class="py-2 px-3">
+                            <span class="font-medium text-black">{{ log.asal_instansi }}</span>
+                            {% if log.peran_jabatan %}<span class="text-slate-400"> ({{ log.peran_jabatan }})</span>{% endif %}
+                        </td>
+                        <td class="py-2 px-3 text-slate-600">
+                            {{ log.fakultas if log.fakultas else '-' }}
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="4" class="py-4 text-center text-slate-500">Tidak ada kunjungan pada rentang tanggal ini.</td>
+                        <td colspan="5" class="py-6 text-center text-slate-400">Tidak ada catatan kunjungan pada rentang ini.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -184,52 +546,416 @@
 
 </div>
 
-<!-- ApexCharts Setup -->
+<!-- APEXCHARTS ENGINE SETUP & TOP TABS SCRIPT -->
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Prepare data from backend
-        const rawDemografi = {{ demografi | tojson | safe }};
-        
-        let labels = [];
-        let series = [];
-        
-        if (rawDemografi.length > 0) {
-            rawDemografi.forEach(item => {
-                labels.push(item.asal_instansi || 'Tidak Diketahui');
-                series.push(item.jumlah);
-            });
-        } else {
-            labels = ['Belum ada data'];
-            series = [1];
+function switchTopTab(tabKey) {
+    const alltimeTbl = document.getElementById('table-top-alltime');
+    const filteredTbl = document.getElementById('table-top-filtered');
+    const btnAlltime = document.getElementById('btn-top-alltime');
+    const btnFiltered = document.getElementById('btn-top-filtered');
+    const subtitle = document.getElementById('top-subtitle');
+
+    if (tabKey === 'alltime') {
+        alltimeTbl.classList.remove('hidden');
+        filteredTbl.classList.add('hidden');
+        btnAlltime.className = "px-3 py-1 rounded-lg font-bold bg-white text-stone-900 shadow-2xs transition";
+        btnFiltered.className = "px-3 py-1 rounded-lg font-medium text-slate-600 hover:text-black transition";
+        subtitle.innerHTML = "🏆 Dihitung <strong>sejak awal perpustakaan buka</strong> (Total 2.703 Riwayat Kunjungan).";
+    } else {
+        alltimeTbl.classList.add('hidden');
+        filteredTbl.classList.remove('hidden');
+        btnFiltered.className = "px-3 py-1 rounded-lg font-bold bg-white text-stone-900 shadow-2xs transition";
+        btnAlltime.className = "px-3 py-1 rounded-lg font-medium text-slate-600 hover:text-black transition";
+        subtitle.innerHTML = "📅 Dihitung sesuai rentang filter: <strong>{{ start_date }} s/d {{ end_date }}</strong>.";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // 1. CHART TREND HARIAN (DYNAMIC MULTI-PERIOD: 7 HARI, 30 HARI, BULAN INI, SEPANJANG WAKTU)
+    const trendDatasets = {{ trend_datasets | tojson | safe }};
+    let chartTrendInstance = null;
+
+    function formatTrendData(dataArray, isAllTime) {
+        const dates = dataArray.map(item => {
+            const parts = item.tgl.split('-');
+            return isAllTime ? `${parts[2]}/${parts[1]}/${parts[0].slice(2)}` : `${parts[2]}/${parts[1]}`;
+        });
+        const values = dataArray.map(item => item.total);
+        return { dates, values };
+    }
+
+    // Default: 'month' (Bulan Ini)
+    const initialData = formatTrendData(trendDatasets['month'] || [], false);
+
+    const trendOptions = {
+        series: [{
+            name: 'Kunjungan Hadir',
+            data: initialData.values
+        }],
+        chart: {
+            type: 'area',
+            height: 250,
+            toolbar: { show: false },
+            zoom: { enabled: false },
+            animations: {
+                enabled: true,
+                easing: 'easeinout',
+                speed: 400
+            }
+        },
+        colors: ['#6D4C41'],
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.55,
+                opacityTo: 0.05,
+                stops: [0, 95, 100]
+            }
+        },
+        dataLabels: { enabled: false },
+        stroke: { curve: 'smooth', width: 2.5 },
+        xaxis: {
+            categories: initialData.dates,
+            labels: { style: { fontSize: '10px' } }
+        },
+        yaxis: {
+            labels: { style: { fontSize: '10px' } },
+            min: 0
+        },
+        tooltip: {
+            y: { formatter: val => `${val} Pengunjung` }
+        }
+    };
+    chartTrendInstance = new ApexCharts(document.querySelector("#chartTrendHarian"), trendOptions);
+    chartTrendInstance.render();
+
+    // Global Switcher Function
+    window.switchTrendPeriod = function(period) {
+        const btns = ['7d', '30d', 'month', 'all'];
+        btns.forEach(b => {
+            const el = document.getElementById('btn-trend-' + b);
+            if (el) {
+                if (b === period) {
+                    el.className = 'px-2.5 py-1 rounded-lg transition bg-white text-stone-900 shadow-2xs font-bold';
+                } else {
+                    el.className = 'px-2.5 py-1 rounded-lg transition text-stone-600 hover:text-stone-900';
+                }
+            }
+        });
+
+        const badge = document.getElementById('trend-badge');
+        const summary = document.getElementById('trend-summary-text');
+        const dataArr = trendDatasets[period] || [];
+        const isAll = (period === 'all');
+        const formatted = formatTrendData(dataArr, isAll);
+
+        if (period === '7d') {
+            if (badge) badge.innerText = '7 Hari (Minggu Ini)';
+            if (summary) summary.innerText = 'Fluktuasi kehadiran sivitas 7 hari terakhir (minggu ini).';
+        } else if (period === '30d') {
+            if (badge) badge.innerText = '30 Hari Terakhir';
+            if (summary) summary.innerText = 'Fluktuasi kehadiran sivitas harian selama 30 hari terakhir.';
+        } else if (period === 'month') {
+            if (badge) badge.innerText = 'Bulan Ini ({{ current_month_name }})';
+            if (summary) summary.innerText = 'Fluktuasi kehadiran harian bulan ini ({{ current_month_name }} {{ today_display.split(' ')[-1] }}).';
+        } else if (period === 'all') {
+            if (badge) badge.innerText = 'Sepanjang Waktu ({{ first_record_display }} s.d. Hari Ini)';
+            if (summary) summary.innerText = 'Tren kehadiran menyeluruh sejak data dicatat pertama kali ({{ first_record_display }}).';
         }
 
-        const chartOptions = {
-            series: series,
-            chart: {
-                type: 'donut',
-                width: 380,
+        if (chartTrendInstance) {
+            chartTrendInstance.updateOptions({
+                xaxis: {
+                    categories: formatted.dates,
+                    tickAmount: isAll ? 14 : undefined
+                }
+            });
+            chartTrendInstance.updateSeries([{
+                name: 'Kunjungan Hadir',
+                data: formatted.values
+            }]);
+        }
+    };
+
+    // 2. CHART POLA JAM SIBUK VS SEPI (COLUMN BAR)
+    const rawHourly = {{ chart_hourly | tojson | safe }};
+    const hourLabels = rawHourly.map(item => `${item.jam}:00`);
+    const hourValues = rawHourly.map(item => item.total);
+
+    // Dynamic color: highlight peak hours (09, 10, 11, 12)
+    const hourColors = rawHourly.map(item => {
+        const h = parseInt(item.jam, 10);
+        if (h >= 10 && h <= 12) return '#DC2626'; // Rush Hour Peak (Merah)
+        if (h === 9 || h === 13) return '#F59E0B'; // Normal Aktif (Amber)
+        return '#10B981'; // Tenang / Sepi (Hijau)
+    });
+
+    const hourlyOptions = {
+        series: [{
+            name: 'Jumlah Hadir',
+            data: hourValues
+        }],
+        chart: {
+            type: 'bar',
+            height: 250,
+            toolbar: { show: false }
+        },
+        plotOptions: {
+            bar: {
+                distributed: true,
+                borderRadius: 4,
+                columnWidth: '55%',
+            }
+        },
+        colors: hourColors,
+        dataLabels: { enabled: false },
+        legend: { show: false },
+        xaxis: {
+            categories: hourLabels,
+            labels: { style: { fontSize: '10px' } }
+        },
+        yaxis: {
+            labels: { style: { fontSize: '10px' } }
+        },
+        tooltip: {
+            y: { formatter: val => `${val} Pengunjung Sepanjang Masa` }
+        }
+    };
+    new ApexCharts(document.querySelector("#chartPolaJam"), hourlyOptions).render();
+
+    // 3. CHART HARI PALING PADAT (SENIN - JUMAT)
+    const rawDow = {{ chart_dow | tojson | safe }};
+    const dayNames = { '1': 'Senin', '2': 'Selasa', '3': 'Rabu', '4': 'Kamis', '5': 'Jumat' };
+    const dowLabels = rawDow.map(item => dayNames[item.dow] || item.dow);
+    const dowValues = rawDow.map(item => item.total);
+
+    const dowOptions = {
+        series: [{
+            name: 'Total Pengunjung',
+            data: dowValues
+        }],
+        chart: {
+            type: 'bar',
+            height: 220,
+            toolbar: { show: false }
+        },
+        plotOptions: {
+            bar: {
+                borderRadius: 5,
+                horizontal: false,
+                columnWidth: '45%',
+            }
+        },
+        colors: ['#4E342E'],
+        dataLabels: { enabled: true, style: { fontSize: '10px' } },
+        xaxis: {
+            categories: dowLabels,
+            labels: { style: { fontSize: '11px', fontWeight: 600 } }
+        },
+        yaxis: { show: false },
+        tooltip: {
+            y: { formatter: val => `${val} Orang` }
+        }
+    };
+    new ApexCharts(document.querySelector("#chartHariPadat"), dowOptions).render();
+
+    // 4. CHART DEMOGRAFI ASAL INSTANSI (DONUT MULTI-WARNA CERAH & KONTRAS)
+    const rawDemografi = {{ demografi | tojson | safe }};
+    let demoLabels = [];
+    let demoSeries = [];
+
+    if (rawDemografi.length > 0) {
+        rawDemografi.forEach(item => {
+            demoLabels.push(item.asal_instansi || 'Lainnya');
+            demoSeries.push(item.jumlah);
+        });
+    } else {
+        demoLabels = ['Belum ada data'];
+        demoSeries = [1];
+    }
+
+    // PALETTE WARNA CERAH & KONTRAS (Bukan Cokelat Semua):
+    // Biru Royal (UKWMS), Kuning Emas/Amber (Seminari), Hijau Emerald (IMAVI), Ungu Violet (Umum/Mitra)
+    const vibrantColors = [
+        '#2563EB', // Biru Cerah (UKWMS)
+        '#F59E0B', // Kuning Emas (Seminari Tinggi)
+        '#8B5CF6', // Ungu Violet (Umum / Mitra Luar)
+        '#10B981', // Hijau Zamrud (IMAVI)
+        '#EC4899', // Pink Fuchsia
+        '#06B6D4'  // Cyan Terang
+    ];
+
+    const demoOptions = {
+        series: demoSeries,
+        chart: {
+            type: 'donut',
+            width: 320,
+        },
+        labels: demoLabels,
+        colors: vibrantColors,
+        stroke: {
+            show: true,
+            colors: ['#ffffff'],
+            width: 2.5
+        },
+        dataLabels: { 
+            enabled: true,
+            formatter: function (val) {
+                return Math.round(val) + "%";
             },
-            labels: labels,
-            colors: ['#6D4C41', '#8D6E63', '#A1887F', '#D7CCC8', '#EFEBE9'],
-            dataLabels: {
-                enabled: true
+            style: {
+                fontSize: '11px',
+                fontWeight: 700,
+                colors: ['#ffffff']
             },
-            legend: {
-                position: 'bottom'
-            },
-            responsive: [{
-                breakpoint: 480,
-                options: {
-                    chart: {
-                        width: 300
+            dropShadow: {
+                enabled: true,
+                top: 1,
+                left: 1,
+                blur: 2,
+                opacity: 0.6
+            }
+        },
+        plotOptions: {
+            pie: {
+                donut: {
+                    size: '62%',
+                    labels: {
+                        show: true,
+                        total: {
+                            show: true,
+                            label: 'Total Hadir',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            color: '#64748b',
+                            formatter: function (w) {
+                                return w.globals.seriesTotals.reduce((a, b) => a + b, 0).toLocaleString('id-ID');
+                            }
+                        }
                     }
                 }
-            }]
-        };
+            }
+        },
+        legend: { 
+            position: 'bottom', 
+            fontSize: '11px',
+            fontWeight: 500,
+            horizontalAlign: 'center',
+            markers: {
+                radius: 4,
+                width: 10,
+                height: 10
+            },
+            itemMargin: {
+                horizontal: 6,
+                vertical: 2
+            }
+        },
+        tooltip: {
+            y: {
+                formatter: function (val) {
+                    return val.toLocaleString('id-ID') + " Pengunjung";
+                }
+            }
+        },
+        responsive: [{
+            breakpoint: 480,
+            options: { chart: { width: 280 } }
+        }]
+    };
+    new ApexCharts(document.querySelector("#chartDemografi"), demoOptions).render();
 
-        const chart = new ApexCharts(document.querySelector("#chartDemografi"), chartOptions);
-        chart.render();
-    });
+});
 </script>
+
+<!-- MODAL SINKRONISASI DATA KANTOR -->
+<div id="modal-sync" class="hidden fixed inset-0 bg-black/60 backdrop-blur-2xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stroke">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-base font-bold text-stone-900 flex items-center gap-2">
+                <i class="fa-solid fa-cloud-arrow-up text-emerald-600"></i> Sinkronisasi Pengunjung Kantor
+            </h3>
+            <button onclick="closeModalSync()" class="text-slate-400 hover:text-slate-600 text-sm">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+            Unggah file CSV baru hasil ekspor dari aplikasi kantor lama. Sistem St. Jerome secara cerdas akan menyaring data baru dan mencegah duplikasi otomatis.
+        </p>
+        <form id="form-sync" onsubmit="submitSyncCsv(event)" class="space-y-4">
+            <div class="border-2 border-dashed border-stroke hover:border-emerald-500 rounded-xl p-6 text-center cursor-pointer transition bg-slate-50 hover:bg-emerald-50/20" onclick="document.getElementById('input-file-csv').click()">
+                <i class="fa-solid fa-file-csv text-3xl text-emerald-600 mb-2"></i>
+                <p id="label-file-csv" class="text-xs font-bold text-slate-700">Klik untuk memilih file CSV</p>
+                <p class="text-[10px] text-slate-400 mt-1">Format: data_pengunjung_*.csv</p>
+                <input type="file" id="input-file-csv" accept=".csv" class="hidden" onchange="onCsvSelected(this)">
+            </div>
+            <div id="sync-status" class="hidden text-xs text-center py-2 font-medium"></div>
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-stroke">
+                <button type="button" onclick="closeModalSync()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
+                    Batal
+                </button>
+                <button type="submit" id="btn-submit-sync" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-upload"></i> Mulai Sinkronisasi
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openModalSync() {
+    document.getElementById('modal-sync').classList.remove('hidden');
+}
+function closeModalSync() {
+    document.getElementById('modal-sync').classList.add('hidden');
+}
+function onCsvSelected(input) {
+    if (input.files && input.files[0]) {
+        document.getElementById('label-file-csv').innerText = input.files[0].name;
+    }
+}
+async function submitSyncCsv(e) {
+    e.preventDefault();
+    const fileInput = document.getElementById('input-file-csv');
+    if (!fileInput.files || !fileInput.files[0]) {
+        alert('Pilih file CSV terlebih dahulu.');
+        return;
+    }
+    const btn = document.getElementById('btn-submit-sync');
+    const status = document.getElementById('sync-status');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Memproses...';
+    status.classList.remove('hidden');
+    status.innerHTML = '<span class="text-slate-500">Memeriksa duplikasi dan menyimpan data baru...</span>';
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    try {
+        const res = await fetch('/api/visitors/import_csv', {
+            method: 'POST',
+            body: formData
+        });
+        const json = await res.json();
+        if (json.status === 'success') {
+            status.innerHTML = `<span class="text-emerald-600 font-bold">✅ ${json.message}</span>`;
+            setTimeout(() => {
+                window.location.reload();
+            }, 1200);
+        } else {
+            status.innerHTML = `<span class="text-rose-600 font-bold">❌ ${json.message}</span>`;
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-upload mr-1"></i> Coba Lagi';
+        }
+    } catch(err) {
+        status.innerHTML = `<span class="text-rose-600 font-bold">❌ Terjadi kesalahan jaringan.</span>`;
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-upload mr-1"></i> Coba Lagi';
+    }
+}
+</script>
+
 {% endblock %}

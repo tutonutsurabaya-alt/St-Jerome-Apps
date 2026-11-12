@@ -1,0 +1,64 @@
+version: '3.8'
+
+networks:
+  ils-network:
+    driver: bridge
+
+services:
+  # ========================================================
+  # 1. APLIKASI PRODUKSI (SESUNGGUHNYA)
+  # ========================================================
+  stjerome-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stjerome-prod
+    restart: unless-stopped
+    networks:
+      - ils-network
+    ports:
+      - "127.0.0.1:5005:5000"
+    environment:
+      - APP_ENV=production
+      - APP_TITLE=Perpustakaan St. Jerome
+      - DATABASE_PATH=/app/data/katalog.db
+      - WA_MODE=live
+      - SHOW_DEMO_BANNER=false
+      - SECRET_KEY=prod_super_secret_key_stjerome_2026
+    volumes:
+      - ./volumes/prod/data:/app/data
+      - ./volumes/prod/uploads:/app/static/uploads
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ========================================================
+  # 2. APLIKASI DEMO / SANDBOX (UNTUK PRESENTASI & UJI COBA)
+  # ========================================================
+  stjerome-demo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stjerome-demo
+    restart: unless-stopped
+    networks:
+      - ils-network
+    ports:
+      - "127.0.0.1:5006:5000"
+    environment:
+      - APP_ENV=demo
+      - APP_TITLE=St. Jerome ILS - Live Demo & Sandbox
+      - DATABASE_PATH=/app/data/katalog.db
+      - WA_MODE=mock
+      - SHOW_DEMO_BANNER=true
+      - SECRET_KEY=demo_sandbox_secret_key_2026
+    volumes:
+      - ./volumes/demo/data:/app/data
+      - ./volumes/demo/uploads:/app/static/uploads
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

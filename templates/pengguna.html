@@ -1,0 +1,526 @@
+{% extends 'layout.html' %}
+
+{% block page_title %}Kelola Pengguna & Hak Akses{% endblock %}
+{% block page_subtitle %}Manajemen akun petugas perpustakaan, kredensial login, dan otoritas modul sistem{% endblock %}
+
+{% block content %}
+<div class="space-y-6" x-data="userManagement()">
+
+    <!-- Flash message alert -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="p-4 rounded-xl border text-xs font-semibold flex items-center justify-between {% if category == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800{% else %}bg-rose-50 border-rose-200 text-rose-800{% endif %}">
+              <div class="flex items-center gap-2.5">
+                  <i class="fa-solid {% if category == 'success' %}fa-circle-check text-emerald-600{% else %}fa-circle-exclamation text-rose-600{% endif %} text-base"></i>
+                  <span>{{ message }}</span>
+              </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- ===== TOP BAR: KPI METRICS & ACTION BUTTON ===== -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        
+        <!-- Summary Badges -->
+        <div class="flex items-center gap-3">
+            <div class="px-3.5 py-2 rounded-xl bg-white border border-stone-200 shadow-2xs flex items-center gap-2 text-xs">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span class="text-stone-500 font-medium">Total Petugas:</span>
+                <strong class="text-stone-900 font-bold">{{ users | length }}</strong>
+            </div>
+
+            <div class="px-3.5 py-2 rounded-xl bg-white border border-stone-200 shadow-2xs flex items-center gap-2 text-xs">
+                <i class="fa-solid fa-crown text-amber-500 text-[11px]"></i>
+                <span class="text-stone-500 font-medium">Master Admin:</span>
+                <strong class="text-stone-900 font-bold">1</strong>
+            </div>
+        </div>
+
+        <!-- Add User Button -->
+        <button @click="openAddModal()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-semibold text-xs transition-colors shadow-2xs cursor-pointer">
+            <i class="fa-solid fa-user-plus text-xs"></i>
+            <span>Tambah Petugas Baru</span>
+        </button>
+    </div>
+
+    <!-- ===== MAIN USERS TABLE ===== -->
+    <div class="rounded-2xl bg-white border border-stone-200 shadow-2xs overflow-hidden">
+        <div class="p-5 border-b border-stone-150 flex items-center justify-between bg-stone-50/50">
+            <div>
+                <h3 class="text-sm font-bold text-stone-900">Daftar Akun Pengguna & Petugas</h3>
+                <p class="text-[11px] text-stone-500 mt-0.5">Seluruh petugas yang memiliki akses ke sistem St. Jerome</p>
+            </div>
+            <span class="text-xs text-stone-400 font-mono">Institut Teologi IMAVI</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="border-b border-stone-200 bg-stone-50/80 text-[11px] font-bold uppercase tracking-wider text-stone-500">
+                        <th class="py-3 px-5">Petugas</th>
+                        <th class="py-3 px-4">Peran (Role)</th>
+                        <th class="py-3 px-4">Hak Akses Modul</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-5 text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-stone-100 text-stone-700">
+                    {% for u in users %}
+                    <tr class="hover:bg-stone-50/80 transition-colors">
+                        
+                        <!-- Col 1: Petugas Info -->
+                        <td class="py-3.5 px-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-stone-900 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                                    {{ u.nama_lengkap[:1] | upper | default('U') }}
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-1.5">
+                                        <p class="font-bold text-stone-900 truncate">{{ u.nama_lengkap }}</p>
+                                        {% if u.username == 'yosef' %}
+                                            <span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[9px] font-bold border border-amber-200" title="Master Admin Utama"><i class="fa-solid fa-crown text-[8px] mr-0.5"></i> Master</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="text-[11px] text-stone-400 font-mono mt-0.5">@{{ u.username }}{% if u.email %} • {{ u.email }}{% endif %}</p>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Col 2: Peran -->
+                        <td class="py-3.5 px-4">
+                            {% if u.role == 'Master Admin' %}
+                                <span class="px-2.5 py-1 rounded-full bg-stone-900 text-white font-bold text-[10px]">Master Admin</span>
+                            {% elif u.role == 'Pustakawan' %}
+                                <span class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 font-bold text-[10px] border border-blue-200">Pustakawan</span>
+                            {% elif u.role == 'Kataloger' %}
+                                <span class="px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 font-bold text-[10px] border border-purple-200">Kataloger</span>
+                            {% elif u.role == 'Operator Sirkulasi' %}
+                                <span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 font-bold text-[10px] border border-amber-200">Sirkulasi & Meja</span>
+                            {% elif u.role == 'Kasir POS' %}
+                                <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] border border-emerald-200">Kasir POS</span>
+                            {% else %}
+                                <span class="px-2.5 py-1 rounded-full bg-stone-100 text-stone-700 font-bold text-[10px] border border-stone-200">{{ u.role }}</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Col 3: Hak Akses Modul -->
+                        <td class="py-3.5 px-4">
+                            <div class="flex flex-wrap gap-1 max-w-xs">
+                                {% if u.hak_akses == 'all' or u.username == 'yosef' %}
+                                    <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold"><i class="fa-solid fa-check-double mr-1"></i> Semua Modul (Full Access)</span>
+                                {% else %}
+                                    {% set modules = u.hak_akses.split(',') if u.hak_akses else [] %}
+                                    {% if 'sirkulasi' in modules %}<span class="px-1.5 py-0.2 rounded bg-stone-100 text-stone-600 text-[10px]">Sirkulasi</span>{% endif %}
+                                    {% if 'pos' in modules %}<span class="px-1.5 py-0.2 rounded bg-stone-100 text-stone-600 text-[10px]">POS Kasir</span>{% endif %}
+                                    {% if 'koleksi' in modules %}<span class="px-1.5 py-0.2 rounded bg-stone-100 text-stone-600 text-[10px]">Pengolahan</span>{% endif %}
+                                    {% if 'baca' in modules %}<span class="px-1.5 py-0.2 rounded bg-stone-100 text-stone-600 text-[10px]">Meja Baca</span>{% endif %}
+                                    {% if 'anggota' in modules %}<span class="px-1.5 py-0.2 rounded bg-stone-100 text-stone-600 text-[10px]">Anggota</span>{% endif %}
+                                    {% if 'laporan' in modules %}<span class="px-1.5 py-0.2 rounded bg-stone-100 text-stone-600 text-[10px]">Laporan</span>{% endif %}
+                                    {% if 'pengaturan' in modules %}<span class="px-1.5 py-0.2 rounded bg-stone-100 text-stone-600 text-[10px]">Pengaturan</span>{% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <!-- Col 4: Status -->
+                        <td class="py-3.5 px-4">
+                            {% if u.is_active == 1 or u.is_active is none %}
+                                <span class="inline-flex items-center gap-1.5 text-emerald-700 font-semibold text-[11px]">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                    <span>Aktif</span>
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center gap-1.5 text-stone-400 font-medium text-[11px]">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-stone-300"></span>
+                                    <span>Nonaktif</span>
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Col 5: Actions -->
+                        <td class="py-3.5 px-5 text-right">
+                            <div class="inline-flex items-center gap-1">
+                                <!-- Edit Button -->
+                                <button @click="openEditModal({{ u | tojson }})" class="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-colors cursor-pointer" title="Edit Data & Hak Akses">
+                                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                </button>
+
+                                <!-- Reset Password Button -->
+                                <button @click="openResetPasswordModal({{ u | tojson }})" class="p-1.5 text-stone-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer" title="Reset Password">
+                                    <i class="fa-solid fa-key text-xs"></i>
+                                </button>
+
+                                <!-- Delete Button (Forbidden for yosef) -->
+                                {% if u.username != 'yosef' %}
+                                    <button @click="confirmDeleteUser({{ u.id }}, '{{ u.nama_lengkap }}')" class="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer" title="Hapus Pengguna">
+                                        <i class="fa-solid fa-trash text-xs"></i>
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== MODAL 1: TAMBAH PENGGUNA BARU ===== -->
+    <div x-show="showAddModal" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen p-4 text-center sm:p-0">
+            <div x-show="showAddModal" x-transition.opacity class="fixed inset-0 bg-stone-900/50 backdrop-blur-xs" @click="showAddModal = false"></div>
+
+            <div x-show="showAddModal" x-transition class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-lg w-full border border-stone-200">
+                <div class="p-5 border-b border-stone-150 flex items-center justify-between bg-stone-50/50">
+                    <h3 class="text-sm font-bold text-stone-900 flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus text-stone-600"></i>
+                        <span>Tambah Petugas / Pengguna Baru</span>
+                    </h3>
+                    <button @click="showAddModal = false" class="text-stone-400 hover:text-stone-700 p-1 rounded-lg">
+                        <i class="fa-solid fa-times text-sm"></i>
+                    </button>
+                </div>
+
+                <form method="POST" action="/api/pengguna/tambah" class="p-5 space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Username (Login ID) *</label>
+                            <input type="text" name="username" required placeholder="contoh: maria" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-stone-800 text-xs focus:outline-none focus:border-stone-400">
+                            <span class="text-[10px] text-stone-400">Huruf kecil tanpa spasi.</span>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Password Awal *</label>
+                            <input type="text" name="password" required placeholder="Minimal 4 karakter" minlength="4" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-stone-800 text-xs focus:outline-none focus:border-stone-400 font-mono">
+                            <span class="text-[10px] text-stone-400">Dapat diganti oleh pengguna nanti.</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Nama Lengkap Petugas *</label>
+                        <input type="text" name="nama_lengkap" required placeholder="contoh: Sr. Maria, OSU" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-stone-800 text-xs focus:outline-none focus:border-stone-400">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Peran / Jabatan</label>
+                            <select name="role" x-model="selectedRole" @change="applyRolePreset()" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-stone-800 text-xs focus:outline-none focus:border-stone-400 bg-white">
+                                <option value="Pustakawan">Pustakawan (Operasional Penuh)</option>
+                                <option value="Kataloger">Kataloger (Input Buku & Label)</option>
+                                <option value="Operator Sirkulasi">Operator Sirkulasi & Meja Baca</option>
+                                <option value="Kasir POS">Petugas Kasir & Fotokopi</option>
+                                <option value="Master Admin">Master Admin (Semua Akses)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Email (Opsional)</label>
+                            <input type="email" name="email" placeholder="petugas@imavi.ac.id" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-stone-800 text-xs focus:outline-none focus:border-stone-400">
+                        </div>
+                    </div>
+
+                    <!-- Granular Module Checkboxes -->
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-2">Hak Akses Modul</label>
+                        <div class="grid grid-cols-2 gap-2 p-3 rounded-xl bg-stone-50 border border-stone-200 text-xs">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="modules" value="sirkulasi" x-model="modules.sirkulasi" class="rounded text-stone-900 focus:ring-0">
+                                <span class="text-stone-700">Meja Sirkulasi</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="modules" value="koleksi" x-model="modules.koleksi" class="rounded text-stone-900 focus:ring-0">
+                                <span class="text-stone-700">Pengolahan Buku</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="modules" value="baca" x-model="modules.baca" class="rounded text-stone-900 focus:ring-0">
+                                <span class="text-stone-700">Scan Meja Baca</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="modules" value="pos" x-model="modules.pos" class="rounded text-stone-900 focus:ring-0">
+                                <span class="text-stone-700">Layanan Kasir POS</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="modules" value="anggota" x-model="modules.anggota" class="rounded text-stone-900 focus:ring-0">
+                                <span class="text-stone-700">Anggota & Kunjungan</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="modules" value="laporan" x-model="modules.laporan" class="rounded text-stone-900 focus:ring-0">
+                                <span class="text-stone-700">Laporan & Analitik</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer col-span-2 pt-1 border-t border-stone-200">
+                                <input type="checkbox" name="modules" value="pengaturan" x-model="modules.pengaturan" class="rounded text-stone-900 focus:ring-0">
+                                <span class="text-stone-700">Konfigurasi Sistem & Pengaturan</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-stone-150 flex items-center justify-end gap-2">
+                        <button type="button" @click="showAddModal = false" class="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-50 text-xs font-semibold">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold shadow-2xs">
+                            Simpan Petugas Baru
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL 2: EDIT PENGGUNA ===== -->
+    <div x-show="showEditModal" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen p-4 text-center sm:p-0">
+            <div x-show="showEditModal" x-transition.opacity class="fixed inset-0 bg-stone-900/50 backdrop-blur-xs" @click="showEditModal = false"></div>
+
+            <div x-show="showEditModal" x-transition class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-lg w-full border border-stone-200">
+                <div class="p-5 border-b border-stone-150 flex items-center justify-between bg-stone-50/50">
+                    <h3 class="text-sm font-bold text-stone-900 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-stone-600"></i>
+                        <span>Edit Data & Hak Akses: <span x-text="editForm.nama_lengkap" class="text-stone-600"></span></span>
+                    </h3>
+                    <button @click="showEditModal = false" class="text-stone-400 hover:text-stone-700 p-1 rounded-lg">
+                        <i class="fa-solid fa-times text-sm"></i>
+                    </button>
+                </div>
+
+                <form :action="'/api/pengguna/edit/' + editForm.id" method="POST" class="p-5 space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Username (Login ID)</label>
+                            <input type="text" :value="editForm.username" disabled class="w-full px-3 py-2 rounded-xl bg-stone-100 border border-stone-200 text-stone-500 text-xs font-mono cursor-not-allowed">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Status Akun</label>
+                            <select name="is_active" x-model="editForm.is_active" :disabled="editForm.username === 'yosef'" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-stone-800 text-xs focus:outline-none focus:border-stone-400 bg-white">
+                                <option value="1">Aktif Normal</option>
+                                <option value="0">Dinonaktifkan</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Nama Lengkap Petugas</label>
+                        <input type="text" name="nama_lengkap" x-model="editForm.nama_lengkap" required class="w-full px-3 py-2 rounded-xl border border-stone-200 text-stone-800 text-xs focus:outline-none focus:border-stone-400">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Peran / Jabatan</label>
+                            <select name="role" x-model="editForm.role" :disabled="editForm.username === 'yosef'" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-stone-800 text-xs focus:outline-none focus:border-stone-400 bg-white">
+                                <option value="Master Admin">Master Admin</option>
+                                <option value="Pustakawan">Pustakawan</option>
+                                <option value="Kataloger">Kataloger</option>
+                                <option value="Operator Sirkulasi">Operator Sirkulasi</option>
+                                <option value="Kasir POS">Kasir POS</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Email Petugas</label>
+                            <input type="email" name="email" x-model="editForm.email" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-stone-800 text-xs focus:outline-none focus:border-stone-400">
+                        </div>
+                    </div>
+
+                    <!-- Checklist Hak Akses Modul -->
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-2">Hak Akses Modul</label>
+                        <div class="grid grid-cols-2 gap-2 p-3 rounded-xl bg-stone-50 border border-stone-200 text-xs">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="modules" value="sirkulasi" x-model="editModules.sirkulasi" :disabled="editForm.username === 'yosef'" class="rounded text-stone-900 focus:ring-0">
+                                <span class="text-stone-700">Meja Sirkulasi</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="modules" value="koleksi" x-model="editModules.koleksi" :disabled="editForm.username === 'yosef'" class="rounded text-stone-900 focus:ring-0">
+                                <span class="text-stone-700">Pengolahan Buku</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="modules" value="baca" x-model="editModules.baca" :disabled="editForm.username === 'yosef'" class="rounded text-stone-900 focus:ring-0">
+                                <span class="text-stone-700">Scan Meja Baca</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="modules" value="pos" x-model="editModules.pos" :disabled="editForm.username === 'yosef'" class="rounded text-stone-900 focus:ring-0">
+                                <span class="text-stone-700">Layanan Kasir POS</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="modules" value="anggota" x-model="editModules.anggota" :disabled="editForm.username === 'yosef'" class="rounded text-stone-900 focus:ring-0">
+                                <span class="text-stone-700">Anggota & Kunjungan</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="modules" value="laporan" x-model="editModules.laporan" :disabled="editForm.username === 'yosef'" class="rounded text-stone-900 focus:ring-0">
+                                <span class="text-stone-700">Laporan & Analitik</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer col-span-2 pt-1 border-t border-stone-200">
+                                <input type="checkbox" name="modules" value="pengaturan" x-model="editModules.pengaturan" :disabled="editForm.username === 'yosef'" class="rounded text-stone-900 focus:ring-0">
+                                <span class="text-stone-700">Konfigurasi Sistem & Pengaturan</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-stone-150 flex items-center justify-end gap-2">
+                        <button type="button" @click="showEditModal = false" class="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-50 text-xs font-semibold">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold shadow-2xs">
+                            Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL 3: RESET PASSWORD PENGGUNA ===== -->
+    <div x-show="showResetModal" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen p-4 text-center sm:p-0">
+            <div x-show="showResetModal" x-transition.opacity class="fixed inset-0 bg-stone-900/50 backdrop-blur-xs" @click="showResetModal = false"></div>
+
+            <div x-show="showResetModal" x-transition class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-md w-full border border-stone-200">
+                <div class="p-5 border-b border-stone-150 flex items-center justify-between bg-stone-50/50">
+                    <h3 class="text-sm font-bold text-stone-900 flex items-center gap-2">
+                        <i class="fa-solid fa-key text-amber-600"></i>
+                        <span>Reset Kata Sandi: <span x-text="resetUser.username" class="font-mono text-stone-600"></span></span>
+                    </h3>
+                    <button @click="showResetModal = false" class="text-stone-400 hover:text-stone-700 p-1 rounded-lg">
+                        <i class="fa-solid fa-times text-sm"></i>
+                    </button>
+                </div>
+
+                <form :action="'/api/pengguna/reset_password/' + resetUser.id" method="POST" class="p-5 space-y-4">
+                    <p class="text-xs text-stone-600">
+                        Sebagai Master Admin, Anda dapat langsung mengatur kata sandi baru untuk <b x-text="resetUser.nama_lengkap"></b> tanpa memerlukan kata sandi lama mereka.
+                    </p>
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Kata Sandi Baru</label>
+                        <input type="text" name="password_baru" required placeholder="Minimal 4 karakter" minlength="4" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-stone-800 text-xs font-mono focus:outline-none focus:border-stone-400">
+                    </div>
+
+                    <div class="pt-3 border-t border-stone-150 flex items-center justify-end gap-2">
+                        <button type="button" @click="showResetModal = false" class="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-50 text-xs font-semibold">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-2xs">
+                            Simpan Password Baru
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function userManagement() {
+    return {
+        showAddModal: false,
+        showEditModal: false,
+        showResetModal: false,
+        selectedRole: 'Pustakawan',
+        modules: {
+            sirkulasi: true,
+            koleksi: true,
+            baca: true,
+            pos: true,
+            anggota: true,
+            laporan: true,
+            pengaturan: false
+        },
+        editForm: {
+            id: null,
+            username: '',
+            nama_lengkap: '',
+            role: '',
+            email: '',
+            is_active: 1
+        },
+        editModules: {
+            sirkulasi: false,
+            koleksi: false,
+            baca: false,
+            pos: false,
+            anggota: false,
+            laporan: false,
+            pengaturan: false
+        },
+        resetUser: {
+            id: null,
+            username: '',
+            nama_lengkap: ''
+        },
+        openAddModal() {
+            this.selectedRole = 'Pustakawan';
+            this.applyRolePreset();
+            this.showAddModal = true;
+        },
+        applyRolePreset() {
+            if (this.selectedRole === 'Master Admin') {
+                this.modules = { sirkulasi: true, koleksi: true, baca: true, pos: true, anggota: true, laporan: true, pengaturan: true };
+            } else if (this.selectedRole === 'Pustakawan') {
+                this.modules = { sirkulasi: true, koleksi: true, baca: true, pos: true, anggota: true, laporan: true, pengaturan: false };
+            } else if (this.selectedRole === 'Kataloger') {
+                this.modules = { sirkulasi: false, koleksi: true, baca: false, pos: false, anggota: false, laporan: false, pengaturan: false };
+            } else if (this.selectedRole === 'Operator Sirkulasi') {
+                this.modules = { sirkulasi: true, koleksi: false, baca: true, pos: true, anggota: true, laporan: false, pengaturan: false };
+            } else if (this.selectedRole === 'Kasir POS') {
+                this.modules = { sirkulasi: false, koleksi: false, baca: false, pos: true, anggota: false, laporan: false, pengaturan: false };
+            }
+        },
+        openEditModal(user) {
+            this.editForm = {
+                id: user.id,
+                username: user.username,
+                nama_lengkap: user.nama_lengkap,
+                role: user.role,
+                email: user.email || '',
+                is_active: user.is_active !== undefined ? user.is_active : 1
+            };
+            const currentMods = (user.hak_akses || '').split(',');
+            const isAll = user.hak_akses === 'all' || user.username === 'yosef';
+            this.editModules = {
+                sirkulasi: isAll || currentMods.includes('sirkulasi'),
+                koleksi: isAll || currentMods.includes('koleksi'),
+                baca: isAll || currentMods.includes('baca'),
+                pos: isAll || currentMods.includes('pos'),
+                anggota: isAll || currentMods.includes('anggota'),
+                laporan: isAll || currentMods.includes('laporan'),
+                pengaturan: isAll || currentMods.includes('pengaturan')
+            };
+            this.showEditModal = true;
+        },
+        openResetPasswordModal(user) {
+            this.resetUser = {
+                id: user.id,
+                username: user.username,
+                nama_lengkap: user.nama_lengkap
+            };
+            this.showResetModal = true;
+        },
+        confirmDeleteUser(userId, userName) {
+            Swal.fire({
+                title: 'Hapus Petugas?',
+                text: `Apakah Anda yakin ingin menghapus akun "${userName}"? Aksi ini tidak dapat dibatalkan.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#1c1917',
+                cancelButtonColor: '#e7e5e4',
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/api/pengguna/hapus/' + userId;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,774 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="space-y-6" x-data="monitoringKeterlambatan()">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200">
+        <div>
+            <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200 uppercase tracking-wider">
+                    Sirkulasi &amp; Pengembalian
+                </span>
+                <span class="text-xs text-stone-500">Real-time SLiMS &amp; SJLA</span>
+            </div>
+            <h1 class="text-2xl font-serif font-bold text-stone-900 mt-1">Monitoring Jatuh Tempo &amp; Keterlambatan</h1>
+            <p class="text-xs text-stone-500 mt-0.5">
+                Daftar buku yang telah melewati batas pinjam (overdue), jatuh tempo hari ini, dan pengingat pengembalian WhatsApp.
+            </p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="/sirkulasi" class="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-semibold transition flex items-center gap-2">
+                <i class="fa-solid fa-cash-register"></i>
+                <span>Meja Sirkulasi (F2)</span>
+            </a>
+            <button @click="openKomunitasWaModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-xs cursor-pointer">
+                <i class="fa-brands fa-whatsapp text-sm"></i>
+                <span>Ingatkan Komunitas Frater</span>
+                <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-900 text-emerald-200 font-mono">+62 811-3089-9997</span>
+            </button>
+            <button @click="printReport()" class="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-xs">
+                <i class="fa-solid fa-print"></i>
+                <span>Cetak Rekap Keterlambatan</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <!-- Pinjaman Aktif -->
+        <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs">
+            <div class="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">Total Pinjaman Aktif</div>
+            <div class="text-2xl font-bold font-serif text-stone-900 mt-1" x-text="kpi.total_active">0</div>
+            <div class="text-[10px] text-stone-400 mt-0.5">Buku beredar di tangan peminjam</div>
+        </div>
+
+        <!-- Terlambat (Overdue) -->
+        <div class="bg-white p-4 rounded-2xl border border-rose-200 shadow-2xs bg-rose-50/20">
+            <div class="text-[11px] font-semibold text-rose-700 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>Lewat Jatuh Tempo</span>
+            </div>
+            <div class="text-2xl font-bold font-serif text-rose-700 mt-1" x-text="kpi.total_overdue">0</div>
+            <div class="text-[10px] text-rose-600 mt-0.5 font-medium">Wajib segera ditagih / dikembalikan</div>
+        </div>
+
+        <!-- Jatuh Tempo Hari Ini -->
+        <div class="bg-white p-4 rounded-2xl border border-amber-200 shadow-2xs bg-amber-50/20">
+            <div class="text-[11px] font-semibold text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-clock"></i>
+                <span>Jatuh Tempo Hari Ini</span>
+            </div>
+            <div class="text-2xl font-bold font-serif text-amber-800 mt-1" x-text="kpi.due_today">0</div>
+            <div class="text-[10px] text-amber-700 mt-0.5">Batas akhir peminjaman hari ini</div>
+        </div>
+
+        <!-- Segera Jatuh Tempo -->
+        <div class="bg-white p-4 rounded-2xl border border-emerald-200 shadow-2xs">
+            <div class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">Mendekati Tempo (H-1 s.d H-3)</div>
+            <div class="text-2xl font-bold font-serif text-emerald-800 mt-1" x-text="kpi.due_soon">0</div>
+            <div class="text-[10px] text-stone-400 mt-0.5">Peringatan dini pengembalian</div>
+        </div>
+
+        <!-- Estimasi Denda Berjalan -->
+        <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs col-span-2 md:col-span-1">
+            <div class="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">Potensi Denda Berjalan</div>
+            <div class="text-xl font-bold font-serif text-rose-800 mt-1" x-text="formatRupiah(kpi.total_fines)">Rp 0</div>
+            <div class="text-[10px] text-stone-400 mt-0.5">Tarif Rp 500 / hari keterlambatan</div>
+        </div>
+    </div>
+
+    <!-- Filters & Search Toolbar -->
+    <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-3">
+        <!-- Status Filter Tabs -->
+        <div class="flex items-center gap-1.5 p-1 bg-stone-100 rounded-xl w-full md:w-auto text-xs font-semibold overflow-x-auto">
+            <button type="button" @click="setStatusFilter('ALL')" 
+                    :class="selectedFilter === 'ALL' ? 'bg-stone-900 text-white shadow-2xs' : 'text-stone-600 hover:text-stone-900'"
+                    class="px-3 py-1.5 rounded-lg transition whitespace-nowrap">
+                Semua (<span x-text="allLoans.length">0</span>)
+            </button>
+            <button type="button" @click="setStatusFilter('OVERDUE')" 
+                    :class="selectedFilter === 'OVERDUE' ? 'bg-rose-700 text-white shadow-2xs' : 'text-rose-700 hover:bg-rose-50'"
+                    class="px-3 py-1.5 rounded-lg transition whitespace-nowrap flex items-center gap-1.5">
+                <i class="fa-solid fa-circle-exclamation text-[10px]"></i>
+                Terlambat (<span x-text="kpi.total_overdue">0</span>)
+            </button>
+            <button type="button" @click="setStatusFilter('TODAY')" 
+                    :class="selectedFilter === 'TODAY' ? 'bg-amber-600 text-white shadow-2xs' : 'text-amber-700 hover:bg-amber-50'"
+                    class="px-3 py-1.5 rounded-lg transition whitespace-nowrap flex items-center gap-1.5">
+                <i class="fa-solid fa-clock text-[10px]"></i>
+                Hari Ini (<span x-text="kpi.due_today">0</span>)
+            </button>
+            <button type="button" @click="setStatusFilter('SOON')" 
+                    :class="selectedFilter === 'SOON' ? 'bg-emerald-700 text-white shadow-2xs' : 'text-emerald-700 hover:bg-emerald-50'"
+                    class="px-3 py-1.5 rounded-lg transition whitespace-nowrap">
+                Segera Tempo (<span x-text="kpi.due_soon">0</span>)
+            </button>
+        </div>
+
+        <!-- Search Input -->
+        <div class="relative w-full md:w-80">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-stone-400"></i>
+            <input type="text" x-model="searchQuery" @input.debounce.250ms="filterData()"
+                   placeholder="Cari nama peminjam, ID, judul, atau barcode..." 
+                   class="w-full pl-9 pr-3 py-2 text-xs bg-stone-50 border border-stone-200 rounded-xl text-stone-800 placeholder-stone-400 focus:outline-none focus:border-stone-400 focus:bg-white transition">
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-white rounded-2xl border border-stone-200 shadow-2xs overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-stone-50/80 border-b border-stone-200 text-stone-500 text-[11px] font-semibold uppercase tracking-wider">
+                        <th class="py-3 px-4 w-12 text-center">No</th>
+                        <th class="py-3 px-4 min-w-[200px]">Identitas Peminjam</th>
+                        <th class="py-3 px-4 min-w-[250px]">Koleksi Buku</th>
+                        <th class="py-3 px-4 w-36">Jadwal Pinjam</th>
+                        <th class="py-3 px-4 w-36 text-center">Status / Telat</th>
+                        <th class="py-3 px-4 w-28 text-right">Estimasi Denda</th>
+                        <th class="py-3 px-4 w-44 text-center">Aksi Cepat</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-stone-100">
+                    <template x-if="filteredLoans.length === 0">
+                        <tr>
+                            <td colspan="7" class="py-12 text-center text-stone-400">
+                                <i class="fa-solid fa-circle-check text-emerald-500 text-3xl mb-2 block"></i>
+                                Tidak ada data peminjaman yang cocok dengan filter ini.
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-for="(item, idx) in filteredLoans" :key="item.id">
+                        <tr class="hover:bg-stone-50/70 transition" :class="item.days_overdue > 0 ? 'bg-rose-50/10' : ''">
+                            <td class="py-3 px-4 text-center text-stone-400 font-mono" x-text="idx + 1"></td>
+                            
+                            <!-- Peminjam -->
+                            <td class="py-3 px-4">
+                                <div class="font-bold text-stone-900" x-text="item.nama"></div>
+                                <div class="flex items-center gap-2 mt-0.5 text-[11px]">
+                                    <span class="font-mono text-stone-500" x-text="item.member_id"></span>
+                                    <span class="text-stone-300">•</span>
+                                    <span class="text-stone-500" x-text="item.tipe_anggota"></span>
+                                </div>
+                                <template x-if="item.telepon">
+                                    <div class="text-[10px] text-stone-400 font-mono mt-0.5">
+                                        <i class="fa-brands fa-whatsapp text-emerald-600 mr-1"></i><span x-text="item.telepon"></span>
+                                    </div>
+                                </template>
+                            </td>
+
+                            <!-- Sampul & Detail Buku -->
+                            <td class="py-3 px-4">
+                                <div class="flex items-start gap-3">
+                                    <!-- Thumbnail Cover Buku -->
+                                    <div class="w-12 h-16 shrink-0 rounded-lg overflow-hidden border border-stone-200 shadow-xs bg-stone-100 relative group cursor-pointer"
+                                         @click="openImageModal(item)"
+                                         :title="'Klik untuk memperbesar sampul: ' + item.judul">
+                                        <template x-if="item.image">
+                                            <img :src="getCoverUrl(item.image)" 
+                                                 class="w-full h-full object-cover group-hover:scale-110 transition duration-300" 
+                                                 :alt="item.judul"
+                                                 @error="$el.style.display='none'; if ($el.nextElementSibling) $el.nextElementSibling.style.display='flex'">
+                                        </template>
+                                        <div class="w-full h-full flex flex-col items-center justify-center p-1 text-center bg-stone-100 text-stone-400"
+                                             :style="item.image ? 'display: none;' : 'display: flex;'">
+                                            <i class="fa-solid fa-book text-stone-300 text-base mb-0.5"></i>
+                                            <span class="text-[7.5px] font-mono leading-tight truncate w-full text-stone-400" x-text="item.no_induk"></span>
+                                        </div>
+                                        <!-- Hover Overlay Zoom Icon -->
+                                        <div class="absolute inset-0 bg-stone-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs">
+                                            <i class="fa-solid fa-magnifying-glass-plus"></i>
+                                        </div>
+                                    </div>
+
+                                    <!-- Informasi Buku -->
+                                    <div class="min-w-0 flex-1">
+                                        <div class="font-bold text-stone-900 leading-snug text-xs hover:text-amber-800 transition cursor-pointer" 
+                                             @click="openImageModal(item)"
+                                             x-text="item.judul"></div>
+                                        <div class="text-[11px] text-stone-500 mt-0.5 truncate" x-text="item.pengarang || 'Pengarang tidak tercatat'"></div>
+                                        <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                                            <span class="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-stone-100 text-stone-700 border border-stone-200" x-text="item.no_induk"></span>
+                                            <template x-if="item.klasifikasi">
+                                                <span class="px-2 py-0.5 rounded font-mono text-[10px] bg-amber-50 text-amber-800 border border-amber-200/60" x-text="'DDC: ' + item.klasifikasi"></span>
+                                            </template>
+                                            <template x-if="item.lokasi">
+                                                <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200/60 flex items-center gap-1 font-medium">
+                                                    <i class="fa-solid fa-location-dot text-[9px] text-emerald-600"></i>
+                                                    <span x-text="'Rak ' + item.lokasi"></span>
+                                                </span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Jadwal -->
+                            <td class="py-3 px-4 text-[11px]">
+                                <div class="text-stone-500">
+                                    <span class="text-[10px] text-stone-400 block">Pinjam:</span>
+                                    <span x-text="item.loan_date"></span>
+                                </div>
+                                <div class="mt-1 font-semibold" :class="item.days_overdue > 0 ? 'text-rose-700' : 'text-stone-800'">
+                                    <span class="text-[10px] text-stone-400 block font-normal">Jatuh Tempo:</span>
+                                    <span x-text="item.due_date"></span>
+                                </div>
+                                <template x-if="item.renewal_count > 0">
+                                    <div class="mt-1">
+                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                            <i class="fa-solid fa-arrows-rotate text-[8.5px]"></i> Diperpanjang
+                                            <span x-show="item.renewal_count > 1" x-text="item.renewal_count + 'x'"></span>
+                                        </span>
+                                    </div>
+                                </template>
+                            </td>
+
+                            <!-- Status Badge -->
+                            <td class="py-3 px-4 text-center">
+                                <template x-if="item.days_overdue > 30">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300 block">
+                                        <i class="fa-solid fa-triangle-exclamation mr-1"></i>Telat <span x-text="item.days_overdue"></span> Hari
+                                    </span>
+                                </template>
+                                <template x-if="item.days_overdue > 0 && item.days_overdue <= 30">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200 block">
+                                        Telat <span x-text="item.days_overdue"></span> Hari
+                                    </span>
+                                </template>
+                                <template x-if="item.days_overdue === 0">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 block">
+                                        <i class="fa-solid fa-clock mr-1"></i>Tempo Hari Ini
+                                    </span>
+                                </template>
+                                <template x-if="item.days_overdue < 0">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 block">
+                                        Sisa <span x-text="Math.abs(item.days_overdue)"></span> Hari
+                                    </span>
+                                </template>
+                            </td>
+
+                            <!-- Estimasi Denda -->
+                            <td class="py-3 px-4 text-right">
+                                <div class="font-mono font-bold" :class="item.days_overdue > 0 ? 'text-rose-700' : 'text-stone-400'"
+                                     x-text="formatRupiah(item.days_overdue > 0 ? item.days_overdue * 500 : 0)">
+                                </div>
+                                <template x-if="item.days_overdue > 0">
+                                    <span class="text-[9px] text-stone-400 block">@ Rp500/hr</span>
+                                </template>
+                            </td>
+
+                            <!-- Aksi Cepat -->
+                            <td class="py-3 px-4 text-center">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <!-- Tombol WhatsApp Pengingat -->
+                                    <button type="button" @click="sendWaReminder(item)" 
+                                            class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-2xs transition flex items-center gap-1"
+                                            title="Kirim pesan pengingat WhatsApp">
+                                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                                        <span>Ingatkan</span>
+                                    </button>
+
+                                    <!-- Tombol Meja Sirkulasi -->
+                                    <a :href="'/sirkulasi?member_id=' + item.member_id" 
+                                       class="px-2.5 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-semibold shadow-2xs transition flex items-center gap-1"
+                                       title="Buka transaksi di Meja Sirkulasi">
+                                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                                        <span>Proses</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Pengingat Komunitas Frater PDMS -->
+    <div x-show="isKomunitasModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto" x-cloak>
+        <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl border border-stone-200 overflow-hidden my-auto" @click.outside="isKomunitasModalOpen = false">
+            <div class="bg-emerald-800 px-6 py-4 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg">
+                        <i class="fa-brands fa-whatsapp text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm">Pemberitahuan Keterlambatan Buku Frater</h3>
+                        <p class="text-[11px] text-emerald-200">Komunitas Seminari Tinggi Providentia Dei (+62 811-3089-9997)</p>
+                    </div>
+                </div>
+                <button @click="isKomunitasModalOpen = false" class="text-emerald-200 hover:text-white text-xl">&times;</button>
+            </div>
+
+            <div class="p-6 space-y-4 text-xs">
+                <!-- Preview Table Frater yang telat -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-bold text-stone-900 uppercase tracking-wider text-[11px]">Daftar Frater yang Memiliki Tanggungan Telat:</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800" x-text="fraterOverdueLoans.length + ' Buku Belum Kembali'"></span>
+                    </div>
+
+                    <div class="border border-stone-200 rounded-xl overflow-hidden max-h-52 overflow-y-auto bg-stone-50/50">
+                        <table class="w-full text-left text-[11px] border-collapse">
+                            <thead class="bg-stone-100 text-stone-600 font-semibold sticky top-0">
+                                <tr>
+                                    <th class="py-2 px-3">Nama Frater</th>
+                                    <th class="py-2 px-3">NIM</th>
+                                    <th class="py-2 px-3">Judul Buku</th>
+                                    <th class="py-2 px-3 text-right">Keterlambatan</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-stone-200 bg-white">
+                                <template x-for="item in fraterOverdueLoans" :key="item.id">
+                                    <tr class="hover:bg-stone-50">
+                                        <td class="py-2 px-3 font-bold text-stone-900" x-text="item.nama"></td>
+                                        <td class="py-2 px-3 font-mono text-stone-600" x-text="item.member_id"></td>
+                                        <td class="py-2 px-3">
+                                            <span class="font-semibold text-stone-800" x-text="item.judul"></span>
+                                            <span class="text-[10px] text-stone-400 font-mono block" x-text="item.no_induk"></span>
+                                        </td>
+                                        <td class="py-2 px-3 text-right font-bold" :class="item.days_overdue > 0 ? 'text-rose-700' : 'text-amber-700'">
+                                            <span x-text="item.days_overdue > 0 ? 'Telat ' + item.days_overdue + ' Hari' : 'Hari Ini'"></span>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Preview Format Pesan -->
+                <div>
+                    <label class="block font-semibold text-stone-700 mb-1">Pratinjau Pesan yang Akan Dikirim:</label>
+                    <textarea x-model="komunitasMessage" rows="7" 
+                              class="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 text-stone-800 font-mono text-[11px] leading-relaxed focus:outline-none focus:border-emerald-600"></textarea>
+                </div>
+
+                <!-- Status alert -->
+                <div x-show="sendAlertMsg" class="p-3 rounded-xl text-xs font-semibold"
+                     :class="sendAlertSuccess ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'"
+                     x-text="sendAlertMsg"></div>
+
+                <!-- Action buttons -->
+                <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-stone-100">
+                    <button type="button" @click="copyKomunitasText()" class="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl font-semibold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-copy"></i>
+                        <span x-text="komunitasCopiedToast ? 'Tersalin! ✓' : 'Salin Draf'"></span>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <button type="button" @click="sendViaWebWhatsApp()" class="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl font-bold transition flex items-center gap-2 border border-stone-200">
+                            <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                            <span>Buka WA Web</span>
+                        </button>
+                        <button type="button" :disabled="isSendingWa" @click="sendViaBotServer()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-paper-plane" x-show="!isSendingWa"></i>
+                            <i class="fa-solid fa-circle-notch fa-spin" x-show="isSendingWa"></i>
+                            <span x-text="isSendingWa ? 'Mengirim...' : 'Kirim Sekarang (Bot WA)'"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Lightbox / Zoom Sampul Buku Fisik -->
+    <div x-show="isCoverModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 overflow-y-auto" x-cloak>
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-stone-200 overflow-hidden my-auto" @click.outside="isCoverModalOpen = false">
+            <div class="bg-stone-900 px-6 py-3.5 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-amber-400"></i>
+                    <h3 class="font-serif font-bold text-sm">Pratinjau Fisik Sampul Buku</h3>
+                </div>
+                <button @click="isCoverModalOpen = false" class="text-stone-400 hover:text-white transition text-lg p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 flex flex-col items-center">
+                <!-- Cover Large Image -->
+                <div class="w-48 h-64 rounded-xl overflow-hidden shadow-xl border border-stone-200 bg-stone-100 flex items-center justify-center relative group">
+                    <template x-if="selectedCoverBook && selectedCoverBook.image">
+                        <img :src="getCoverUrl(selectedCoverBook.image)" 
+                             class="w-full h-full object-cover" 
+                             :alt="selectedCoverBook.judul"
+                             @error="$el.style.display='none'; $el.nextElementSibling.style.display='flex'">
+                    </template>
+                    <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-stone-100 text-stone-400"
+                         :style="selectedCoverBook && selectedCoverBook.image ? 'display: none;' : 'display: flex;'">
+                        <i class="fa-solid fa-book text-stone-300 text-4xl mb-2"></i>
+                        <span class="text-xs text-stone-400">Sampul belum tersedia di sistem</span>
+                    </div>
+                </div>
+
+                <!-- Book Info in Lightbox -->
+                <div class="w-full mt-5 text-center">
+                    <h4 class="font-serif font-bold text-stone-900 text-base leading-snug" x-text="selectedCoverBook ? selectedCoverBook.judul : ''"></h4>
+                    <p class="text-xs text-stone-500 mt-1" x-text="selectedCoverBook ? (selectedCoverBook.pengarang || 'Pengarang Anonim') : ''"></p>
+                    
+                    <div class="flex flex-wrap items-center justify-center gap-2 mt-3">
+                        <span class="px-2.5 py-1 rounded-lg font-mono text-xs font-bold bg-stone-100 text-stone-800 border border-stone-200" 
+                              x-text="'No. Induk: ' + (selectedCoverBook ? selectedCoverBook.no_induk : '')"></span>
+                        <template x-if="selectedCoverBook && selectedCoverBook.klasifikasi">
+                            <span class="px-2.5 py-1 rounded-lg font-mono text-xs bg-amber-50 text-amber-900 border border-amber-200" 
+                                  x-text="'Klasifikasi: ' + selectedCoverBook.klasifikasi"></span>
+                        </template>
+                        <template x-if="selectedCoverBook && selectedCoverBook.lokasi">
+                            <span class="px-2.5 py-1 rounded-lg text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold" 
+                                  x-text="'Lokasi: ' + selectedCoverBook.lokasi"></span>
+                        </template>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-stone-50 rounded-2xl border border-stone-200 text-left text-xs space-y-1">
+                        <div class="flex justify-between">
+                            <span class="text-stone-500">Peminjam:</span>
+                            <span class="font-bold text-stone-900" x-text="selectedCoverBook ? (selectedCoverBook.nama + ' (' + selectedCoverBook.member_id + ')') : ''"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-stone-500">Tanggal Jatuh Tempo:</span>
+                            <span class="font-semibold" :class="selectedCoverBook && selectedCoverBook.days_overdue > 0 ? 'text-rose-700' : 'text-stone-800'"
+                                  x-text="selectedCoverBook ? (selectedCoverBook.due_date + (selectedCoverBook.days_overdue > 0 ? ' (Telat ' + selectedCoverBook.days_overdue + ' hr)' : '')) : ''"></span>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 flex justify-end">
+                        <button type="button" @click="isCoverModalOpen = false" class="px-5 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-xl text-xs font-bold transition">
+                            Tutup Pratinjau
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Pengingat Komunitas Frater PDMS -->
+    <div x-show="isKomunitasModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 overflow-y-auto" x-cloak>
+        <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl border border-stone-200 overflow-hidden my-auto" @click.outside="isKomunitasModalOpen = false">
+            <div class="bg-emerald-800 px-6 py-4 text-white flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-serif font-bold text-base leading-tight">Pengingat Komunitas Frater (PDMS)</h3>
+                        <p class="text-[11px] text-emerald-200">Kirim rekap buku lewat jatuh tempo ke pengurus komunitas</p>
+                    </div>
+                </div>
+                <button @click="isKomunitasModalOpen = false" class="text-white/80 hover:text-white transition text-lg p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-stone-700 mb-1">Nomor WhatsApp Komunitas:</label>
+                    <div class="flex items-center gap-2">
+                        <input type="text" x-model="komunitasPhone" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-stone-800 font-mono text-sm focus:outline-none focus:border-emerald-600">
+                        <span class="text-[10px] text-stone-400 whitespace-nowrap">Seminari Tinggi Providentia Dei</span>
+                    </div>
+                </div>
+
+                <!-- Preview Cover Buku Frater Terlambat -->
+                <template x-if="fraterOverdueItems.length > 0">
+                    <div>
+                        <label class="block font-semibold text-stone-700 mb-1.5">Buku Frater yang Perlu Diperiksa:</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-stone-50 p-2.5 rounded-2xl border border-stone-200 max-h-40 overflow-y-auto">
+                            <template x-for="item in fraterOverdueItems" :key="item.id">
+                                <div class="flex items-center gap-2.5 bg-white p-2 rounded-xl border border-stone-200/80 shadow-2xs">
+                                    <div class="w-8 h-11 shrink-0 rounded overflow-hidden bg-stone-100 border border-stone-200">
+                                        <template x-if="item.image">
+                                            <img :src="getCoverUrl(item.image)" class="w-full h-full object-cover">
+                                        </template>
+                                        <div class="w-full h-full flex items-center justify-center text-stone-300" :style="item.image ? 'display:none;' : ''">
+                                            <i class="fa-solid fa-book text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="font-bold text-stone-900 truncate text-[11px]" x-text="item.judul"></div>
+                                        <div class="text-[10px] text-stone-500 truncate" x-text="item.nama"></div>
+                                        <div class="text-[9px] text-rose-700 font-bold" x-text="'Telat ' + item.days_overdue + ' hari (' + item.no_induk + ')'"></div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="font-semibold text-stone-700">Preview & Edit Pesan:</label>
+                        <span class="text-[10px] text-stone-400">Pesan dapat disunting bebas</span>
+                    </div>
+                    <textarea x-model="komunitasMessage" rows="7" 
+                              class="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 text-stone-800 font-mono text-xs leading-relaxed focus:outline-none focus:border-emerald-600"></textarea>
+                </div>
+
+                <div x-show="komunitasSendResult" class="p-3 rounded-xl text-xs flex items-center gap-2"
+                     :class="komunitasSendResult && komunitasSendResult.status === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'">
+                    <i :class="komunitasSendResult && komunitasSendResult.status === 'success' ? 'fa-solid fa-circle-check text-emerald-600' : 'fa-solid fa-circle-exclamation text-rose-600'"></i>
+                    <span x-text="komunitasSendResult ? komunitasSendResult.message : ''"></span>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-stone-100">
+                    <button type="button" @click="copyKomunitasText()" class="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl font-semibold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-copy"></i>
+                        <span x-text="komunitasCopiedToast ? 'Tersalin! ✓' : 'Salin Pesan'"></span>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <button type="button" @click="openKomunitasDirect()" class="px-4 py-2 border border-emerald-600 text-emerald-700 hover:bg-emerald-50 rounded-xl font-semibold transition flex items-center gap-1.5">
+                            <i class="fa-brands fa-whatsapp"></i>
+                            <span>Buka WA Web</span>
+                        </button>
+                        <button type="button" @click="sendKomunitasServer()" :disabled="isSendingKomunitas" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition flex items-center gap-2 shadow-sm disabled:opacity-50">
+                            <i class="fa-solid" :class="isSendingKomunitas ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+                            <span x-text="isSendingKomunitas ? 'Mengirim...' : 'Kirim via Server Bot'"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal WhatsApp Customizer -->
+    <div x-show="isWaModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" x-cloak>
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-stone-200 overflow-hidden" @click.outside="isWaModalOpen = false">
+            <div class="bg-emerald-700 px-6 py-4 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-xl"></i>
+                    <div>
+                        <h3 class="font-bold text-sm">Kirim Pengingat Pengembalian WhatsApp</h3>
+                        <p class="text-[10px] text-emerald-100">Perpustakaan St. Jerome (IMAVI)</p>
+                    </div>
+                </div>
+                <button @click="isWaModalOpen = false" class="text-emerald-200 hover:text-white text-lg">&times;</button>
+            </div>
+            <div class="p-6 space-y-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-stone-700 mb-1">Nomor WhatsApp Peminjam</label>
+                    <input type="text" x-model="waPhoneInput" placeholder="Contoh: 08123456789 atau 628123456789"
+                           class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-stone-900 font-mono text-sm focus:outline-none focus:border-emerald-600">
+                    <span class="text-[10px] text-stone-400 mt-1 block">Pastikan nomor aktif di WhatsApp (gunakan format 08... atau 62...)</span>
+                </div>
+                <div>
+                    <label class="block font-semibold text-stone-700 mb-1">Draf Pesan Pengingat</label>
+                    <textarea x-model="waMessageInput" rows="6" 
+                              class="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 text-stone-800 font-sans leading-relaxed focus:outline-none focus:border-emerald-600"></textarea>
+                </div>
+                <div class="flex items-center justify-between pt-2">
+                    <button type="button" @click="copyWaText()" class="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl font-semibold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-copy"></i>
+                        <span x-text="waCopiedToast ? 'Tersalin! ✓' : 'Salin Pesan'"></span>
+                    </button>
+                    <button type="button" @click="openWhatsAppDirect()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition flex items-center gap-2 shadow-sm">
+                        <i class="fa-brands fa-whatsapp text-base"></i>
+                        <span>Buka WhatsApp Web / App</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function monitoringKeterlambatan() {
+    return {
+        allLoans: [],
+        filteredLoans: [],
+        selectedFilter: 'ALL',
+        searchQuery: '',
+        kpi: {
+            total_active: 0,
+            total_overdue: 0,
+            due_today: 0,
+            due_soon: 0,
+            total_fines: 0
+        },
+        isWaModalOpen: false,
+        isCoverModalOpen: false,
+        selectedCoverBook: null,
+        isKomunitasModalOpen: false,
+        komunitasPhone: '6281130899997',
+        komunitasMessage: '',
+        komunitasCopiedToast: false,
+        isSendingKomunitas: false,
+        komunitasSendResult: null,
+        fraterOverdueItems: [],
+        waPhoneInput: '',
+        waMessageInput: '',
+        waCopiedToast: false,
+
+        async init() {
+            await this.loadData();
+        },
+
+        async loadData() {
+            try {
+                const res = await fetch('/api/sirkulasi/terlambat?_t=' + Date.now(), { cache: 'no-store' });
+                const data = await res.json();
+                this.allLoans = data.loans || [];
+                this.kpi = data.kpi || {};
+                this.filterData();
+            } catch (e) {
+                console.error("Gagal memuat data keterlambatan:", e);
+            }
+        },
+
+        setStatusFilter(filter) {
+            this.selectedFilter = filter;
+            this.filterData();
+        },
+
+        filterData() {
+            let res = this.allLoans;
+
+            if (this.selectedFilter === 'OVERDUE') {
+                res = res.filter(x => x.days_overdue > 0);
+            } else if (this.selectedFilter === 'TODAY') {
+                res = res.filter(x => x.days_overdue === 0);
+            } else if (this.selectedFilter === 'SOON') {
+                res = res.filter(x => x.days_overdue < 0);
+            }
+
+            if (this.searchQuery.trim()) {
+                const q = this.searchQuery.toLowerCase();
+                res = res.filter(x => 
+                    (x.nama && x.nama.toLowerCase().includes(q)) ||
+                    (x.member_id && x.member_id.toLowerCase().includes(q)) ||
+                    (x.judul && x.judul.toLowerCase().includes(q)) ||
+                    (x.no_induk && x.no_induk.toLowerCase().includes(q))
+                );
+            }
+
+            this.filteredLoans = res;
+        },
+
+        formatRupiah(num) {
+            if (!num) return 'Rp 0';
+            return 'Rp ' + Number(num).toLocaleString('id-ID');
+        },
+
+        sendWaReminder(item) {
+            this.waPhoneInput = item.telepon || '';
+            const terlambatStr = item.days_overdue > 0 
+                ? `telah melewati batas waktu peminjaman selama *${item.days_overdue} hari* (Jatuh tempo: *${item.due_date}*). Estimasi denda saat ini: *Rp ${Number(item.days_overdue * 500).toLocaleString('id-ID')}*.`
+                : (item.days_overdue === 0 
+                    ? `jatuh tempo *HARI INI* (*${item.due_date}*).`
+                    : `akan jatuh tempo pada *${item.due_date}* (sisa ${Math.abs(item.days_overdue)} hari).`);
+
+            this.waMessageInput = `*PEMBERITAHUAN PERPUSTAKAAN ST. JEROME (IMAVI)*\n\nHalo Sdr/i *${item.nama}* (ID: ${item.member_id}),\n\nKami menginformasikan bahwa buku koleksi perpustakaan yang Anda pinjam:\n📖 *${item.judul}*\n🔖 Barcode/No. Induk: *${item.no_induk}*\n\nStatus: ${terlambatStr}\n\nMohon kesediaannya untuk segera mengembalikan atau memperpanjang masa pinjam buku tersebut ke Meja Sirkulasi Perpustakaan St. Jerome.\n\nTerima kasih atas kerjasamanya! 🙏\n_St. Jerome Library & Archives (SJLA)_`;
+
+            this.isWaModalOpen = true;
+        },
+
+        copyWaText() {
+            navigator.clipboard.writeText(this.waMessageInput);
+            this.waCopiedToast = true;
+            setTimeout(() => { this.waCopiedToast = false; }, 2000);
+        },
+
+        openWhatsAppDirect() {
+            let phone = this.waPhoneInput.replace(/[^0-9]/g, '');
+            if (phone.startsWith('0')) {
+                phone = '62' + phone.substring(1);
+            }
+            const encoded = encodeURIComponent(this.waMessageInput);
+            const url = phone ? `https://wa.me/${phone}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
+            window.open(url, '_blank');
+        },
+
+        getCoverUrl(img) {
+            if (!img) return '';
+            if (img.startsWith('http://') || img.startsWith('https://')) return img;
+            if (img.startsWith('/static/')) return img;
+            return '/static/' + img;
+        },
+
+        openImageModal(item) {
+            this.selectedCoverBook = item;
+            this.isCoverModalOpen = true;
+        },
+
+        openKomunitasWaModal() {
+            this.komunitasSendResult = null;
+            const fraters = this.allLoans.filter(x => {
+                const isFr = (x.tipe_anggota && x.tipe_anggota.toLowerCase().includes('frater')) ||
+                             (x.nama && x.nama.toLowerCase().startsWith('fr.'));
+                return isFr;
+            });
+
+            this.fraterOverdueItems = fraters.filter(x => x.days_overdue > 0);
+            const todayFraters = fraters.filter(x => x.days_overdue === 0);
+
+            let msg = "*PENGINGAT SIRKULASI PERPUSTAKAAN IMAVI / ST. JEROME*\n";
+            msg += "Kepada Yth. Komunitas Seminari Tinggi Providentia Dei,\n\n";
+            msg += "Salam damai dalam Kristus,\n";
+
+            if (this.fraterOverdueItems.length > 0) {
+                msg += "Berikut kami sampaikan rekap peminjaman buku perpustakaan oleh Frater yang telah *melewati batas tanggal jatuh tempo (terlambat)* per hari ini:\n\n";
+                this.fraterOverdueItems.forEach((item, idx) => {
+                    msg += `${idx + 1}. *${item.nama}* (NIM: ${item.member_id})\n`;
+                    msg += `   • Judul: ${item.judul} [${item.no_induk}]\n`;
+                    msg += `   • Jatuh Tempo: ${item.due_date} (Telat ${item.days_overdue} hari)\n\n`;
+                });
+            } else {
+                msg += "Puji Tuhan, saat ini *tidak ada Frater yang terlambat* mengembalikan buku perpustakaan.\n\n";
+            }
+
+            if (todayFraters.length > 0) {
+                msg += "📌 *Catatan Buku Frater Jatuh Tempo Hari Ini (21 Okt 2026):*\n";
+                todayFraters.forEach((item, idx) => {
+                    msg += `• *${item.nama}* (NIM: ${item.member_id}) - ${item.judul} [${item.no_induk}]\n`;
+                });
+                msg += "\n";
+            }
+
+            msg += "Mohon perkenan Komunitas / Romo Pamong untuk mengingatkan Frater yang bersangkutan agar dapat melakukan pengembalian atau perpanjangan masa pinjam di Meja Sirkulasi Perpustakaan IMAVI.\n\n";
+            msg += "Terima kasih banyak atas perhatian dan kerja samanya.\nTuhan memberkati.\n\n";
+            msg += "_Layanan Sirkulasi & Automasi St. Jerome — Perpustakaan IMAVI_";
+
+            this.komunitasMessage = msg;
+            this.isKomunitasModalOpen = true;
+        },
+
+        copyKomunitasText() {
+            navigator.clipboard.writeText(this.komunitasMessage);
+            this.komunitasCopiedToast = true;
+            setTimeout(() => { this.komunitasCopiedToast = false; }, 2000);
+        },
+
+        openKomunitasDirect() {
+            let phone = this.komunitasPhone.replace(/[^0-9]/g, '');
+            if (phone.startsWith('0')) {
+                phone = '62' + phone.substring(1);
+            }
+            const encoded = encodeURIComponent(this.komunitasMessage);
+            window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encoded}`, '_blank');
+        },
+
+        async sendKomunitasServer() {
+            this.isSendingKomunitas = true;
+            this.komunitasSendResult = null;
+            try {
+                const res = await fetch('/api/sirkulasi/kirim_wa_komunitas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        number: this.komunitasPhone,
+                        message: this.komunitasMessage
+                    })
+                });
+                const data = await res.json();
+                this.komunitasSendResult = data;
+            } catch (err) {
+                this.komunitasSendResult = { status: 'error', message: 'Gagal terhubung ke bot server: ' + err.message };
+            } finally {
+                this.isSendingKomunitas = false;
+            }
+        },
+
+        printReport() {
+            window.print();
+        }
+    }
+}
+</script>
+{% endblock %}

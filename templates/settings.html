@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block page_title %}Pengaturan Sistem{% endblock %}
-{% block page_subtitle %}Konfigurasi Aplikasi dan Backup Otomatis{% endblock %}
+{% block page_subtitle %}Konfigurasi Aplikasi, Feature Flags, dan Backup Telegram{% endblock %}
 
 {% block content %}
 <div class="grid grid-cols-1 gap-6">
@@ -16,47 +16,120 @@
       {% endif %}
     {% endwith %}
 
+    <!-- CARD 1: MODE APLIKASI & FEATURE FLAGS ("1 CORE BANYAK WAJAH") -->
+    <div class="rounded-sm border border-stroke bg-white shadow-default p-6">
+        <div class="border-b border-stroke pb-4 mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div>
+                <h3 class="font-bold text-black text-lg">
+                    <i class="fa-solid fa-sliders text-primary mr-2"></i> Mode Aplikasi &amp; Feature Flags
+                </h3>
+                <p class="text-sm text-slate-500 mt-1">Atur identitas perpustakaan dan modul aktif agar satu codebase siap untuk mode online maupun offline portabel.</p>
+            </div>
+            <span class="px-2.5 py-1 rounded text-xs font-semibold uppercase tracking-wide bg-stone-100 text-stone-700 border border-stone-200">
+                Mode Aktif: {{ features.get('APP_MODE', 'online') }}
+            </span>
+        </div>
+
+        <form method="POST" action="{{ url_for('settings') }}">
+            <input type="hidden" name="form_section" value="features">
+            <input type="hidden" name="save_feature_flags" value="1">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-black">Nama Perpustakaan (Branding Sidebar)</label>
+                    <input type="text" name="library_name" value="{{ config.get('LIBRARY_NAME', features.get('LIBRARY_NAME', 'Perpustakaan IMAVI')) }}" placeholder="Perpustakaan IMAVI" class="w-full rounded border border-stroke bg-transparent py-2.5 px-4 outline-none transition focus:border-primary">
+                </div>
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-black">Mode Operasional Aplikasi</label>
+                    {% set cur_mode = config.get('APP_MODE', features.get('APP_MODE', 'online')) %}
+                    <select name="app_mode" class="w-full rounded border border-stroke bg-transparent py-2.5 px-4 outline-none transition focus:border-primary">
+                        <option value="online" {% if cur_mode == 'online' %}selected{% endif %}>online (Server Produksi / Fitur Lengkap)</option>
+                        <option value="offline_portable" {% if cur_mode == 'offline_portable' %}selected{% endif %}>offline_portable (Tanpa Internet, AI, Auto-Cover &amp; POS)</option>
+                        <option value="demo" {% if cur_mode == 'demo' %}selected{% endif %}>demo (Mode Uji Coba / Trial)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5 text-sm">
+                <label class="flex items-center justify-between rounded border border-stroke px-4 py-3 cursor-pointer hover:bg-stone-50">
+                    <span><strong class="block text-black">Backup &amp; Alert Telegram</strong><span class="text-xs text-slate-500">Kirim snapshot &amp; alert sistem ke Telegram</span></span>
+                    <input type="checkbox" name="flag_ENABLE_TELEGRAM_OPS" {% if features.get('ENABLE_TELEGRAM_OPS') %}checked{% endif %} class="h-4 w-4 accent-primary">
+                </label>
+
+                <label class="flex items-center justify-between rounded border border-stroke px-4 py-3 cursor-pointer hover:bg-stone-50">
+                    <span><strong class="block text-black">Layanan Kasir POS (FC &amp; Print)</strong><span class="text-xs text-slate-500">Aktifkan modul kasir POS di sidebar &amp; endpoint</span></span>
+                    <input type="checkbox" name="flag_ENABLE_POS_FOTOCOPY" {% if features.get('ENABLE_POS_FOTOCOPY') %}checked{% endif %} class="h-4 w-4 accent-primary">
+                </label>
+
+                <label class="flex items-center justify-between rounded border border-stroke px-4 py-3 cursor-pointer hover:bg-stone-50">
+                    <span><strong class="block text-black">Asisten AI &amp; Scan Sampul (Gemini)</strong><span class="text-xs text-slate-500">Nonaktif otomatis saat mode offline_portable</span></span>
+                    <input type="checkbox" name="flag_ENABLE_AI_ASSISTANT" {% if features.get('ENABLE_AI_ASSISTANT') %}checked{% endif %} class="h-4 w-4 accent-primary">
+                </label>
+
+                <label class="flex items-center justify-between rounded border border-stroke px-4 py-3 cursor-pointer hover:bg-stone-50">
+                    <span><strong class="block text-black">Robot Auto-Cover Online (OpenLibrary)</strong><span class="text-xs text-slate-500">Download URL sampul dari internet secara otomatis</span></span>
+                    <input type="checkbox" name="flag_ENABLE_AUTOCOVER_ONLINE" {% if features.get('ENABLE_AUTOCOVER_ONLINE') %}checked{% endif %} class="h-4 w-4 accent-primary">
+                </label>
+
+                <label class="flex items-center justify-between rounded border border-stroke px-4 py-3 cursor-pointer hover:bg-stone-50">
+                    <span><strong class="block text-black">Integrasi Jadwal &amp; Office Sync</strong><span class="text-xs text-slate-500">Proxy portal jadwal &amp; sync eksternal</span></span>
+                    <input type="checkbox" name="flag_ENABLE_SYNC_JADWAL_PROXY" {% if features.get('ENABLE_SYNC_JADWAL_PROXY') %}checked{% endif %} class="h-4 w-4 accent-primary">
+                </label>
+
+                <div class="flex items-center justify-between rounded border border-stroke bg-stone-50 px-4 py-3 text-slate-500">
+                    <span><strong class="block text-stone-700">WhatsApp Bot Gateway</strong><span class="text-xs">Dinonaktifkan (Sistem memakai Telegram untuk notifikasi &amp; backup)</span></span>
+                    <span class="px-2 py-0.5 rounded bg-stone-200 text-stone-700 text-xs font-semibold">OFF</span>
+                </div>
+            </div>
+
+            <button type="submit" class="rounded bg-stone-900 px-6 py-2.5 font-medium text-white hover:bg-stone-800">
+                <i class="fa-solid fa-check-double mr-2"></i> Simpan Mode &amp; Fitur
+            </button>
+        </form>
+    </div>
+
+    <!-- CARD 2: TELEGRAM BACKUP & ASISTEN AI -->
     <div class="rounded-sm border border-stroke bg-white shadow-default p-6">
         <div class="border-b border-stroke pb-4 mb-4">
             <h3 class="font-bold text-black text-lg">
-                <i class="fa-brands fa-telegram text-[#0088cc] mr-2"></i> Telegram Backup (Awan Tanpa Batas)
+                <i class="fa-brands fa-telegram text-[#0088cc] mr-2"></i> Telegram Backup &amp; Notifikasi (Awan Tanpa Batas)
             </h3>
-            <p class="text-sm text-slate-500 mt-1">Konfigurasi Bot Telegram untuk mengirimkan cadangan database secara otomatis ke HP Anda.</p>
+            <p class="text-sm text-slate-500 mt-1">Konfigurasi Bot Telegram untuk mengirimkan cadangan database otomatis dan notifikasi sistem ke HP Anda.</p>
         </div>
-        
+
         <form method="POST" action="{{ url_for('settings') }}">
+            <input type="hidden" name="form_section" value="integrations">
+
             <div class="mb-5.5">
                 <label class="mb-2 block text-sm font-medium text-black">Telegram Bot Token</label>
                 <input type="text" name="telegram_token" value="{{ config.get('TELEGRAM_BOT_TOKEN', '') }}" placeholder="Contoh: 123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZ" class="w-full rounded border border-stroke bg-transparent py-3 px-5 outline-none transition focus:border-primary active:border-primary">
                 <p class="text-xs text-slate-500 mt-1">Dapatkan dari <a href="https://t.me/BotFather" target="_blank" class="text-primary hover:underline">@BotFather</a></p>
             </div>
-            
+
             <div class="mb-5.5">
                 <label class="mb-2 block text-sm font-medium text-black">Telegram Chat ID (ID Bapak)</label>
                 <input type="text" name="telegram_chat_id" value="{{ config.get('TELEGRAM_CHAT_ID', '') }}" placeholder="Contoh: 12345678" class="w-full rounded border border-stroke bg-transparent py-3 px-5 outline-none transition focus:border-primary active:border-primary">
                 <p class="text-xs text-slate-500 mt-1">Dapatkan dari <a href="https://t.me/userinfobot" target="_blank" class="text-primary hover:underline">@userinfobot</a></p>
             </div>
-            
-            
-        <div class="border-b border-stroke pb-4 mb-4 mt-8">
-            <h3 class="font-bold text-black text-lg">
-                <i class="fa-solid fa-robot text-primary mr-2"></i> WhatsApp AI (Google Gemini)
-            </h3>
-            <p class="text-sm text-slate-500 mt-1">Kunci API untuk menghidupkan fitur obrolan pintar Customer Service WA.</p>
-        </div>
-        
-        <div class="mb-5.5">
-            <label class="mb-2 block text-sm font-medium text-black">Google Gemini API Key</label>
-            <input type="text" name="gemini_api_key" value="{{ config.get('GEMINI_API_KEY', '') }}" placeholder="Contoh: AIzaSyB..." class="w-full rounded border border-stroke bg-transparent py-3 px-5 outline-none transition focus:border-primary active:border-primary">
-            <p class="text-xs text-slate-500 mt-1">Dapatkan secara gratis dari <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-primary hover:underline">Google AI Studio</a></p>
-        </div>
 
-          <div class="mb-5.5 border-t border-stroke pt-4 mt-4">
-              <label class="mb-2 block text-sm font-medium text-black">Informasi & Profil Perpustakaan (Untuk Bekal Pengetahuan AI)</label>
-              <textarea name="info_perpustakaan" rows="4" class="w-full rounded border border-stroke bg-transparent py-3 px-5 outline-none transition focus:border-primary active:border-primary" placeholder="Masukkan jam buka, aturan pinjam, denda, dll di sini agar AI bisa menjawab pertanyaan mahasiswa...">{{ config.get('INFO_PERPUSTAKAAN', '') }}</textarea>
-              <p class="text-xs text-slate-500 mt-1">Tuliskan panduan jam buka, denda, dan aturan perpustakaan. AI akan membaca teks ini setiap kali ditanya oleh mahasiswa.</p>
-          </div>
+            <div class="border-b border-stroke pb-4 mb-4 mt-8">
+                <h3 class="font-bold text-black text-lg">
+                    <i class="fa-solid fa-robot text-primary mr-2"></i> Asisten AI &amp; Katalogisasi (Google Gemini)
+                </h3>
+                <p class="text-sm text-slate-500 mt-1">Kunci API Google Gemini untuk fitur Smart Catalog &amp; Asisten AI Perpustakaan.</p>
+            </div>
 
+            <div class="mb-5.5">
+                <label class="mb-2 block text-sm font-medium text-black">Google Gemini API Key</label>
+                <input type="text" name="gemini_api_key" value="{{ config.get('GEMINI_API_KEY', '') }}" placeholder="Contoh: AIzaSyB..." class="w-full rounded border border-stroke bg-transparent py-3 px-5 outline-none transition focus:border-primary active:border-primary">
+                <p class="text-xs text-slate-500 mt-1">Dapatkan secara gratis dari <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-primary hover:underline">Google AI Studio</a></p>
+            </div>
+
+            <div class="mb-5.5 border-t border-stroke pt-4 mt-4">
+                <label class="mb-2 block text-sm font-medium text-black">Informasi &amp; Profil Perpustakaan (Untuk Bekal Pengetahuan AI)</label>
+                <textarea name="info_perpustakaan" rows="4" class="w-full rounded border border-stroke bg-transparent py-3 px-5 outline-none transition focus:border-primary active:border-primary" placeholder="Masukkan jam buka, aturan pinjam, denda, dll di sini agar AI bisa menjawab pertanyaan mahasiswa...">{{ config.get('INFO_PERPUSTAKAAN', '') }}</textarea>
+                <p class="text-xs text-slate-500 mt-1">Tuliskan panduan jam buka, denda, dan aturan perpustakaan.</p>
+            </div>
 
             <div class="flex gap-4">
                 <button type="submit" class="rounded bg-primary px-6 py-2.5 font-medium text-white hover:bg-opacity-90">
@@ -67,7 +140,7 @@
                 </button>
             </div>
         </form>
-        
+
         <!-- PANDUAN -->
         <div class="mt-8 rounded bg-blue-50 p-4 border border-blue-100 text-sm">
             <h4 class="font-bold text-slate-800 mb-2"><i class="fa-solid fa-circle-info text-primary mr-1"></i> Cara Membuat Bot Telegram dalam 1 Menit:</h4>
@@ -93,7 +166,7 @@ function testBackup() {
             Swal.showLoading();
         }
     });
-    
+
     fetch("{{ url_for('test_backup') }}", {
         method: 'POST',
         headers: {'Content-Type': 'application/json'}

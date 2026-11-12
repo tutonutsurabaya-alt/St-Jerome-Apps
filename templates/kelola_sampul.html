@@ -37,65 +37,6 @@
         </div>
 
 
-        <div class="bg-slate-800 rounded-lg p-5 mb-8 text-white shadow-md relative overflow-hidden">
-            <!-- Background Decoration -->
-            <div class="absolute -right-10 -top-10 opacity-10">
-                <i class="fa-solid fa-robot text-9xl"></i>
-            </div>
-            
-            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h3 class="font-bold text-lg text-amber-400 mb-1"><i class="fa-solid fa-robot mr-2"></i> Pusat Komando Robot</h3>
-                    <p class="text-sm text-slate-300">Biarkan server mencari sampul otomatis. <br/>Gunakan tombol ini secara berkala agar tidak diblokir Google.</p>
-                </div>
-                
-                <div class="flex flex-col items-end gap-2">
-                    <button @click="startRobot()" x-show="!robot.is_running" class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold px-6 py-2 rounded-md transition flex items-center shadow-lg">
-                        <i class="fa-solid fa-play mr-2"></i> Cari 50 Buku Sekarang
-                    </button>
-                    <button @click="stopRobot()" x-show="robot.is_running" style="display: none;" class="bg-danger hover:bg-opacity-80 text-white font-bold px-6 py-2 rounded-md transition flex items-center shadow-lg">
-                        <i class="fa-solid fa-stop mr-2"></i> Hentikan Robot
-                    </button>
-                </div>
-            </div>
-
-            <!-- Panel Status Robot -->
-            <div x-show="robot.is_running || robot.progress > 0 || robot.error" style="display: none;" class="mt-5 bg-slate-900/50 rounded p-4 border border-slate-700">
-                <div class="flex justify-between text-xs mb-1">
-                    <span class="text-slate-400">Proses Pencarian:</span>
-                    <span class="font-bold" x-text="robot.progress + ' / ' + robot.total"></span>
-                </div>
-                <div class="w-full bg-slate-800 rounded-full h-2.5 mb-4">
-                    <div class="bg-amber-500 h-2.5 rounded-full transition-all duration-500" :style="'width: ' + (robot.total > 0 ? (robot.progress / robot.total * 100) : 0) + '%'"></div>
-                </div>
-                
-                <div class="text-sm">
-                    <span class="text-slate-400 mr-2">Target saat ini:</span>
-                    <span class="font-medium text-amber-300" x-text="robot.current_book"></span>
-                </div>
-                
-                <div x-show="robot.error" style="display: none;" class="mt-3 text-sm text-danger flex items-start gap-2 bg-danger/10 p-2 rounded">
-                    <i class="fa-solid fa-triangle-exclamation mt-1"></i>
-                    <span x-text="robot.error"></span>
-                </div>
-
-                <!-- Hasil Terakhir -->
-                <div x-show="robot.results.length > 0" class="mt-4 border-t border-slate-700 pt-3">
-                    <h4 class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Hasil Pencarian Terakhir</h4>
-                    <div class="max-h-40 overflow-y-auto pr-2 space-y-2">
-                        <template x-for="r in robot.results">
-                            <div class="flex items-center justify-between bg-slate-800/80 p-2 rounded text-xs">
-                                <span class="truncate pr-4 flex-1" x-text="r.judul"></span>
-                                <span class="px-2 py-0.5 rounded font-medium" 
-                                      :class="r.status === 'Ditemukan' ? 'bg-success/20 text-success' : (r.status === 'Limit Google' ? 'bg-warning/20 text-warning' : 'bg-slate-700 text-slate-300')"
-                                      x-text="r.status"></span>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
         <!-- Pencarian -->
 
         <div class="flex mb-6 gap-4">
@@ -173,212 +114,58 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('sampulManager', () => ({
         robot: { is_running: false, progress: 0, total: 0, current_book: '', results: [], error: '' },
         stats: { total: 0, punya_sampul: 0, belum_sampul: 0, persen: 0 },
-        shouldStop: false,
+        pollInterval: null,
         
-        async startRobot() {
-            if (this.robot.is_running) return;
-            this.robot = { is_running: true, progress: 0, total: 50, current_book: 'Mengambil antrian buku...', results: [], error: '' };
-            this.shouldStop = false;
-            
-            try {
-                // Ambil 50 buku kosong dari server
-                const res = await fetch('/api/sampul_kosong?page=1&search=');
-                const data = await res.json();
-                
-                if (!data.data || data.data.length === 0) {
-                    this.robot.error = "Luar biasa! Tidak ada lagi buku yang membutuhkan sampul.";
-                    this.robot.is_running = false;
-                    return;
-                }
-                
-                let books = data.data.slice(0, 50);
-                this.robot.total = books.length;
-                
-                for (let i = 0; i < books.length; i++) {
-                    if (this.shouldStop) {
-                        this.robot.error = "Dihentikan manual.";
-                        break;
-                    }
-                    
-                    let book = books[i];
-                    this.robot.current_book = book.judul + " - " + (book.pengarang || '');
-                    
-                    let image_url = 'NOT_FOUND';
-                    let statusText = 'Kosong';
-                    let needGoogleDelay = false;
-                    
-                    try {
-                        // SUMBER 1: OpenLibrary by ISBN (instant, tanpa rate limit)
-                        if (book.isbn && book.isbn.trim() && book.isbn.trim() !== '-') {
-                            const cleanIsbn = book.isbn.replace(/-/g, '').replace(/ /g, '').trim();
-                            try {
-                                const isbnRes = await fetch('https://openlibrary.org/api/books?bibkeys=ISBN:' + cleanIsbn + '&format=json&jscmd=data');
-                                const isbnData = await isbnRes.json();
-                                const key = 'ISBN:' + cleanIsbn;
-                                if (isbnData[key] && isbnData[key].cover) {
-                                    image_url = isbnData[key].cover.medium || isbnData[key].cover.small || isbnData[key].cover.large;
-                                    if (image_url) statusText = 'Ditemukan';
-                                }
-                            } catch(e) {}
-                        }
-                        
-                        // SUMBER 2: OpenLibrary Search by judul+pengarang
-                        if (image_url === 'NOT_FOUND') {
-                            try {
-                                const query = encodeURIComponent((book.judul || '') + ' ' + (book.pengarang || ''));
-                                const olRes = await fetch('https://openlibrary.org/search.json?q=' + query + '&fields=cover_i&limit=1');
-                                const olData = await olRes.json();
-                                if (olData.docs && olData.docs.length > 0 && olData.docs[0].cover_i) {
-                                    image_url = 'https://covers.openlibrary.org/b/id/' + olData.docs[0].cover_i + '-M.jpg';
-                                    statusText = 'Ditemukan';
-                                }
-                            } catch(e) {}
-                        }
-
-                        // SUMBER 3: Google Books (fallback, jeda 6 detik agar tidak diblokir)
-                        if (image_url === 'NOT_FOUND') {
-                            needGoogleDelay = true;
-                            try {
-                                const gQuery = encodeURIComponent((book.judul || '') + ' ' + (book.pengarang || ''));
-                                const gRes = await fetch('https://www.googleapis.com/books/v1/volumes?q=' + gQuery);
-                                if (gRes.status === 429) {
-                                    let wait = 60;
-                                    while (wait > 0) {
-                                        if (this.shouldStop) {
-                                            this.robot.error = "Dihentikan manual.";
-                                            this.robot.is_running = false;
-                                            return;
-                                        }
-                                        this.robot.error = `Google Books membatasi. Menunggu otomatis ${wait} detik...`;
-                                        await new Promise(r => setTimeout(r, 1000));
-                                        wait--;
-                                    }
-                                    this.robot.error = "";
-                                    i--; // Ulangi buku ini
-                                    continue;
-                                }
-                                const gData = await gRes.json();
-                                if (gData.items && gData.items.length > 0) {
-                                    let img = gData.items[0].volumeInfo?.imageLinks?.thumbnail;
-                                    if (img) {
-                                        image_url = img.replace('http:', 'https:');
-                                        statusText = 'Ditemukan (Google)';
-                                    }
-                                }
-                            } catch(e) {}
-                        }
-                    } catch (e) {
-                        console.error(e);
-                    }
-                    
-                    // Simpan ke database server
-                    await fetch('/api/sampul/update', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: book.id, image_url: image_url })
-                    });
-                    
-                    this.robot.results.unshift({
-                        judul: book.judul,
-                        status: statusText
-                    });
-                    this.robot.progress++;
-                    
-                    // Jeda: 300ms untuk buku OpenLibrary, 6 detik kalau pakai Google Books
-                    await new Promise(r => setTimeout(r, needGoogleDelay ? 6000 : 300));
-                }
-            } catch (e) {
-                this.robot.error = "Terjadi kesalahan jaringan.";
-            }
-            
-            this.robot.current_book = "Selesai";
-            this.robot.is_running = false;
-            this.loadData(); // Refresh UI bawah
-        },
-        
-        stopRobot() {
-            this.shouldStop = true;
-        },
-        
-        search: '',
-        books: [],
-        loading: false,
-        total: 0,
-        page: 1,
-        totalPages: 1,
-        
-        async loadData() {
-            this.loading = true;
-            try {
-                const res = await fetch('/api/sampul_kosong?page=' + this.page + '&search=' + encodeURIComponent(this.search));
-                const data = await res.json();
-                if(data.status === 'success') {
-                    // Tambahkan state lokal untuk setiap buku
-                    this.books = data.data.map(b => ({...b, newImage: '', saving: false}));
-                    this.total = data.total;
-                    this.page = data.page;
-                    this.totalPages = data.total_pages;
-                }
-            } catch (e) {
-                console.error(e);
-                alert("Gagal memuat data.");
-            }
-            this.loading = false;
+        init() {
             this.loadStats();
+            // Robot removed
         },
-
+        
         async loadStats() {
             try {
                 const res = await fetch('/api/sampul/stats');
                 const data = await res.json();
-                if (data.status === 'success') this.stats = data;
+                this.stats = data;
             } catch(e) {}
         },
         
-        async saveImage(book) {
-            if (!book.newImage || book.newImage.trim() === '') {
-                alert("Harap masukkan link URL gambar.");
-                return;
-            }
-            if (!book.newImage.startsWith('http')) {
-                alert("URL harus diawali dengan http:// atau https://");
-                return;
-            }
-            
-            book.saving = true;
+        async checkRobotStatus() {
             try {
-                const res = await fetch('/api/sampul/update', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: book.id, image_url: book.newImage.trim() })
-                });
-                const data = await res.json();
-                if(data.status === 'success') {
-                    // Hapus dari daftar jika berhasil (karena sudah tidak kosong)
-                    this.books = this.books.filter(b => b.id !== book.id);
-                    this.total -= 1;
-                } else {
-                    alert("Gagal menyimpan: " + data.message);
+                const res = await fetch('/api/robot/status');
+                const state = await res.json();
+                this.robot = state;
+                
+                if (this.robot.is_running && !this.pollInterval) {
+                    this.pollInterval = setInterval(() => this.checkRobotStatus(), 2000);
+                } else if (!this.robot.is_running && this.pollInterval) {
+                    clearInterval(this.pollInterval);
+                    this.pollInterval = null;
+                    this.loadStats();
                 }
-            } catch (e) {
-                console.error(e);
-                alert("Terjadi kesalahan koneksi.");
-            }
-            book.saving = false;
+            } catch(e) {}
         },
         
-        nextPage() {
-            if (this.page < this.totalPages) {
-                this.page++;
-                this.loadData();
+        async startRobot() {
+            if (this.robot.is_running) return;
+            this.robot.current_book = "Memulai...";
+            try {
+                await fetch('/api/robot/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({limit: 0})
+                });
+                // Robot removed
+            } catch(e) {
+                alert('Gagal memulai robot.');
             }
         },
         
-        prevPage() {
-            if (this.page > 1) {
-                this.page--;
-                this.loadData();
-            }
+        async stopRobot() {
+            this.robot.current_book = "Menghentikan...";
+            try {
+                await fetch('/api/robot/stop', { method: 'POST' });
+                // Robot removed
+            } catch(e) {}
         }
     }));
 });

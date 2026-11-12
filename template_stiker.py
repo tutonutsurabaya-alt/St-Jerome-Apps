@@ -43,7 +43,7 @@ def draw_identitas(c, x_stiker, y_base, item_h, buku):
     
     c.setFillColor(colors.black)
     c.setFont("Helvetica-Bold", 8)
-    c.drawString(x_stiker + col_kiri_w + 0.2*cm, y_tgl + 0.2*cm, buku.get('no_induk', ''))
+    c.drawString(x_stiker + col_kiri_w + 0.2*cm, y_tgl + 0.2*cm, str(buku.get('no_induk', '')))
     
     tgl_terima_raw = buku.get('tgl_terima', '')
     tgl_terima_format = tgl_terima_raw
@@ -71,7 +71,7 @@ def draw_identitas(c, x_stiker, y_base, item_h, buku):
     c.drawString(x_stiker + col_kiri_w + 0.2*cm, y_kopi + 0.6*cm, call_number)
     
     c.setFont("Helvetica-Bold", 7)
-    c.drawString(x_stiker + col_kiri_w + 0.2*cm, y_stiker + 0.1*cm, buku.get('copy_ke', '1'))
+    c.drawString(x_stiker + col_kiri_w + 0.2*cm, y_stiker + 0.1*cm, str(buku.get('copy_ke', '1')))
 
 
 def draw_punggung(c, x_spine, y_base, item_h, buku):

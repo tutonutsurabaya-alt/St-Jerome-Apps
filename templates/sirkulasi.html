@@ -2,162 +2,434 @@
 
 {% block content %}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<div class="flex flex-col md:flex-row gap-0 h-full border border-stroke bg-white shadow-default" x-data="sirkulasiApp()" @keydown.escape.window="endSession()" @keydown.f2.window.prevent="activeTab = 'peminjaman'" @keydown.f3.window.prevent="activeTab = 'saat_ini'" @keydown.f4.window.prevent="activeTab = 'reservasi'" @keydown.f9.window.prevent="activeTab = 'denda'" @keydown.f10.window.prevent="activeTab = 'sejarah'">
+
+<div class="p-4 md:p-8 space-y-6 max-w-7xl mx-auto animate-fade-in" x-data="sirkulasiApp()" 
+     @keydown.escape.window="endSession()" 
+     @keydown.f2.window.prevent="activeTab = 'peminjaman'" 
+     @keydown.f3.window.prevent="activeTab = 'saat_ini'" 
+     @keydown.f4.window.prevent="activeTab = 'reservasi'" 
+     @keydown.f9.window.prevent="activeTab = 'denda'" 
+     @keydown.f10.window.prevent="activeTab = 'sejarah'">
     
     <!-- Toast Alert Global -->
-    <div class="fixed top-4 right-4 z-50 w-80 shadow-lg rounded" style="display: none;" x-show="alert.show" x-transition>
-        <div class="p-4 border-l-4" :class="alert.type === 'error' ? 'bg-red-100 border-danger text-danger' : 'bg-green-100 border-success text-success'">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h4 class="font-bold text-sm" x-text="alert.title"></h4>
-                    <p class="text-sm mt-1" x-html="alert.message"></p>
-                </div>
-                <button @click="alert.show = false" class="text-slate-400 hover:text-black">&times;</button>
+    <div class="fixed top-5 right-5 z-50 w-88 shadow-2xl rounded-2xl overflow-hidden border transition-all duration-300" 
+         style="display: none;" x-show="alert.show" x-transition>
+        <div class="p-4 flex items-start gap-3" 
+             :class="alert.type === 'error' ? 'bg-red-50 border-red-200 text-red-900' : 'bg-emerald-50 border-emerald-200 text-emerald-900'">
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-base"
+                 :class="alert.type === 'error' ? 'bg-red-200 text-red-700' : 'bg-emerald-200 text-emerald-700'">
+                <i :class="alert.type === 'error' ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-circle-check'"></i>
             </div>
+            <div class="flex-grow">
+                <h5 class="font-bold text-xs uppercase tracking-wider" x-text="alert.title"></h5>
+                <p class="text-xs mt-0.5 leading-relaxed" x-html="alert.message"></p>
+            </div>
+            <button @click="alert.show = false" class="text-gray-400 hover:text-gray-700 text-sm">&times;</button>
         </div>
     </div>
 
-    <!-- Inner Sidebar (SLiMS style) -->
-    <div class="w-full md:w-56 flex-shrink-0 bg-slate-50 border-r border-stroke">
-       <ul class="text-sm font-medium text-slate-600">
-          <li>
-            <a href="#" @click.prevent="switchMode('peminjaman')" :class="mode === 'peminjaman' ? 'bg-white text-primary border-l-4 border-primary font-bold shadow-sm' : 'hover:bg-slate-100 border-l-4 border-transparent'" class="block py-3 px-5 transition">
-                Mulai Transaksi
-            </a>
-          </li>
-          <li>
-            <a href="#" @click.prevent="switchMode('pengembalian')" :class="mode === 'pengembalian' ? 'bg-white text-primary border-l-4 border-primary font-bold shadow-sm' : 'hover:bg-slate-100 border-l-4 border-transparent'" class="block py-3 px-5 transition">
-                Pengembalian Kilat
-            </a>
-          </li>
-       </ul>
+    <!-- Header Section with Mode Switcher -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-gray-200">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                    <i class="fa-solid fa-arrows-rotate text-amber-600"></i> Meja Layanan Sirkulasi
+                </span>
+                <span class="text-xs text-gray-400">•</span>
+                <span class="text-xs text-gray-500">St. Jerome Library Assistant</span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Sirkulasi & Peminjaman</h1>
+            <p class="text-sm text-gray-500 mt-1">
+                Layanan terpadu peminjaman, pengembalian, perpanjangan masa pinjam, dan denda pemustaka.
+            </p>
+        </div>
+
+        <!-- Mode Toggle Tabs -->
+        <div class="bg-gray-100 p-1.5 rounded-2xl flex items-center gap-1 shadow-inner border border-gray-200 shrink-0">
+            <button @click.prevent="switchMode('peminjaman')" 
+                    :class="mode === 'peminjaman' ? 'bg-white text-gray-900 font-bold shadow-sm' : 'text-gray-500 hover:text-gray-800 font-medium'"
+                    class="px-4 py-2 rounded-xl text-xs transition flex items-center gap-2">
+                <i class="fa-solid fa-user-check" :class="mode === 'peminjaman' ? 'text-amber-600' : 'text-gray-400'"></i>
+                <span>Transaksi Anggota</span>
+            </button>
+            <button @click.prevent="switchMode('pengembalian')" 
+                    :class="mode === 'pengembalian' ? 'bg-white text-gray-900 font-bold shadow-sm' : 'text-gray-500 hover:text-gray-800 font-medium'"
+                    class="px-4 py-2 rounded-xl text-xs transition flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-amber-500"></i>
+                <span>Pengembalian Kilat</span>
+            </button>
+        </div>
     </div>
-    
-    <!-- Main Content Area -->
-    <div class="flex-grow p-6 bg-white min-h-[600px]">
+
+    <!-- ========================================================================= -->
+    <!-- MODE 1: TRANSAKSI ANGGOTA (Mulai Transaksi) -->
+    <!-- ========================================================================= -->
+    <div x-show="mode === 'peminjaman'">
         
-        <!-- MODE PEMINJAMAN (Mulai Transaksi) -->
-        <div x-show="mode === 'peminjaman'">
-            <h2 class="text-2xl font-semibold text-black mb-4 border-b border-stroke pb-2">Sirkulasi</h2>
-            
-            <!-- STEP 1: Jika belum ada sesi member aktif -->
-            <div x-show="!sessionActive">
-                <div class="bg-blue-50 text-blue-800 px-4 py-3 rounded mb-6 text-sm border border-blue-200">
-                    SIRKULASI - Masukkan nomor anggota untuk mulai transaksi dengan papan kunci atau pemindai
+        <!-- STEP 1: BELUM ADA SESI MEMBER AKTIF -->
+        <div x-show="!sessionActive" class="space-y-6">
+            <!-- Member Scanner Hero Box -->
+            <div class="bg-gradient-to-br from-white to-amber-50/40 rounded-3xl p-6 md:p-8 border border-amber-200/80 shadow-sm relative overflow-hidden">
+                <div class="max-w-2xl">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 mb-3">
+                        <i class="fa-solid fa-barcode"></i> Siap Memindai
+                    </span>
+                    <h3 class="text-xl md:text-2xl font-black text-gray-900">Mulai Transaksi Sirkulasi</h3>
+                    <p class="text-xs text-gray-500 mt-1">
+                        Pindai *barcode* pada kartu anggota atau ketikkan NIM / ID Anggota di bawah ini lalu tekan <strong class="text-gray-700">Enter</strong>.
+                    </p>
+
+                    <div class="mt-5 flex flex-col sm:flex-row items-stretch gap-3">
+                        <div class="relative flex-grow">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                                <i class="fa-solid fa-id-card text-base"></i>
+                            </div>
+                            <input type="text" id="memberIdInput" x-model="memberId" @keydown.enter="startSession()" :disabled="isLoadingMember"
+                                   placeholder="Contoh: 04820008 atau NIM..."
+                                   class="w-full pl-11 pr-4 py-3.5 rounded-2xl text-sm font-medium border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white shadow-sm transition">
+                        </div>
+                        <button @click="startSession()" :disabled="isLoadingMember"
+                                class="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold text-sm shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 shrink-0 disabled:opacity-50">
+                            <span x-show="!isLoadingMember"><i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Buka Sesi (Enter)</span>
+                            <span x-show="isLoadingMember"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Mencari...</span>
+                        </button>
+                    </div>
+
+                    <div class="mt-3 flex items-center gap-2 text-[11px] text-gray-500">
+                        <i class="fa-regular fa-lightbulb text-amber-500"></i>
+                        <span>Tips: Pemindai *barcode scanner* USB otomatis menekan tombol Enter setelah pemindaian.</span>
+                    </div>
                 </div>
-                
-                <div class="flex items-center gap-3">
-                    <label class="font-medium text-black">ID Anggota</label>
-                    <input type="text" id="memberIdInput" x-model="memberId" @keydown.enter="startSession()" :disabled="isLoadingMember" class="border border-stroke rounded px-3 py-1.5 w-64 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-black">
-                    <button @click="startSession()" :disabled="isLoadingMember" class="bg-slate-500 hover:bg-slate-600 text-white px-4 py-1.5 rounded shadow transition font-medium text-sm">Mulai Transaksi</button>
+                <div class="hidden lg:block absolute right-8 top-1/2 -translate-y-1/2 opacity-15 text-amber-900 pointer-events-none">
+                    <i class="fa-solid fa-id-badge text-9xl"></i>
                 </div>
             </div>
 
-            <!-- STEP 2: Jika sesi member aktif -->
-            <div x-show="sessionActive" style="display: none;">
-                <div class="bg-yellow-50 text-yellow-800 px-4 py-3 rounded mb-6 text-sm border border-yellow-200 flex gap-2 items-center">
-                    Remember to click <strong>Selesai Transaksi</strong> once all loans/returns are complete.
+            <!-- 4 Summary KPI Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Pinjaman Aktif</p>
+                        <h4 class="text-2xl font-black text-gray-800 mt-1">{{ stats.total_active }} <span class="text-xs font-normal text-gray-500">Buku</span></h4>
+                        <p class="text-xs text-blue-600 mt-1"><i class="fa-solid fa-book-open"></i> Sedang di pemustaka</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shadow-inner">
+                        <i class="fa-solid fa-book-bookmark"></i>
+                    </div>
                 </div>
-                
-                <div class="flex gap-3 mb-6">
-                    <button @click="endSession()" class="bg-danger hover:bg-red-600 text-white px-4 py-1.5 rounded shadow flex items-center gap-2 transition text-sm font-medium">
-                        <i class="fa-solid fa-arrow-right-from-bracket rotate-180"></i> Selesai Transaksi (Esc)
+
+                <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Dikembalikan</p>
+                        <h4 class="text-2xl font-black text-gray-800 mt-1">{{ stats.total_returned }} <span class="text-xs font-normal text-gray-500">Buku</span></h4>
+                        <p class="text-xs text-emerald-600 mt-1"><i class="fa-solid fa-check"></i> Sudah kembali di rak</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shadow-inner">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </div>
+                </div>
+
+                <a href="/sirkulasi/keterlambatan" class="bg-white hover:bg-amber-50/50 cursor-pointer rounded-2xl p-5 border border-amber-200 shadow-sm hover:shadow-md transition flex items-center justify-between group" title="Buka Daftar Monitoring Buku Terlambat & Jatuh Tempo">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Jatuh Tempo</p>
+                            <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 group-hover:bg-amber-600 group-hover:text-white transition">Lihat Daftar &rarr;</span>
+                        </div>
+                        <h4 class="text-2xl font-black text-gray-800 mt-1">{{ stats.total_overdue }} <span class="text-xs font-normal text-gray-500">Buku</span></h4>
+                        <p class="text-xs text-amber-600 mt-1"><i class="fa-solid fa-clock"></i> Melewati batas waktu</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center text-xl shadow-inner transition">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                </a>
+
+                <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Denda Belum Lunas</p>
+                        <h4 class="text-2xl font-black text-gray-800 mt-1">Rp {{ "{:,}".format(stats.unpaid_fines or 0).replace(",", ".") }}</h4>
+                        <p class="text-xs text-red-600 mt-1"><i class="fa-solid fa-receipt"></i> Tagihan denda berjalan</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center text-xl shadow-inner">
+                        <i class="fa-solid fa-hand-holding-dollar"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Circulation Feed (Mengisi Ruang Bawah) -->
+            <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h4 class="text-base font-bold text-gray-900">Aktivitas Sirkulasi Terkini</h4>
+                        <p class="text-xs text-gray-500">Catatan peminjaman dan pengembalian buku yang baru saja terekam</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
+                        <i class="fa-solid fa-clock-rotate-left mr-1"></i> Riwayat Langsung
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
+                                <th class="py-3 px-4 font-semibold text-center w-12">Tipe</th>
+                                <th class="py-3 px-4 font-semibold">Nama Pemustaka</th>
+                                <th class="py-3 px-4 font-semibold">Judul Buku</th>
+                                <th class="py-3 px-4 font-semibold text-center">Kode Eksemplar</th>
+                                <th class="py-3 px-4 font-semibold">Waktu Transaksi</th>
+                                <th class="py-3 px-4 font-semibold text-center">Batas / Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-gray-100">
+                            {% for rc in recent_circulations %}
+                            <tr class="hover:bg-gray-50/60 transition">
+                                <td class="py-3.5 px-4 text-center">
+                                    {% if rc.tipe_transaksi == 'PINJAM' %}
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i> PINJAM
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        <i class="fa-solid fa-arrow-down-left-and-up-right-to-center text-[9px]"></i> KEMBALI
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-4 font-medium text-gray-900">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-7 h-7 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center text-xs font-bold shrink-0">
+                                            {{ rc.nama_anggota[0] | upper }}
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-xs text-gray-900">{{ rc.nama_anggota }}</div>
+                                            <div class="text-[10px] text-gray-400 font-mono">{{ rc.member_id }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3.5 px-4 text-xs font-medium text-gray-800 max-w-xs truncate" title="{{ rc.judul }}">
+                                    {{ rc.judul }}
+                                </td>
+                                <td class="py-3.5 px-4 text-center font-mono text-xs text-gray-600">
+                                    <span class="bg-gray-100 px-2 py-0.5 rounded border border-gray-200">{{ rc.no_induk }}</span>
+                                </td>
+                                <td class="py-3.5 px-4 text-xs text-gray-500 whitespace-nowrap">
+                                    <i class="fa-regular fa-clock text-gray-400 mr-1"></i>
+                                    {{ rc.return_date if rc.return_date else rc.loan_date }}
+                                </td>
+                                <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                                    {% if rc.tipe_transaksi == 'PINJAM' %}
+                                    <span class="text-xs text-amber-700 font-semibold bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                                        Kembali: {{ rc.due_date[:10] }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-xs text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                                        Selesai
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="py-10 text-center text-gray-400 text-xs">
+                                    Belum ada transaksi sirkulasi yang tercatat hari ini.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: JIKA SESI MEMBER SUDAH AKTIF -->
+        <div x-show="sessionActive" style="display: none;" class="space-y-6">
+            
+            <!-- Alert Sticky Warning -->
+            <div class="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-5 py-3 rounded-2xl shadow-sm text-xs font-medium flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation text-base"></i>
+                    <span>Sesi pemustaka sedang aktif. Jangan lupa klik <strong>Selesai Transaksi (Esc)</strong> setelah semua buku selesai dipindai.</span>
+                </div>
+                <button @click="endSession()" class="px-3 py-1 rounded-lg bg-black/20 hover:bg-black/30 text-white font-bold transition text-[11px]">
+                    Selesai (Esc)
+                </button>
+            </div>
+
+            <!-- Member Profile Card & Action Bar -->
+            <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <!-- Member Info -->
+                <div class="flex items-start gap-4">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-700 to-amber-500 text-white flex items-center justify-center text-2xl font-black shadow-md shrink-0">
+                        <span x-text="member ? member.nama.substring(0,1).toUpperCase() : '?'"></span>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h3 class="text-xl font-extrabold text-gray-900" x-text="member ? member.nama : ''"></h3>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200" x-text="member ? member.tipe : ''"></span>
+                            <span :class="member && member.status === 'AKTIF' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-red-100 text-red-800 border-red-200'" 
+                                  class="px-2.5 py-0.5 rounded-full text-xs font-bold border" x-text="member ? member.status : ''"></span>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1 mt-2 text-xs text-gray-500">
+                            <div><span class="text-gray-400">ID Anggota:</span> <strong class="text-gray-700 font-mono" x-text="member ? member.id : '-'"></strong></div>
+                            <div><span class="text-gray-400">Email:</span> <span class="text-gray-700" x-text="member && member.email ? member.email : '-'"></span></div>
+                            <div><span class="text-gray-400">Berlaku Hingga:</span> <span class="text-gray-700 font-medium" x-text="member ? member.masa_berlaku : '-'"></span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side: Loan Capacity & Action Buttons -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-gray-100">
+                    <!-- Capacity Pill -->
+                    <div class="px-4 py-2.5 rounded-2xl bg-gray-50 border border-gray-200 text-center">
+                        <div class="text-[10px] text-gray-400 uppercase font-semibold">Kapasitas Pinjam</div>
+                        <div class="text-base font-black text-gray-800">
+                            <span :class="member && member.active_loans >= member.max_loans ? 'text-red-600' : 'text-emerald-600'" x-text="member ? member.active_loans : 0"></span>
+                            <span class="text-gray-400 font-normal">/</span>
+                            <span x-text="member ? member.max_loans : 0"></span>
+                            <span class="text-xs font-normal text-gray-500">buku</span>
+                        </div>
+                    </div>
+
+                    <!-- Thermal Receipts & End Session -->
+                    <div class="flex items-center gap-2">
+                        <button @click="cetakStruk()" title="Cetak Struk Peminjaman" 
+                                class="px-3.5 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-900 text-white text-xs font-semibold shadow-sm transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-print"></i>
+                            <span>Struk Pinjam</span>
+                        </button>
+                        <button @click="cetakStrukKembali()" title="Cetak Struk Pengembalian" 
+                                class="px-3.5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold border border-gray-200 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-receipt"></i>
+                            <span>Struk Kembali</span>
+                        </button>
+                        <a :href="'/sirkulasi/bebas_pustaka/' + (member ? member.id : '')" target="_blank" title="Cetak Surat Keterangan Bebas Perpustakaan (Lampiran 8 IMAVI)" 
+                           class="px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-sm transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-circle-check"></i>
+                            <span>Bebas Pustaka</span>
+                        </a>
+                        <button @click="endSession()" title="Selesai Transaksi (Esc)" 
+                                class="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-md transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            <span>Selesai (Esc)</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modern Sub-Tabs (F2 - F10) -->
+            <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+                <div class="flex items-center gap-2 border-b border-gray-100 pb-3 mb-6 overflow-x-auto text-xs font-bold">
+                    <button @click.prevent="activeTab = 'peminjaman'" 
+                            :class="activeTab === 'peminjaman' ? 'bg-amber-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'"
+                            class="px-4 py-2 rounded-xl transition flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-book-medical"></i>
+                        <span>Peminjaman (F2)</span>
                     </button>
-                    <button @click="cetakStruk()" class="bg-primary hover:bg-opacity-90 text-white px-4 py-1.5 rounded shadow flex items-center gap-2 transition text-sm font-medium">
-                        <i class="fa-solid fa-print"></i> Cetak Struk
+                    <button @click.prevent="activeTab = 'saat_ini'" 
+                            :class="activeTab === 'saat_ini' ? 'bg-amber-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'"
+                            class="px-4 py-2 rounded-xl transition flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span>Pinjaman Saat Ini (F3)</span>
+                        <span class="px-2 py-0.2 rounded-full text-[10px] font-bold" 
+                              :class="activeTab === 'saat_ini' ? 'bg-white text-amber-800' : 'bg-amber-100 text-amber-800'"
+                              x-show="member && member.loans && member.loans.length > 0" x-text="member.loans.length"></span>
                     </button>
-                    <button @click="cetakStrukKembali()" class="bg-secondary hover:bg-opacity-90 text-white px-4 py-1.5 rounded shadow flex items-center gap-2 transition text-sm font-medium">
-                        <i class="fa-solid fa-receipt"></i> Struk Kembali
+                    <button @click.prevent="activeTab = 'reservasi'" 
+                            :class="activeTab === 'reservasi' ? 'bg-amber-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'"
+                            class="px-4 py-2 rounded-xl transition flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>Reservasi (F4)</span>
                     </button>
-                    
+                    <button @click.prevent="activeTab = 'denda'" 
+                            :class="activeTab === 'denda' ? 'bg-amber-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'"
+                            class="px-4 py-2 rounded-xl transition flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-hand-holding-dollar"></i>
+                        <span>Denda (F9)</span>
+                    </button>
+                    <button @click.prevent="activeTab = 'sejarah'" 
+                            :class="activeTab === 'sejarah' ? 'bg-amber-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'"
+                            class="px-4 py-2 rounded-xl transition flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>Sejarah Peminjaman (F10)</span>
+                    </button>
                 </div>
-                
-                <!-- Member Info Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-12 mb-6 text-sm">
-                    <div class="flex justify-between border-b border-stroke pb-1">
-                        <span class="font-semibold text-black">Nama Anggota</span>
-                        <span x-text="member ? member.nama : ''" class="text-black"></span>
-                    </div>
-                    <div class="flex justify-between border-b border-stroke pb-1">
-                        <span class="font-semibold text-black">ID Anggota</span>
-                        <span x-text="member ? member.id : ''" class="text-black"></span>
-                    </div>
-                    <div class="flex justify-between border-b border-stroke pb-1">
-                        <span class="font-semibold text-black">Surel Anggota</span>
-                        <span x-text="member ? member.email : ''" class="text-black"></span>
-                    </div>
-                    <div class="flex justify-between border-b border-stroke pb-1">
-                        <span class="font-semibold text-black">Tipe Keanggotaan</span>
-                        <span x-text="member ? member.tipe : ''" class="text-black"></span>
-                    </div>
-                    <div class="flex justify-between border-b border-stroke pb-1">
-                        <span class="font-semibold text-black">Tanggal Registrasi</span>
-                        <span class="text-black">-</span>
-                    </div>
-                    <div class="flex justify-between border-b border-stroke pb-1">
-                        <span class="font-semibold text-black">Berlaku Hingga</span>
-                        <span x-text="member ? member.masa_berlaku : ''" class="text-black"></span>
-                    </div>
-                    <div class="flex justify-between border-b border-stroke pb-1">
-                        <span class="font-semibold text-black text-danger">Status Peminjaman</span>
-                        <span class="text-black font-bold">
-                            <span :class="member && member.status === 'AKTIF' ? 'text-success' : 'text-danger'" x-text="member ? member.status : ''"></span> 
-                            (Pinjam <span x-text="member ? member.active_loans : 0"></span>/<span x-text="member ? member.max_loans : 0"></span>)
-                        </span>
-                    </div>
-                </div>
-                
-                <!-- Tabs -->
-                <div class="flex border-b border-stroke mb-6 text-sm font-medium flex-wrap">
-                    <a href="#" @click.prevent="activeTab = 'peminjaman'" :class="activeTab === 'peminjaman' ? 'text-primary border-b-2 border-primary bg-slate-50' : 'text-slate-500 hover:text-black'" class="px-5 py-2 transition">Peminjaman (F2)</a>
-                    <a href="#" @click.prevent="activeTab = 'saat_ini'" :class="activeTab === 'saat_ini' ? 'text-primary border-b-2 border-primary bg-slate-50' : 'text-slate-500 hover:text-black'" class="px-5 py-2 transition flex gap-2 items-center">
-                        Pinjaman Saat Ini (F3)
-                        <span class="bg-primary text-white text-xs px-2 py-0.5 rounded-full" x-show="member && member.loans && member.loans.length > 0" x-text="member.loans.length"></span>
-                    </a>
-                    <a href="#" @click.prevent="activeTab = 'reservasi'" :class="activeTab === 'reservasi' ? 'text-primary border-b-2 border-primary bg-slate-50' : 'text-slate-500 hover:text-black'" class="px-5 py-2 transition">Reservasi (F4)</a>
-                    <a href="#" @click.prevent="activeTab = 'denda'" :class="activeTab === 'denda' ? 'text-primary border-b-2 border-primary bg-slate-50' : 'text-slate-500 hover:text-black'" class="px-5 py-2 transition">Denda (F9)</a>
-                    <a href="#" @click.prevent="activeTab = 'sejarah'" :class="activeTab === 'sejarah' ? 'text-primary border-b-2 border-primary bg-slate-50' : 'text-slate-500 hover:text-black'" class="px-5 py-2 transition">Sejarah Peminjaman (F10)</a>
-                </div>
-                
-                <!-- Tab Content: Peminjaman -->
+
+                <!-- Sub-tab 1: Peminjaman (F2) -->
                 <div x-show="activeTab === 'peminjaman'">
-                    <div class="flex items-center gap-3">
-                        <label class="font-medium text-black">Masukkan Kode Eksemplar/Barkod</label>
-                        <input type="text" id="borrowBookIdInput" x-model="borrowBookId" @keydown.enter="processBorrow()" :disabled="!canBorrow || isBorrowing" class="border border-stroke rounded px-3 py-1.5 w-72 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-black disabled:bg-slate-100">
-                        <button @click="processBorrow()" :disabled="!canBorrow || isBorrowing" class="bg-slate-500 hover:bg-slate-600 text-white px-6 py-1.5 rounded shadow transition disabled:opacity-50 font-medium text-sm">Pinjam</button>
+                    <div class="bg-gray-50/80 rounded-2xl p-5 border border-gray-200">
+                        <h5 class="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-barcode text-amber-600"></i>
+                            <span>Pindai Barkod Buku yang Ingin Dipinjam</span>
+                        </h5>
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                            <div class="relative flex-grow">
+                                <input type="text" id="borrowBookIdInput" x-model="borrowBookId" @keydown.enter="processBorrow()" 
+                                       :disabled="!canBorrow || isBorrowing"
+                                       placeholder="Ketik / Pindai nomor barcode buku (misal: 1953/22)..."
+                                       class="w-full pl-4 pr-4 py-3 rounded-xl text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white font-mono transition disabled:bg-gray-100 disabled:cursor-not-allowed">
+                            </div>
+                            <button @click="processBorrow()" :disabled="!canBorrow || isBorrowing"
+                                    class="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-sm transition flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span x-show="!isBorrowing"><i class="fa-solid fa-plus mr-1"></i> Pinjam Buku (Enter)</span>
+                                <span x-show="isBorrowing"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Memproses...</span>
+                            </button>
+                        </div>
+
+                        <div class="mt-3">
+                            <p x-show="!canBorrow && member && member.status === 'AKTIF'" class="text-red-600 text-xs font-semibold flex items-center gap-1.5">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Anggota telah mencapai batas maksimal peminjaman (<span x-text="member.max_loans"></span> buku).
+                            </p>
+                            <p x-show="member && member.status === 'DIBLOKIR'" class="text-red-600 text-xs font-semibold flex items-center gap-1.5">
+                                <i class="fa-solid fa-ban"></i> Status akun DIBLOKIR. Selesaikan pengembalian atau denda terlebih dahulu.
+                            </p>
+                            <p x-show="canBorrow" class="text-gray-500 text-xs flex items-center gap-1.5">
+                                <i class="fa-regular fa-circle-check text-emerald-500"></i> Anggota aktif dan memiliki kuota peminjaman yang cukup.
+                            </p>
+                        </div>
                     </div>
-                    <p x-show="!canBorrow && member && member.status === 'AKTIF'" class="text-danger mt-3 text-sm"><i class="fa-solid fa-triangle-exclamation"></i> Anggota sudah mencapai batas maksimal peminjaman.</p>
-                    <p x-show="member && member.status === 'DIBLOKIR'" class="text-danger mt-3 text-sm"><i class="fa-solid fa-ban"></i> Anggota sedang DIBLOKIR. Tidak dapat meminjam buku.</p>
                 </div>
-                
-                <!-- Tab Content: Pinjaman Saat Ini -->
+
+                <!-- Sub-tab 2: Pinjaman Saat Ini (F3) -->
                 <div x-show="activeTab === 'saat_ini'" style="display: none;">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm border-collapse border border-stroke mt-1">
+                        <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-slate-100 border-b border-stroke text-black">
-                                    <th class="p-2 border-r border-stroke">Kode Eksemplar</th>
-                                    <th class="p-2 border-r border-stroke">Judul</th>
-                                    <th class="p-2 border-r border-stroke">Tanggal Pinjam</th>
-                                    <th class="p-2 border-r border-stroke">Tgl. Jatuh Tempo</th>
-                                    <th class="p-2 text-center">Aksi</th>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
+                                    <th class="py-3 px-4 font-semibold text-center w-12">No</th>
+                                    <th class="py-3 px-4 font-semibold">Kode Eksemplar</th>
+                                    <th class="py-3 px-4 font-semibold">Judul Buku</th>
+                                    <th class="py-3 px-4 font-semibold">Tgl. Pinjam</th>
+                                    <th class="py-3 px-4 font-semibold text-center">Tgl. Jatuh Tempo</th>
+                                    <th class="py-3 px-4 font-semibold text-center">Aksi Cepat</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <template x-for="loan in (member?.loans || [])" :key="loan.id">
-                                    <tr class="border-b border-stroke hover:bg-slate-50">
-                                        <td class="p-2 border-r border-stroke text-black" x-text="loan.no_induk"></td>
-                                        <td class="p-2 border-r border-stroke font-medium text-black" x-text="loan.judul"></td>
-                                        <td class="p-2 border-r border-stroke text-black" x-text="loan.loan_date.substring(0,10)"></td>
-                                        <td class="p-2 border-r border-stroke text-danger font-semibold" x-text="loan.due_date.substring(0,10)"></td>
-                                        <td class="p-2 text-center">
-                                            <button @click="processReturnFromList(loan.no_induk)" class="text-xs bg-slate-200 hover:bg-success hover:text-white px-3 py-1.5 rounded font-medium transition shadow-sm mb-1 w-full">Kembalikan</button>
-<button @click="processRenew(loan.no_induk)" class="text-xs bg-slate-200 hover:bg-primary hover:text-white px-3 py-1.5 rounded font-medium transition shadow-sm w-full">Perpanjang</button>
+                            <tbody class="text-sm divide-y divide-gray-100">
+                                <template x-for="(loan, idx) in (member?.loans || [])" :key="loan.id">
+                                    <tr class="hover:bg-amber-50/20 transition">
+                                        <td class="py-3 px-4 text-center text-xs font-mono text-gray-400" x-text="idx + 1"></td>
+                                        <td class="py-3 px-4 font-mono text-xs font-bold text-gray-900">
+                                            <span class="bg-gray-100 px-2 py-0.5 rounded border" x-text="loan.no_induk"></span>
+                                        </td>
+                                        <td class="py-3 px-4 font-medium text-gray-900 text-xs" x-text="loan.judul"></td>
+                                        <td class="py-3 px-4 text-xs text-gray-500" x-text="loan.loan_date.substring(0,10)"></td>
+                                        <td class="py-3 px-4 text-center">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200" x-text="loan.due_date.substring(0,10)"></span>
+                                        </td>
+                                        <td class="py-3 px-4 text-center whitespace-nowrap">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <button @click="processReturnFromList(loan.no_induk)" 
+                                                        class="px-3 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-200 text-xs font-semibold transition">
+                                                    <i class="fa-solid fa-rotate-left mr-1"></i> Kembalikan
+                                                </button>
+                                                <button @click="processRenew(loan.no_induk)" 
+                                                        class="px-3 py-1 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200 text-xs font-semibold transition">
+                                                    <i class="fa-solid fa-arrows-rotate mr-1"></i> Perpanjang
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 </template>
                                 <tr x-show="!member || !member.loans || member.loans.length === 0">
-                                    <td colspan="5" class="p-6 text-center text-slate-500 bg-slate-50 border border-dashed border-stroke">
+                                    <td colspan="6" class="py-12 text-center text-gray-400 text-xs">
+                                        <i class="fa-solid fa-circle-check text-emerald-400 text-3xl mb-2 block"></i>
                                         Anggota ini tidak memiliki pinjaman aktif saat ini.
                                     </td>
                                 </tr>
@@ -166,44 +438,49 @@
                     </div>
                 </div>
 
-                
-                <!-- Tab Content: Reservasi -->
+                <!-- Sub-tab 3: Reservasi (F4) -->
                 <div x-show="activeTab === 'reservasi'" style="display: none;">
-                    <div class="p-8 text-center border border-dashed border-stroke bg-slate-50 rounded mt-1">
-                        <i class="fa-solid fa-clock-rotate-left text-4xl text-slate-300 mb-3"></i>
-                        <h3 class="text-lg font-semibold text-slate-700">Fitur Reservasi Belum Aktif</h3>
-                        <p class="text-sm text-slate-500 mt-1">Fitur untuk memesan/menahan (hold) buku sedang dalam tahap pengembangan.</p>
+                    <div class="py-12 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
+                        <i class="fa-solid fa-clock-rotate-left text-4xl text-gray-300 mb-3 block"></i>
+                        <h4 class="text-sm font-bold text-gray-700">Fitur Reservasi Buku</h4>
+                        <p class="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
+                            Fitur antrean / pemesanan awal buku (*hold request*) yang sedang dipinjam orang lain.
+                        </p>
                     </div>
                 </div>
 
-                <!-- Tab Content: Denda -->
+                <!-- Sub-tab 4: Denda (F9) -->
                 <div x-show="activeTab === 'denda'" style="display: none;">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm border-collapse border border-stroke mt-1">
+                        <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-slate-100 border-b border-stroke text-black">
-                                    <th class="p-2 border-r border-stroke">Tgl Kembali</th>
-                                    <th class="p-2 border-r border-stroke">Kode Eksemplar</th>
-                                    <th class="p-2 border-r border-stroke">Judul Buku</th>
-                                    <th class="p-2 border-r border-stroke">Nominal Denda</th>
-                                    <th class="p-2">Aksi</th>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
+                                    <th class="py-3 px-4 font-semibold">Tgl. Kembali</th>
+                                    <th class="py-3 px-4 font-semibold">Kode Eksemplar</th>
+                                    <th class="py-3 px-4 font-semibold">Judul Buku</th>
+                                    <th class="py-3 px-4 font-semibold text-right">Nominal Denda</th>
+                                    <th class="py-3 px-4 font-semibold text-center">Aksi Pembayaran</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="text-sm divide-y divide-gray-100">
                                 <template x-for="denda in (member?.history_loans || []).filter(h => h.fine_amount > 0 && h.fine_status === 'BELUM_LUNAS')" :key="denda.id">
-                                    <tr class="border-b border-stroke hover:bg-slate-50">
-                                        <td class="p-2 border-r border-stroke text-black font-medium" x-text="denda.return_date.substring(0,10)"></td>
-                                        <td class="p-2 border-r border-stroke text-black" x-text="denda.no_induk"></td>
-                                        <td class="p-2 border-r border-stroke text-black" x-text="denda.judul"></td>
-                                        <td class="p-2 border-r border-stroke text-danger font-bold text-lg" x-text="'Rp ' + denda.fine_amount"></td>
-                                        <td class="p-2 text-center">
-                                            <button @click="payFine(denda.id)" class="text-xs bg-success hover:bg-opacity-90 text-white px-4 py-1.5 rounded font-medium shadow-sm transition">Bayar Lunas</button>
+                                    <tr class="hover:bg-red-50/30 transition">
+                                        <td class="py-3 px-4 text-xs text-gray-700 font-medium" x-text="denda.return_date.substring(0,10)"></td>
+                                        <td class="py-3 px-4 font-mono text-xs text-gray-700" x-text="denda.no_induk"></td>
+                                        <td class="py-3 px-4 text-xs font-medium text-gray-900" x-text="denda.judul"></td>
+                                        <td class="py-3 px-4 text-right font-black text-red-600 text-sm" x-text="'Rp ' + Number(denda.fine_amount).toLocaleString('id-ID')"></td>
+                                        <td class="py-3 px-4 text-center">
+                                            <button @click="payFine(denda.id)" 
+                                                    class="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition">
+                                                <i class="fa-solid fa-receipt mr-1"></i> Bayar Lunas
+                                            </button>
                                         </td>
                                     </tr>
                                 </template>
                                 <tr x-show="(member?.history_loans || []).filter(h => h.fine_amount > 0 && h.fine_status === 'BELUM_LUNAS').length === 0">
-                                    <td colspan="5" class="p-6 text-center text-slate-500 bg-slate-50 border border-dashed border-stroke">
-                                        Anggota ini tidak memiliki denda yang belum dibayar.
+                                    <td colspan="5" class="py-12 text-center text-gray-400 text-xs">
+                                        <i class="fa-solid fa-circle-check text-emerald-400 text-3xl mb-2 block"></i>
+                                        Tidak ada denda yang tertunggak. Akun anggota bersih!
                                     </td>
                                 </tr>
                             </tbody>
@@ -211,35 +488,37 @@
                     </div>
                 </div>
 
-                <!-- Tab Content: Sejarah Peminjaman -->
+                <!-- Sub-tab 5: Sejarah Peminjaman (F10) -->
                 <div x-show="activeTab === 'sejarah'" style="display: none;">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm border-collapse border border-stroke mt-1">
+                        <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-slate-100 border-b border-stroke text-black">
-                                    <th class="p-2 border-r border-stroke">Kode Eksemplar</th>
-                                    <th class="p-2 border-r border-stroke">Judul</th>
-                                    <th class="p-2 border-r border-stroke">Tgl Pinjam</th>
-                                    <th class="p-2 border-r border-stroke">Tgl Kembali</th>
-                                    <th class="p-2">Status Denda</th>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
+                                    <th class="py-3 px-4 font-semibold">Kode Eksemplar</th>
+                                    <th class="py-3 px-4 font-semibold">Judul Buku</th>
+                                    <th class="py-3 px-4 font-semibold">Tgl. Pinjam</th>
+                                    <th class="py-3 px-4 font-semibold">Tgl. Kembali</th>
+                                    <th class="py-3 px-4 font-semibold text-center">Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="text-sm divide-y divide-gray-100">
                                 <template x-for="hist in (member?.history_loans || [])" :key="hist.id">
-                                    <tr class="border-b border-stroke hover:bg-slate-50">
-                                        <td class="p-2 border-r border-stroke text-black" x-text="hist.no_induk"></td>
-                                        <td class="p-2 border-r border-stroke font-medium text-black" x-text="hist.judul"></td>
-                                        <td class="p-2 border-r border-stroke text-black" x-text="hist.loan_date.substring(0,10)"></td>
-                                        <td class="p-2 border-r border-stroke font-semibold" :class="hist.fine_amount > 0 ? 'text-danger' : 'text-success'" x-text="hist.return_date.substring(0,10)"></td>
-                                        <td class="p-2">
-                                            <span x-show="hist.fine_amount == 0" class="text-xs text-success bg-green-100 px-2 py-0.5 rounded font-bold">LUNAS / TEPAT WAKTU</span>
-                                            <span x-show="hist.fine_amount > 0" class="text-xs text-danger bg-red-100 px-2 py-0.5 rounded font-bold" x-text="'DENDA RP ' + hist.fine_amount"></span>
+                                    <tr class="hover:bg-gray-50/50 transition">
+                                        <td class="py-3 px-4 font-mono text-xs text-gray-700" x-text="hist.no_induk"></td>
+                                        <td class="py-3 px-4 text-xs font-medium text-gray-900" x-text="hist.judul"></td>
+                                        <td class="py-3 px-4 text-xs text-gray-500" x-text="hist.loan_date.substring(0,10)"></td>
+                                        <td class="py-3 px-4 text-xs font-medium text-gray-700" x-text="hist.return_date.substring(0,10)"></td>
+                                        <td class="py-3 px-4 text-center">
+                                            <span x-show="hist.fine_amount == 0" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                <i class="fa-solid fa-check text-[9px]"></i> Tepat Waktu
+                                            </span>
+                                            <span x-show="hist.fine_amount > 0" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-700 border border-red-200" x-text="'Denda Rp ' + Number(hist.fine_amount).toLocaleString('id-ID')"></span>
                                         </td>
                                     </tr>
                                 </template>
                                 <tr x-show="!member || !member.history_loans || member.history_loans.length === 0">
-                                    <td colspan="5" class="p-6 text-center text-slate-500 bg-slate-50 border border-dashed border-stroke">
-                                        Anggota ini belum memiliki sejarah peminjaman.
+                                    <td colspan="5" class="py-10 text-center text-gray-400 text-xs">
+                                        Belum ada riwayat peminjaman terdahulu.
                                     </td>
                                 </tr>
                             </tbody>
@@ -248,48 +527,94 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- MODE PENGEMBALIAN KILAT -->
-        <div x-show="mode === 'pengembalian'" style="display: none;">
-            <h2 class="text-2xl font-semibold text-black mb-4 border-b border-stroke pb-2">Pengembalian Kilat</h2>
-            
-            <div class="bg-blue-50 text-blue-800 px-4 py-3 rounded mb-6 text-sm border border-blue-200">
-                PENGEMBALIAN - Pindai barkod eksemplar atau ketikkan kode eksemplar lalu tekan Enter.
-            </div>
-            
-            <div class="flex items-center gap-3 mb-8">
-                <label class="font-medium text-black">ID Eksemplar / Barkod</label>
-                <input type="text" id="returnBookIdInput" x-model="returnBookId" @keydown.enter="processReturnFast()" :disabled="isLoadingReturn" class="border border-stroke rounded px-3 py-1.5 w-72 focus:border-success focus:ring-1 focus:ring-success outline-none text-black">
-                <button @click="processReturnFast()" :disabled="isLoadingReturn" class="bg-success hover:bg-opacity-90 text-white px-6 py-1.5 rounded shadow transition font-medium text-sm">Kembalikan</button>
-            </div>
-            
-            <!-- Log Pengembalian Kilat -->
-            <div class="border border-stroke rounded shadow-sm overflow-hidden">
-                <div class="bg-slate-100 px-4 py-3 border-b border-stroke font-semibold text-black text-sm">
-                    Sejarah Pengembalian Sesi Ini
+    <!-- ========================================================================= -->
+    <!-- MODE 2: PENGEMBALIAN KILAT (FAST RETURN) -->
+    <!-- ========================================================================= -->
+    <div x-show="mode === 'pengembalian'" style="display: none;" class="space-y-6">
+        <!-- Fast Return Scanner Hero Box -->
+        <div class="bg-gradient-to-br from-white to-emerald-50/40 rounded-3xl p-6 md:p-8 border border-emerald-200/80 shadow-sm relative overflow-hidden">
+            <div class="max-w-2xl">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 mb-3">
+                    <i class="fa-solid fa-bolt-lightning text-amber-500"></i> Mode Pengembalian Cepat
+                </span>
+                <h3 class="text-xl md:text-2xl font-black text-gray-900">Pengembalian Kilat Tanpa Anggota</h3>
+                <p class="text-xs text-gray-500 mt-1">
+                    Pindai atau ketikkan kode eksemplar buku yang dikembalikan pemustaka, sistem akan otomatis mencocokkan dengan peminjam dan menghitung denda bila ada.
+                </p>
+
+                <div class="mt-5 flex flex-col sm:flex-row items-stretch gap-3">
+                    <div class="relative flex-grow">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                            <i class="fa-solid fa-barcode text-base"></i>
+                        </div>
+                        <input type="text" id="returnBookIdInput" x-model="returnBookId" @keydown.enter="processReturnFast()" :disabled="isLoadingReturn"
+                               placeholder="Scan barcode buku yang dikembalikan (misal: 1953/22)..."
+                               class="w-full pl-11 pr-4 py-3.5 rounded-2xl text-sm font-medium border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white font-mono shadow-sm transition">
+                    </div>
+                    <button @click="processReturnFast()" :disabled="isLoadingReturn"
+                            class="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold text-sm shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 shrink-0 disabled:opacity-50">
+                        <span x-show="!isLoadingReturn"><i class="fa-solid fa-check mr-1"></i> Kembalikan (Enter)</span>
+                        <span x-show="isLoadingReturn"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Memproses...</span>
+                    </button>
                 </div>
-                <ul class="max-h-72 overflow-y-auto">
-                    <template x-for="log in fastReturnLogs.slice().reverse()">
-                        <li class="p-3 border-b border-stroke text-sm flex justify-between items-center hover:bg-slate-50" :class="log.denda > 0 ? 'bg-red-50/50' : ''">
-                            <div>
-                                <span class="bg-slate-200 text-black px-2 py-0.5 rounded text-xs font-bold mr-2" x-text="log.buku_id"></span>
-                                <span class="font-medium text-black" x-text="log.buku_judul"></span>
-                                <span class="block text-xs text-slate-500 mt-1" x-text="'Dikembalikan oleh ' + log.anggota_nama + ' pada ' + log.time"></span>
-                            </div>
-                            <div class="text-right">
-                                <span x-show="log.denda > 0" class="text-danger font-bold block" x-text="'Denda: Rp ' + log.denda"></span>
-                                <span x-show="log.denda > 0" class="text-danger text-xs block mt-0.5" x-text="'Telat ' + log.terlambat_hari + ' hari'"></span>
-                                <span x-show="log.denda === 0" class="text-success font-semibold text-xs"><i class="fa-solid fa-check"></i> Tepat Waktu</span>
-                            </div>
-                        </li>
-                    </template>
-                    <li x-show="fastReturnLogs.length === 0" class="p-6 text-center text-slate-500 text-sm">
-                        Belum ada buku yang dikembalikan pada sesi ini.
-                    </li>
-                </ul>
+            </div>
+            <div class="hidden lg:block absolute right-8 top-1/2 -translate-y-1/2 opacity-15 text-emerald-900 pointer-events-none">
+                <i class="fa-solid fa-rotate-left text-9xl"></i>
             </div>
         </div>
-        
+
+        <!-- Log Pengembalian Kilat Sesi Ini -->
+        <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                <div>
+                    <h4 class="text-base font-bold text-gray-900">Buku yang Dikembalikan pada Sesi Ini</h4>
+                    <p class="text-xs text-gray-500">Daftar buku yang baru saja Anda proses melalui Pengembalian Kilat</p>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600" x-text="fastReturnLogs.length + ' Buku'"></span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
+                            <th class="py-3 px-4 font-semibold">Waktu</th>
+                            <th class="py-3 px-4 font-semibold">Barcode</th>
+                            <th class="py-3 px-4 font-semibold">Judul Buku</th>
+                            <th class="py-3 px-4 font-semibold">Peminjam</th>
+                            <th class="py-3 px-4 font-semibold text-center">Status / Denda</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm divide-y divide-gray-100">
+                        <template x-for="log in fastReturnLogs.slice().reverse()" :key="log.id">
+                            <tr class="hover:bg-gray-50 transition" :class="log.denda > 0 ? 'bg-red-50/40' : ''">
+                                <td class="py-3 px-4 text-xs font-mono text-gray-500" x-text="log.time"></td>
+                                <td class="py-3 px-4 font-mono text-xs font-bold text-gray-800">
+                                    <span class="bg-gray-100 px-2 py-0.5 rounded border" x-text="log.buku_id"></span>
+                                </td>
+                                <td class="py-3 px-4 font-medium text-gray-900 text-xs" x-text="log.buku_judul"></td>
+                                <td class="py-3 px-4 text-xs text-gray-700" x-text="log.anggota_nama"></td>
+                                <td class="py-3 px-4 text-center">
+                                    <span x-show="log.denda > 0" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                        <span x-text="'Denda Rp ' + Number(log.denda).toLocaleString('id-ID') + ' (' + log.terlambat_hari + ' hr)'"></span>
+                                    </span>
+                                    <span x-show="log.denda === 0" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                        <i class="fa-solid fa-check"></i> Tepat Waktu
+                                    </span>
+                                </td>
+                            </tr>
+                        </template>
+                        <tr x-show="fastReturnLogs.length === 0">
+                            <td colspan="5" class="py-12 text-center text-gray-400 text-xs">
+                                Belum ada buku yang dikembalikan pada sesi ini.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -315,7 +640,6 @@ function sirkulasiApp() {
         alert: { show: false, type: '', title: '', message: '' },
         
         init() {
-            // Auto focus on init
             setTimeout(() => {
                 const el = document.getElementById('memberIdInput');
                 if(el) el.focus();
@@ -382,7 +706,6 @@ function sirkulasiApp() {
         async endSession() {
             if (!this.member) return;
             
-            // Tanya apakah mau cetak struk
             const result = await Swal.fire({
                 title: 'Transaksi Selesai',
                 text: "Apakah Anda ingin mencetak struk untuk member ini?",
@@ -408,7 +731,6 @@ function sirkulasiApp() {
             setTimeout(() => document.getElementById('memberIdInput')?.focus(), 100);
         },
         
-        // Refresh member data to update loan lists silently
         async refreshMemberData() {
             if (!this.member) return;
             try {
@@ -438,7 +760,7 @@ function sirkulasiApp() {
                 if (result.status === 'success') {
                     this.showAlert('success', 'Pinjam Sukses', 'Buku <b>' + this.borrowBookId + '</b> berhasil dipinjamkan.');
                     this.borrowBookId = '';
-                    await this.refreshMemberData(); // Refresh list pinjaman
+                    await this.refreshMemberData();
                 } else {
                     this.showAlert('error', 'Peminjaman Ditolak', result.message);
                 }
@@ -491,7 +813,7 @@ function sirkulasiApp() {
             }
         },
         
-                async processRenew(bookId) {
+        async processRenew(bookId) {
             try {
                 const response = await fetch('/api/sirkulasi/renew', {
                     method: 'POST',
@@ -502,7 +824,7 @@ function sirkulasiApp() {
                 
                 if (result.status === 'success') {
                     this.showAlert('success', 'Perpanjang Sukses', result.message + ' (Jatuh tempo baru: ' + result.new_due_date + ')');
-                    await this.refreshMemberData(); // update list
+                    await this.refreshMemberData();
                 } else {
                     this.showAlert('error', 'Gagal Diperpanjang', result.message);
                 }
@@ -511,7 +833,7 @@ function sirkulasiApp() {
             }
         },
         
-                async payFine(loanId) {
+        async payFine(loanId) {
             if(!confirm('Tandai denda ini sebagai LUNAS?')) return;
             try {
                 const response = await fetch('/api/sirkulasi/pay_fine', {
@@ -546,7 +868,7 @@ function sirkulasiApp() {
                     } else {
                         this.showAlert('success', 'Kembali Sukses', 'Buku ' + bookId + ' berhasil dikembalikan.');
                     }
-                    await this.refreshMemberData(); // update list
+                    await this.refreshMemberData();
                 } else {
                     this.showAlert('error', 'Gagal', result.message);
                 }

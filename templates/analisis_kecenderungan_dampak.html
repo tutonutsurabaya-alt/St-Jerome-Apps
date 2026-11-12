@@ -1,0 +1,680 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<!-- CUSTOM STYLES TO ENSURE 100% CLEAN, HIGH-CONTRAST, BRIGHT THEME -->
+<style>
+    /* Paksa container dan kartu menjadi bersih, terang, dan kontras tinggi */
+    .stj-clean-container {
+        background-color: transparent !important;
+        color: #1e293b !important;
+    }
+    .stj-card {
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 0.5rem !important;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
+    }
+    .stj-table-th {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        font-weight: 700 !important;
+        border-bottom: 2px solid #cbd5e1 !important;
+    }
+    .stj-table-td {
+        color: #1e293b !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        background-color: #ffffff !important;
+    }
+    .stj-table-row:hover td {
+        background-color: #f8fafc !important;
+    }
+</style>
+
+<div class="stj-clean-container">
+
+    <!-- HEADER & BREADCRUMBS -->
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between print:mb-2">
+        <div>
+            <div class="flex items-center gap-2">
+                <span class="inline-flex rounded-md bg-blue-100 px-3 py-1 text-xs font-bold text-blue-800 uppercase tracking-wider">
+                    <i class="fa-solid fa-chart-line mr-1.5 mt-0.5"></i> Intelijen Minat & Dampak Baca
+                </span>
+                <span class="text-xs text-slate-500 font-medium">| St. Jerome Library Analytics</span>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 mt-1.5 tracking-tight">
+                Analisis Kecenderungan & Dampak Pembaca
+            </h2>
+            <p class="text-sm text-slate-600 mt-1">
+                Pemetaan pola kecenderungan minat baca di meja baca (*in-house reading*) serta proyeksi dampak akademis, formasi moral, dan ketahanan koleksi fisik.
+            </p>
+        </div>
+        
+        <!-- BUTTONS ACTION & PRINT -->
+        <div class="print:hidden flex items-center gap-2.5">
+            <button onclick="window.print()" class="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-800 py-2.5 px-4 text-center text-xs font-bold text-white hover:bg-slate-900 transition shadow-sm">
+                <i class="fa-solid fa-print text-amber-400"></i> Cetak Laporan / PDF
+            </button>
+            <button onclick="exportTableToCSV('analisis_kecenderungan_pembaca.csv')" class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 py-2.5 px-4 text-center text-xs font-bold text-white hover:bg-emerald-700 transition shadow-sm">
+                <i class="fa-solid fa-file-excel"></i> Ekspor CSV
+            </button>
+        </div>
+    </div>
+
+    <!-- FILTER BAR (CLEAN WHITE) -->
+    <div class="mb-6 stj-card p-4 print:hidden">
+        <form method="GET" action="/analisis_kecenderungan_dampak" class="flex flex-wrap items-end justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Mulai Tanggal</label>
+                    <input type="date" name="start_date" value="{{ start_date }}" class="rounded-lg border border-slate-300 bg-white py-2 px-3 text-sm text-slate-800 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Sampai Tanggal</label>
+                    <input type="date" name="end_date" value="{{ end_date }}" class="rounded-lg border border-slate-300 bg-white py-2 px-3 text-sm text-slate-800 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600">
+                </div>
+                <div>
+                    <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 py-2 px-4 text-sm font-bold text-white hover:bg-blue-700 transition shadow-sm">
+                        <i class="fa-solid fa-filter"></i> Filter
+                    </button>
+                    {% if start_date or end_date %}
+                    <a href="/analisis_kecenderungan_dampak" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white py-2 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition ml-2">
+                        <i class="fa-solid fa-rotate-left"></i> Reset
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-600">
+                <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                <span>Waktu secara otomatis disinkronkan ke <strong>WIB (Waktu Indonesia Barat, UTC+7)</strong>.</span>
+            </div>
+        </form>
+    </div>
+
+    <!-- 4 KPI SUMMARY CARDS (CLEAN BRIGHT WHITE) -->
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 xl:grid-cols-4 mb-6">
+        
+        <!-- Card 1: Total Pembacaan -->
+        <div class="stj-card p-5">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Pembacaan</span>
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                    <i class="fa-solid fa-book-open-reader text-lg"></i>
+                </div>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between">
+                <h3 class="text-3xl font-extrabold text-slate-900">{{ total_baca }}</h3>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                    In-House Read
+                </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Frekuensi buku dibaca di meja baca</p>
+        </div>
+
+        <!-- Card 2: Variasi Judul -->
+        <div class="stj-card p-5">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Judul Unik</span>
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
+                    <i class="fa-solid fa-layer-group text-lg"></i>
+                </div>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between">
+                <h3 class="text-3xl font-extrabold text-slate-900">{{ total_judul_unik }}</h3>
+                <span class="text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+                    {% if total_baca > 0 %}{{ "%.0f"|format((total_judul_unik / total_baca) * 100) }}% diversitas{% else %}0%{% endif %}
+                </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Variasi koleksi yang disentuh pemustaka</p>
+        </div>
+
+        <!-- Card 3: Rumpun Paling Diminati -->
+        <div class="stj-card p-5">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Rumpun Terfavorit</span>
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                    <i class="fa-solid fa-star text-lg"></i>
+                </div>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between">
+                <h3 class="text-lg font-extrabold text-slate-900 truncate" title="{{ top_ddc }}">
+                    {{ top_ddc.split('-')[1] if '-' in top_ddc else top_ddc }}
+                </h3>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800">
+                    {{ top_ddc_persen }}%
+                </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Kelas DDC dominan yang paling aktif diakses</p>
+        </div>
+
+        <!-- Card 4: Jam Puncak Pembacaan (WIB) -->
+        <div class="stj-card p-5">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Jam Puncak (WIB)</span>
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
+                    <i class="fa-solid fa-clock text-lg"></i>
+                </div>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between">
+                <h3 class="text-lg font-extrabold text-slate-900">{{ peak_hour }}</h3>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-rose-100 text-rose-800">
+                    Peak Time
+                </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Waktu paling ramai aktivitas baca meja</p>
+        </div>
+
+    </div>
+
+    <!-- 2 CHARTS SECTION (CLEAN BRIGHT WHITE) -->
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-12 mb-6">
+        
+        <!-- Chart 1: Distribusi Minat DDC (7 Cols) -->
+        <div class="xl:col-span-7 stj-card p-6">
+            <div class="mb-4">
+                <h4 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-blue-600"></i> Distribusi Minat Berdasarkan Klasifikasi DDC
+                </h4>
+                <p class="text-xs text-slate-500 mt-0.5">Persentase pembacaan menurut 10 Rumpun Klasifikasi Dewey Decimal.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 items-center gap-4">
+                <div class="lg:col-span-6 relative flex items-center justify-center min-h-[250px]">
+                    <canvas id="ddcChart" class="max-h-[240px]"></canvas>
+                </div>
+                <div class="lg:col-span-6 space-y-1.5 max-h-[270px] overflow-y-auto pr-1">
+                    {% for item in ddc_dist %}
+                    <div class="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition">
+                        <div class="flex items-center gap-2 truncate pr-2">
+                            <span class="h-3 w-3 rounded-full shrink-0" style="background-color: {{ ['#2563EB', '#0D9488', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#64748B', '#F97316', '#06B6D4', '#6366F1'][loop.index0 % 11] }};"></span>
+                            <span class="font-bold text-slate-800 truncate" title="{{ item.kategori }}">{{ item.kategori }}</span>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="font-extrabold text-slate-900">{{ item.total }}x</span>
+                            <span class="text-slate-500 font-semibold">({{ item.persentase }}%)</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-xs text-slate-400 text-center py-6">Belum ada data distribusi DDC.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 2: Pola Jam Membaca WIB (5 Cols) -->
+        <div class="xl:col-span-5 stj-card p-6">
+            <div class="mb-4">
+                <h4 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-column text-amber-500"></i> Pola Jam Membaca (WIB - Waktu Indonesia Barat)
+                </h4>
+                <p class="text-xs text-slate-500 mt-0.5">Frekuensi pembacaan riil pada jam operasional perpustakaan.</p>
+            </div>
+            <div class="relative min-h-[250px] flex items-center justify-center">
+                <canvas id="hourlyChart" class="w-full max-h-[250px]"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- DUA PILAR BESAR: KECENDERUNGAN & DAMPAK (CLEAN, HIGH CONTRAST) -->
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-2 mb-6">
+        
+        <!-- PILAR 1: ANALISIS KECENDERUNGAN PEMBACA -->
+        <div class="stj-card p-6">
+            <div class="border-b border-slate-200 pb-3 mb-4 flex items-center justify-between">
+                <div>
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-blue-700 bg-blue-50 px-2.5 py-1 rounded">
+                        Pilar I
+                    </span>
+                    <h3 class="text-lg font-extrabold text-slate-900 mt-1.5">
+                        Kecenderungan Pembaca (*Reading Tendencies*)
+                    </h3>
+                </div>
+                <div class="h-9 w-9 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                    <i class="fa-solid fa-magnifying-glass-chart"></i>
+                </div>
+            </div>
+
+            <p class="text-xs text-slate-600 leading-relaxed mb-4">
+                Berdasarkan <strong>{{ total_baca }} pembacaan riil</strong> yang terekam pada sistem St. Jerome, teridentifikasi 3 pola kecenderungan utama:
+            </p>
+
+            <!-- Card Kecenderungan 1 -->
+            <div class="mb-3.5 rounded-lg border border-blue-200 bg-blue-50/50 p-4">
+                <div class="flex items-start gap-3">
+                    <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white text-xs font-bold">
+                        1
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-bold text-slate-900">
+                            Sinergi Nalar Kritis & Landasan Teologis (72.2% Pembacaan)
+                        </h5>
+                        <p class="text-xs text-slate-700 mt-1 leading-relaxed">
+                            Terjadi konsentrasi masif pada <strong>Kelas 200 (Agama & Teologi: 36.1%)</strong> dan <strong>Kelas 100 (Filsafat & Etika: 36.1%)</strong>. Pemustaka tidak membaca teologi secara terisolasi, melainkan mendalaminya bersama teks-teks epistemologi klasik (René Descartes: <em>Discourse on Method</em>, <em>Passions of the Soul</em>). Menandai prinsip akademik <em>fides quaerens intellectum</em> (iman mencari nalar pemahaman kritis).
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Kecenderungan 2 -->
+            <div class="mb-3.5 rounded-lg border border-amber-200 bg-amber-50/50 p-4">
+                <div class="flex items-start gap-3">
+                    <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white text-xs font-bold">
+                        2
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-bold text-slate-900">
+                            Minat Mendalam pada Warisan Bapa Gereja (Patristik)
+                        </h5>
+                        <p class="text-xs text-slate-700 mt-1 leading-relaxed">
+                            Pembaca menunjukkan kecenderungan kuat menelaah sumber primer sejarah Gereja purba (karya Mike Aquilina dan Robert Louis Wilken). Pembaca memprioritaskan pemahaman akar liturgis dan doktriner historis untuk memperdalam teologi biblika dan sakramen.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Kecenderungan 3 -->
+            <div class="mb-3.5 rounded-lg border border-emerald-200 bg-emerald-50/50 p-4">
+                <div class="flex items-start gap-3">
+                    <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white text-xs font-bold">
+                        3
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-bold text-slate-900">
+                            Kesadaran Etika Sosial, Politik & Formasi Hidup Bersama
+                        </h5>
+                        <p class="text-xs text-slate-700 mt-1 leading-relaxed">
+                            Terlihat keterlibatan membaca di <strong>Kelas 300 (Ilmu Sosial & Politik: 13.9%)</strong>, terutama karya <em>Etika Politik dan Kekuasaan</em> (Haryatmoko, Otto Gusti Madung) serta sastra reflektif formasi rohani (Frater TOR). Hal ini membuktikan keterbukaan pembaca terhadap tantangan etis kebangsaan.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subjek Granular -->
+            <div class="pt-2 border-t border-slate-200">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-2">
+                    Klasifikasi Spesifik Paling Sering Diakses:
+                </span>
+                <div class="flex flex-wrap gap-1.5">
+                    {% for sub in subjek_spesifik %}
+                    <span class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 border border-slate-200 py-1 px-2.5 text-xs text-slate-800">
+                        <strong class="text-blue-700 font-mono">{{ sub.klasifikasi }}</strong>
+                        <span class="text-slate-500">({{ sub.total }}x baca)</span>
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- PILAR 2: ANALISIS DAMPAK STRATEGIS -->
+        <div class="stj-card p-6">
+            <div class="border-b border-slate-200 pb-3 mb-4 flex items-center justify-between">
+                <div>
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded">
+                        Pilar II
+                    </span>
+                    <h3 class="text-lg font-extrabold text-slate-900 mt-1.5">
+                        Dampak Nyata & Implikasi (*Impact Analysis*)
+                    </h3>
+                </div>
+                <div class="h-9 w-9 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                    <i class="fa-solid fa-bullseye"></i>
+                </div>
+            </div>
+
+            <p class="text-xs text-slate-600 leading-relaxed mb-4">
+                Temuan pola pembacaan di atas membawa 4 dampak nyata bagi formasi mahasiswa, kurikulum, dan operasional perpustakaan:
+            </p>
+
+            <!-- Dampak A: Formasi Intelektual -->
+            <div class="mb-3.5 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <div class="flex items-start gap-3">
+                    <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded bg-blue-100 text-blue-700 text-xs font-bold">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-bold text-slate-900">
+                            A. Dampak Formasi Intelektual (Kualitas Akademik Tinggi)
+                        </h5>
+                        <p class="text-xs text-slate-700 mt-1 leading-relaxed">
+                            <strong>Dampak Nyata:</strong> Mahasiswa dan frater terbiasa membaca karya teks induk (*primary sources*) dan literatur bermutu tinggi. Hal ini berdampak langsung pada ketajaman tesis, makalah seminar, serta akurasi argumentasi ilmiah yang teruji secara metodologis.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dampak B: Moral & Pastoral -->
+            <div class="mb-3.5 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <div class="flex items-start gap-3">
+                    <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded bg-emerald-100 text-emerald-700 text-xs font-bold">
+                        <i class="fa-solid fa-hands-holding-circle"></i>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-bold text-slate-900">
+                            B. Dampak Formasi Pastoral & Moral Kemasyarakatan
+                        </h5>
+                        <p class="text-xs text-slate-700 mt-1 leading-relaxed">
+                            <strong>Dampak Nyata:</strong> Pembacaan etika sosial dan nalar politik membekali calon rohaniwan agar tidak terisolasi di menara gading, melainkan memiliki kepekaan etis terhadap isu kemiskinan, ketidakadilan, dan dialog keberagaman bangsa.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dampak C: Ketahanan Fisik Koleksi -->
+            <div class="mb-3.5 rounded-lg border border-rose-200 bg-rose-50/40 p-4">
+                <div class="flex items-start gap-3">
+                    <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded bg-rose-100 text-rose-700 text-xs font-bold">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h5 class="text-sm font-bold text-slate-900">
+                                C. Dampak Ketahanan Fisik & Risiko Salinan Tunggal
+                            </h5>
+                            <span class="text-[10px] bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded">Perlu Antisipasi</span>
+                        </div>
+                        <p class="text-xs text-slate-700 mt-1 leading-relaxed">
+                            <strong>Peringatan Manajerial:</strong> Buku-buku yang paling sering diakses (seperti karya Descartes dan Patristik) saat ini <strong>hanya memiliki 1 eksemplar fisik</strong> di rak. Dampaknya: risiko keausan fisik buku meningkat dan dapat memicu antrean akses pada periode ujian/tugas akhir.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dampak D: Rekomendasi Roadmap Pengadaan -->
+            <div class="rounded-lg border border-amber-200 bg-amber-50/40 p-4">
+                <div class="flex items-start gap-3">
+                    <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded bg-amber-100 text-amber-700 text-xs font-bold">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-bold text-slate-900">
+                            D. Rekomendasi Kebijakan & Pengadaan Presisi (*Smart Roadmap*)
+                        </h5>
+                        <ul class="text-xs text-slate-700 mt-1 space-y-1 list-disc list-inside">
+                            <li><strong>Pengadaan Terarah:</strong> Alokasikan anggaran belanja buku baru prioritas pada Patrologi, Teologi Dogmatika, dan Filsafat Kontemporer.</li>
+                            <li><strong>Duplikasi Eksemplar:</strong> Tambah minimal 1 eksemplar cadangan untuk buku-buku berstatus salinan tunggal yang sering dibaca.</li>
+                            <li><strong>Sudut Display Tematik:</strong> Buat pojok baca bulanan bertema <em>"Filsafat & Spiritualitas Bapa Gereja"</em> di dekat pintu masuk.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- TABEL 1: TOP 15 KOLEKSI PALING SERING DIBACA (CLEAN WHITE) -->
+    <div class="stj-card p-6 mb-6">
+        <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-200 pb-3">
+            <div>
+                <h4 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-ranking-star text-amber-500"></i> 15 Koleksi Paling Sering Diakses di Meja Baca
+                </h4>
+                <p class="text-xs text-slate-500 mt-0.5">Daftar buku dengan frekuensi baca tertinggi beserta ketersediaan eksemplar fisiknya.</p>
+            </div>
+            <span class="text-xs font-bold text-slate-700 bg-slate-100 border border-slate-200 px-3 py-1 rounded-lg">
+                Total Koleksi Dianalisis: {{ top_books|length }} Judul
+            </span>
+        </div>
+
+        <div class="max-w-full overflow-x-auto">
+            <table class="w-full table-auto text-sm" id="tableTopBooks">
+                <thead>
+                    <tr>
+                        <th class="stj-table-th py-3 px-3 text-center w-12">No</th>
+                        <th class="stj-table-th py-3 px-3 text-left">Judul Koleksi</th>
+                        <th class="stj-table-th py-3 px-3 text-left">Pengarang</th>
+                        <th class="stj-table-th py-3 px-3 text-center">DDC</th>
+                        <th class="stj-table-th py-3 px-3 text-center">Total Dibaca</th>
+                        <th class="stj-table-th py-3 px-3 text-center">Koleksi Fisik</th>
+                        <th class="stj-table-th py-3 px-3 text-center">Indikator Kebutuhan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for book in top_books %}
+                    <tr class="stj-table-row transition">
+                        <td class="stj-table-td py-3 px-3 text-center font-bold text-slate-500">
+                            {{ loop.index }}
+                        </td>
+                        <td class="stj-table-td py-3 px-3">
+                            <a href="/detail-opac?id={{ book.id }}" target="_blank" class="font-bold text-blue-700 hover:text-blue-900 hover:underline line-clamp-2" title="{{ book.judul }}">
+                                {{ book.judul }}
+                            </a>
+                        </td>
+                        <td class="stj-table-td py-3 px-3 text-slate-700 font-medium">
+                            {{ book.pengarang or '-' }}
+                        </td>
+                        <td class="stj-table-td py-3 px-3 text-center font-mono font-bold">
+                            <span class="bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded text-xs">
+                                {{ book.klasifikasi or '-' }}
+                            </span>
+                        </td>
+                        <td class="stj-table-td py-3 px-3 text-center font-extrabold text-slate-900">
+                            <span class="inline-flex rounded-full bg-blue-100 text-blue-800 py-0.5 px-2.5 text-xs font-bold">
+                                {{ book.total_dibaca }}x
+                            </span>
+                        </td>
+                        <td class="stj-table-td py-3 px-3 text-center text-xs font-bold text-slate-700">
+                            {{ book.total_eksemplar }} Eks
+                        </td>
+                        <td class="stj-table-td py-3 px-3 text-center">
+                            {% if book.total_eksemplar == 1 and book.total_dibaca >= 2 %}
+                            <span class="inline-flex items-center gap-1 rounded bg-rose-100 border border-rose-300 py-1 px-2.5 text-xs font-bold text-rose-800">
+                                <i class="fa-solid fa-plus"></i> Butuh Salinan Tambahan
+                            </span>
+                            {% elif book.total_dibaca >= 2 %}
+                            <span class="inline-flex items-center gap-1 rounded bg-emerald-100 border border-emerald-300 py-1 px-2.5 text-xs font-bold text-emerald-800">
+                                <i class="fa-solid fa-check"></i> Utilisasi Optimal
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1 rounded bg-slate-100 border border-slate-200 py-1 px-2.5 text-xs font-semibold text-slate-600">
+                                Normal
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-6 text-slate-500">Tidak ada data koleksi terbaca pada rentang waktu ini.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TABEL 2: LOG AKTIVITAS BACA TERBARU (WIB) -->
+    <div class="stj-card p-6 print:hidden">
+        <div class="mb-4 flex items-center justify-between border-b border-slate-200 pb-3">
+            <div>
+                <h4 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-history text-slate-500"></i> Log Terakhir Aktivitas Meja Baca (Waktu Indonesia Barat)
+                </h4>
+                <p class="text-xs text-slate-500 mt-0.5">10 transaksi pembacaan buku terkini dengan penyesuaian waktu lokal WIB.</p>
+            </div>
+            <a href="/laporan_buku_dibaca" class="text-xs text-blue-700 font-bold hover:underline flex items-center gap-1">
+                Lihat Seluruh Riwayat <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="max-w-full overflow-x-auto">
+            <table class="w-full table-auto text-xs">
+                <thead>
+                    <tr>
+                        <th class="stj-table-th py-2.5 px-3 text-left">Waktu Pembacaan (WIB)</th>
+                        <th class="stj-table-th py-2.5 px-3 text-left">Barcode</th>
+                        <th class="stj-table-th py-2.5 px-3 text-left">Judul Koleksi</th>
+                        <th class="stj-table-th py-2.5 px-3 text-left">Pengarang</th>
+                        <th class="stj-table-th py-2.5 px-3 text-center">DDC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in recent_reads %}
+                    <tr class="stj-table-row transition">
+                        <td class="stj-table-td py-2.5 px-3 text-slate-600 font-mono font-bold">
+                            {{ r.waktu_baca }} WIB
+                        </td>
+                        <td class="stj-table-td py-2.5 px-3 font-mono font-bold text-blue-700">
+                            {{ r.no_induk }}
+                        </td>
+                        <td class="stj-table-td py-2.5 px-3 font-bold text-slate-900">
+                            {{ r.judul }}
+                        </td>
+                        <td class="stj-table-td py-2.5 px-3 text-slate-600 font-medium">
+                            {{ r.pengarang or '-' }}
+                        </td>
+                        <td class="stj-table-td py-2.5 px-3 text-center font-mono font-bold text-slate-800">
+                            {{ r.klasifikasi or '-' }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-slate-500">Belum ada riwayat baca.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- SCRIPT UNTUK CHART.JS & EKSPOR CSV -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // 1. Inisialisasi Chart DDC
+    const ddcData = {{ ddc_dist|tojson }};
+    const ddcLabels = ddcData.map(d => d.kategori);
+    const ddcValues = ddcData.map(d => d.total);
+    const ddcColors = [
+        '#2563EB', '#0D9488', '#10B981', '#F59E0B', '#EF4444',
+        '#8B5CF6', '#EC4899', '#64748B', '#F97316', '#06B6D4', '#6366F1'
+    ];
+
+    const ctxDdc = document.getElementById('ddcChart');
+    if (ctxDdc && ddcValues.length > 0) {
+        new Chart(ctxDdc, {
+            type: 'doughnut',
+            data: {
+                labels: ddcLabels,
+                datasets: [{
+                    data: ddcValues,
+                    backgroundColor: ddcColors.slice(0, ddcValues.length),
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const val = context.raw;
+                                const pct = Math.round((val / total) * 100);
+                                return ` ${context.label}: ${val} buku (${pct}%)`;
+                            }
+                        }
+                    }
+                },
+                cutout: '68%'
+            }
+        });
+    }
+
+    // 2. Inisialisasi Chart Pola Jam Membaca (WIB)
+    const hourlyData = {{ hourly_dist|tojson }};
+    // 24 Jam Operasional
+    const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+    const hourMap = {};
+    hourlyData.forEach(h => { hourMap[h.jam] = h.total; });
+    const hourlyCounts = hours.map(h => hourMap[h] || 0);
+
+    const ctxHourly = document.getElementById('hourlyChart');
+    if (ctxHourly) {
+        new Chart(ctxHourly, {
+            type: 'bar',
+            data: {
+                labels: hours.map(h => h + ':00 WIB'),
+                datasets: [{
+                    label: 'Frekuensi Membaca',
+                    data: hourlyCounts,
+                    backgroundColor: hours.map(h => (hourMap[h] && hourMap[h] >= 10) ? '#2563EB' : '#93C5FD'),
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 2, color: '#475569', font: { weight: 'bold' } },
+                        grid: { color: '#f1f5f9' }
+                    },
+                    x: {
+                        ticks: { color: '#475569', maxRotation: 45, minRotation: 45, font: { size: 10 } },
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return ` ${ctx.raw} kali pembacaan`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 3. Export CSV Function
+    function exportTableToCSV(filename) {
+        let csv = [];
+        const rows = document.querySelectorAll("#tableTopBooks tr");
+        
+        for (let i = 0; i < rows.length; i++) {
+            let row = [];
+            const cols = rows[i].querySelectorAll("td, th");
+            for (let j = 0; j < cols.length; j++) {
+                let text = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").trim();
+                row.push('"' + text.replace(/"/g, '""') + '"');
+            }
+            csv.push(row.join(","));
+        }
+        
+        const csvFile = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+        const downloadLink = document.createElement("a");
+        downloadLink.download = filename;
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+</script>
+
+<style>
+@media print {
+    body {
+        background: #fff !important;
+        color: #000 !important;
+    }
+    aside, header, .print\:hidden {
+        display: none !important;
+    }
+    .stj-card {
+        box-shadow: none !important;
+        border: 1px solid #cbd5e1 !important;
+        break-inside: avoid;
+    }
+}
+</style>
+{% endblock %}

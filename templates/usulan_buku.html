@@ -1,0 +1,540 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="p-4 md:p-8 space-y-6 max-w-7xl mx-auto animate-fade-in">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-gray-200">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                    <i class="fa-solid fa-sparkles text-amber-600"></i> Pengadaan & Minat Koleksi
+                </span>
+                <span class="text-xs text-gray-400">•</span>
+                <span class="text-xs text-gray-500">St. Jerome Library</span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Usulan Buku & Analisis Pencarian</h1>
+            <p class="text-sm text-gray-500 mt-1">
+                Analisis terpadu pemetaan kebutuhan buku pemustaka dari interaksi <strong class="text-gray-700">WhatsApp Bot</strong> dan katalog <strong class="text-gray-700">Web OPAC</strong>.
+            </p>
+        </div>
+        <div class="flex items-center gap-2.5">
+            <a href="/opac" target="_blank" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 shadow-sm transition">
+                <i class="fa-solid fa-arrow-up-right-from-square text-gray-400"></i> Buka OPAC
+            </a>
+            <button onclick="window.print()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition">
+                <i class="fa-solid fa-print"></i> Cetak Laporan
+            </button>
+        </div>
+    </div>
+
+    <!-- 4 Summary KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Card 1: Total Judul -->
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Judul Diminati</p>
+                <h3 class="text-2xl md:text-3xl font-black text-gray-800 mt-1">{{ stats.total_judul }} <span class="text-xs font-normal text-gray-500">Judul</span></h3>
+                <p class="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                    <i class="fa-solid fa-layer-group text-blue-500"></i> {{ stats.total_permintaan }}x total permintaan
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shadow-inner">
+                <i class="fa-solid fa-book-bookmark"></i>
+            </div>
+        </div>
+
+        <!-- Card 2: Muncul di Keduanya (Prioritas Tinggi) -->
+        <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-5 border border-amber-200 shadow-sm flex items-center justify-between relative overflow-hidden">
+            <div class="relative z-10">
+                <div class="flex items-center gap-1.5">
+                    <p class="text-xs font-bold text-amber-800 uppercase tracking-wider">Keduanya (Prioritas)</p>
+                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-200 text-amber-900 animate-pulse">URGENT</span>
+                </div>
+                <h3 class="text-2xl md:text-3xl font-black text-amber-900 mt-1">{{ stats.keduanya }} <span class="text-xs font-medium text-amber-700">Judul ({{ stats.keduanya_pct }}%)</span></h3>
+                <p class="text-xs text-amber-700 mt-1 flex items-center gap-1">
+                    <i class="fa-solid fa-fire text-amber-600"></i> Dicari di OPAC & WA Bot
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-xl shadow-md relative z-10">
+                <i class="fa-solid fa-fire"></i>
+            </div>
+            <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-amber-200/40 rounded-full blur-xl pointer-events-none"></div>
+        </div>
+
+        <!-- Card 3: Usulan via WhatsApp -->
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Via WhatsApp Bot</p>
+                <h3 class="text-2xl md:text-3xl font-black text-gray-800 mt-1">{{ stats.wa }} <span class="text-xs font-normal text-gray-500">Judul ({{ stats.wa_pct }}%)</span></h3>
+                <p class="text-xs text-emerald-600 mt-1 flex items-center gap-1">
+                    <i class="fa-brands fa-whatsapp"></i> Usulan langsung pemustaka
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shadow-inner">
+                <i class="fa-brands fa-whatsapp"></i>
+            </div>
+        </div>
+
+        <!-- Card 4: Pencarian via Web OPAC -->
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Via Web OPAC</p>
+                <h3 class="text-2xl md:text-3xl font-black text-gray-800 mt-1">{{ stats.opac }} <span class="text-xs font-normal text-gray-500">Judul ({{ stats.opac_pct }}%)</span></h3>
+                <p class="text-xs text-sky-600 mt-1 flex items-center gap-1">
+                    <i class="fa-solid fa-globe"></i> Pencarian katalog gagal
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl shadow-inner">
+                <i class="fa-solid fa-globe"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visual Charts Section (2 Columns) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Chart 1: Donut Sumber Usulan (5 Cols) -->
+        <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h4 class="text-base font-bold text-gray-900">Proporsi Kanal Kebutuhan Buku</h4>
+                        <p class="text-xs text-gray-500">Perbandingan asal sumber minat pemustaka</p>
+                    </div>
+                    <span class="p-2 rounded-xl bg-gray-50 text-gray-500 text-xs">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </span>
+                </div>
+                <div class="relative h-64 flex items-center justify-center">
+                    <canvas id="sourceDonutChart"></canvas>
+                </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-100 grid grid-cols-3 gap-2 text-center text-xs">
+                <div class="p-2 rounded-xl bg-amber-50 border border-amber-100">
+                    <div class="flex items-center justify-center gap-1 text-amber-700 font-semibold mb-0.5">
+                        <span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span> Keduanya
+                    </div>
+                    <div class="text-base font-black text-amber-900">{{ stats.keduanya }}</div>
+                    <div class="text-[10px] text-amber-600">{{ stats.keduanya_pct }}%</div>
+                </div>
+                <div class="p-2 rounded-xl bg-emerald-50 border border-emerald-100">
+                    <div class="flex items-center justify-center gap-1 text-emerald-700 font-semibold mb-0.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> WA Bot
+                    </div>
+                    <div class="text-base font-black text-emerald-900">{{ stats.wa }}</div>
+                    <div class="text-[10px] text-emerald-600">{{ stats.wa_pct }}%</div>
+                </div>
+                <div class="p-2 rounded-xl bg-sky-50 border border-sky-100">
+                    <div class="flex items-center justify-center gap-1 text-sky-700 font-semibold mb-0.5">
+                        <span class="w-2 h-2 rounded-full bg-sky-500 inline-block"></span> Web OPAC
+                    </div>
+                    <div class="text-base font-black text-sky-900">{{ stats.opac }}</div>
+                    <div class="text-[10px] text-sky-600">{{ stats.opac_pct }}%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 2: Top 7 Buku Paling Banyak Diminati (7 Cols) -->
+        <div class="lg:col-span-7 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h4 class="text-base font-bold text-gray-900">Top Judul & Topik Paling Banyak Diminati</h4>
+                        <p class="text-xs text-gray-500">Buku dengan akumulasi permintaan tertinggi (pencarian + usulan)</p>
+                    </div>
+                    <span class="p-2 rounded-xl bg-gray-50 text-gray-500 text-xs">
+                        <i class="fa-solid fa-chart-bar"></i>
+                    </span>
+                </div>
+                <div class="relative h-64">
+                    <canvas id="topBooksBarChart"></canvas>
+                </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-info text-amber-500"></i> Warna bar menandakan sumber:</span>
+                <div class="flex items-center gap-3 text-[11px]">
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-amber-500 inline-block"></span> Keduanya</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-emerald-500 inline-block"></span> WA Bot</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-sky-500 inline-block"></span> Web OPAC</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Tabs & Search Bar -->
+    <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <!-- Source Filter Buttons -->
+        <div class="flex flex-wrap items-center gap-1.5" id="filterTabs">
+            <button onclick="setSourceFilter('all')" data-filter="all" class="filter-btn active px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-gray-900 text-white transition flex items-center gap-1.5 shadow-sm">
+                <span>Semua</span>
+                <span class="px-1.5 py-0.2 rounded-full bg-gray-700 text-[10px] text-gray-200">{{ stats.total_judul }}</span>
+            </button>
+            <button onclick="setSourceFilter('Keduanya')" data-filter="Keduanya" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-amber-100 hover:text-amber-800 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-fire text-amber-500"></i>
+                <span>Keduanya</span>
+                <span class="px-1.5 py-0.2 rounded-full bg-amber-200 text-amber-900 text-[10px] font-bold">{{ stats.keduanya }}</span>
+            </button>
+            <button onclick="setSourceFilter('WhatsApp')" data-filter="WhatsApp" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-emerald-100 hover:text-emerald-800 transition flex items-center gap-1.5">
+                <i class="fa-brands fa-whatsapp text-emerald-600"></i>
+                <span>WhatsApp Bot</span>
+                <span class="px-1.5 py-0.2 rounded-full bg-emerald-200 text-emerald-900 text-[10px]">{{ stats.wa }}</span>
+            </button>
+            <button onclick="setSourceFilter('Web OPAC')" data-filter="Web OPAC" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-800 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-globe text-blue-600"></i>
+                <span>Web OPAC</span>
+                <span class="px-1.5 py-0.2 rounded-full bg-blue-200 text-blue-900 text-[10px]">{{ stats.opac }}</span>
+            </button>
+        </div>
+
+        <!-- Search Input -->
+        <div class="relative w-full md:w-72">
+            <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Cari judul, pengarang, catatan..." class="w-full pl-9 pr-8 py-2 rounded-xl text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition">
+            <button id="clearSearch" onclick="clearSearchInput()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Table Container -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse" id="usulanTable">
+                <thead>
+                    <tr class="bg-gray-50/80 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
+                        <th class="py-3.5 px-4 font-bold text-center w-12">No</th>
+                        <th class="py-3.5 px-4 font-bold">Judul Buku & Pengarang</th>
+                        <th class="py-3.5 px-4 font-bold text-center">Sumber Minat</th>
+                        <th class="py-3.5 px-4 font-bold">Pengusul / Keterangan</th>
+                        <th class="py-3.5 px-4 font-bold text-center">Peminat</th>
+                        <th class="py-3.5 px-4 font-bold">Terakhir Dicari</th>
+                        <th class="py-3.5 px-4 font-bold text-center">Status Pengadaan</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm divide-y divide-gray-100">
+                    {% for row in items %}
+                    <tr class="hover:bg-amber-50/30 transition table-row-item" data-source="{{ row.sumber }}" data-title="{{ row.judul | lower }}" data-author="{{ row.pengarang | lower }}" data-notes="{{ row.catatan | lower }}" data-user="{{ row.pengusul | lower }}">
+                        <!-- No -->
+                        <td class="py-3.5 px-4 text-center font-mono text-xs text-gray-400 row-number">
+                            {{ loop.index }}
+                        </td>
+
+                        <!-- Judul & Pengarang -->
+                        <td class="py-3.5 px-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg {% if row.sumber == 'Keduanya' %}bg-amber-100 text-amber-800{% elif row.sumber == 'WhatsApp' %}bg-emerald-100 text-emerald-800{% else %}bg-blue-100 text-blue-800{% endif %} flex items-center justify-center text-sm shrink-0 mt-0.5 shadow-sm">
+                                    <i class="fa-solid fa-book"></i>
+                                </div>
+                                <div>
+                                    <h5 class="font-bold text-gray-900 leading-snug">{{ row.judul }}</h5>
+                                    <p class="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-user-pen text-gray-400 text-[10px]"></i>
+                                        <span>{{ row.pengarang if row.pengarang and row.pengarang != '-' else 'Penulis tidak disebutkan' }}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Sumber Minat Badge -->
+                        <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                            {% if row.sumber == 'Keduanya' %}
+                            <div class="inline-flex flex-col items-center">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm shadow-amber-200">
+                                    <i class="fa-solid fa-fire text-yellow-200"></i> Keduanya (WA + OPAC)
+                                </span>
+                                <span class="text-[10px] text-amber-700 font-semibold mt-1">
+                                    {{ row.wa_count }} Usulan WA • {{ row.opac_count }}x di OPAC
+                                </span>
+                            </div>
+                            {% elif row.sumber == 'WhatsApp' %}
+                            <div class="inline-flex flex-col items-center">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    <i class="fa-brands fa-whatsapp text-emerald-600"></i> WhatsApp Bot
+                                </span>
+                                <span class="text-[10px] text-gray-400 mt-1">
+                                    {{ row.wa_count }} Usulan Terdaftar
+                                </span>
+                            </div>
+                            {% else %}
+                            <div class="inline-flex flex-col items-center">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">
+                                    <i class="fa-solid fa-globe text-sky-600"></i> Web OPAC
+                                </span>
+                                <span class="text-[10px] text-gray-400 mt-1">
+                                    Pencarian Katalog Gagal
+                                </span>
+                            </div>
+                            {% endif %}
+                        </td>
+
+                        <!-- Pengusul / Catatan -->
+                        <td class="py-3.5 px-4 text-xs text-gray-600 max-w-xs">
+                            <div class="font-medium text-gray-800 flex items-center gap-1 mb-0.5">
+                                <i class="fa-solid fa-user text-gray-400 text-[10px]"></i>
+                                <span>{{ row.pengusul }}</span>
+                            </div>
+                            {% if row.catatan %}
+                            <p class="text-gray-500 italic line-clamp-2" title="{{ row.catatan }}">
+                                "{{ row.catatan }}"
+                            </p>
+                            {% else %}
+                            <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Peminat / Frekuensi -->
+                        <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-black {% if row.total_frekuensi >= 3 %}bg-amber-100 text-amber-900 border border-amber-300 shadow-sm{% elif row.total_frekuensi >= 2 %}bg-orange-50 text-orange-800 border border-orange-200{% else %}bg-gray-100 text-gray-700{% endif %}">
+                                {% if row.total_frekuensi >= 3 %}<i class="fa-solid fa-fire text-amber-500"></i>{% endif %}
+                                {{ row.total_frekuensi }}x
+                            </span>
+                        </td>
+
+                        <!-- Terakhir Dicari -->
+                        <td class="py-3.5 px-4 text-xs text-gray-500 whitespace-nowrap">
+                            <span class="flex items-center gap-1.5">
+                                <i class="fa-regular fa-clock text-gray-400"></i>
+                                {{ row.terakhir_dicari_formatted }}
+                            </span>
+                        </td>
+
+                        <!-- Status Pengadaan Dropdown -->
+                        <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                            <div class="relative inline-block text-left">
+                                <select onchange="updateStatus('{{ row.id }}', this.value)" class="text-xs font-semibold px-2.5 py-1 rounded-lg border focus:outline-none transition cursor-pointer {% if row.status == 'Disetujui' %}bg-emerald-50 text-emerald-800 border-emerald-300{% elif row.status == 'Dalam Pengadaan' %}bg-blue-50 text-blue-800 border-blue-300{% elif row.status == 'Selesai' %}bg-purple-50 text-purple-800 border-purple-300{% elif row.status == 'Ditolak' %}bg-red-50 text-red-800 border-red-300{% else %}bg-amber-50 text-amber-800 border-amber-300{% endif %}">
+                                    <option value="Menunggu" {% if row.status == 'Menunggu' %}selected{% endif %}>⏳ Menunggu</option>
+                                    <option value="Disetujui" {% if row.status == 'Disetujui' %}selected{% endif %}>✅ Disetujui</option>
+                                    <option value="Dalam Pengadaan" {% if row.status == 'Dalam Pengadaan' %}selected{% endif %}>📦 Dalam Pengadaan</option>
+                                    <option value="Selesai" {% if row.status == 'Selesai' %}selected{% endif %}>🎉 Sudah Ada</option>
+                                    <option value="Ditolak" {% if row.status == 'Ditolak' %}selected{% endif %}>❌ Ditolak</option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr id="emptyRow">
+                        <td colspan="7" class="py-16 text-center text-gray-400">
+                            <div class="w-16 h-16 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-3xl mx-auto mb-3 shadow-inner">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                            <h5 class="text-base font-bold text-gray-700">Koleksi Sangat Lengkap!</h5>
+                            <p class="text-xs text-gray-500 mt-1 max-w-sm mx-auto">Belum ada usulan pengadaan buku baru atau pencarian katalog yang gagal.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div id="noMatchMessage" class="hidden py-12 text-center text-gray-400 border-t border-gray-100">
+            <i class="fa-solid fa-magnifying-glass text-3xl mb-2 text-gray-300 block"></i>
+            <p class="text-sm font-semibold text-gray-600">Tidak ada usulan buku yang cocok dengan filter atau kata kunci.</p>
+            <button onclick="resetFilters()" class="mt-2 text-xs text-amber-600 hover:underline">Reset Filter</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toastNotification" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-gray-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-xs pointer-events-none">
+    <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+    <span id="toastMessage">Status berhasil diperbarui!</span>
+</div>
+
+<!-- Chart.js Integration -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // 1. Inisialisasi Data Grafik dari Flask Backend
+    const chartData = {{ chart_data | tojson | safe }};
+
+    // 2. Donut Chart (Proporsi Sumber)
+    const ctxDonut = document.getElementById('sourceDonutChart').getContext('2d');
+    new Chart(ctxDonut, {
+        type: 'doughnut',
+        data: {
+            labels: chartData.source_labels,
+            datasets: [{
+                data: chartData.source_counts,
+                backgroundColor: [
+                    '#F59E0B', // Keduanya (Amber)
+                    '#10B981', // WhatsApp (Emerald)
+                    '#0284C7'  // Web OPAC (Sky Blue)
+                ],
+                borderWidth: 3,
+                borderColor: '#ffffff',
+                hoverOffset: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 15,
+                        font: { size: 11, family: 'Inter, sans-serif', weight: '600' }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const val = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+                            return ` ${label}: ${val} judul (${pct}%)`;
+                        }
+                    }
+                }
+            },
+            cutout: '72%'
+        }
+    });
+
+    // 3. Bar Chart (Top 7 Buku Paling Banyak Diminati)
+    const ctxBar = document.getElementById('topBooksBarChart').getContext('2d');
+    new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+            labels: chartData.top_labels,
+            datasets: [{
+                label: 'Akumulasi Peminat',
+                data: chartData.top_values,
+                backgroundColor: chartData.top_colors,
+                borderRadius: 8,
+                borderSkipped: false,
+                barThickness: 18
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ` Total Peminat: ${context.raw}x dicari/diusulkan`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        font: { size: 11, family: 'Inter, sans-serif' }
+                    },
+                    grid: { color: '#f3f4f6' }
+                },
+                y: {
+                    ticks: {
+                        font: { size: 11, family: 'Inter, sans-serif', weight: '500' }
+                    },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+
+    // 4. Interactive Filter Logic
+    let currentSourceFilter = 'all';
+
+    function setSourceFilter(source) {
+        currentSourceFilter = source;
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            if (btn.getAttribute('data-filter') === source) {
+                btn.className = "filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-gray-900 text-white transition flex items-center gap-1.5 shadow-sm";
+            } else {
+                btn.className = "filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition flex items-center gap-1.5";
+            }
+        });
+        filterTable();
+    }
+
+    function filterTable() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        const clearBtn = document.getElementById('clearSearch');
+        if (query.length > 0) {
+            clearBtn.classList.remove('hidden');
+        } else {
+            clearBtn.classList.add('hidden');
+        }
+
+        const rows = document.querySelectorAll('.table-row-item');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const rowSource = row.getAttribute('data-source');
+            const rowTitle = row.getAttribute('data-title') || '';
+            const rowAuthor = row.getAttribute('data-author') || '';
+            const rowNotes = row.getAttribute('data-notes') || '';
+            const rowUser = row.getAttribute('data-user') || '';
+
+            const matchesSource = (currentSourceFilter === 'all') || (rowSource === currentSourceFilter);
+            const matchesQuery = !query || 
+                rowTitle.includes(query) || 
+                rowAuthor.includes(query) || 
+                rowNotes.includes(query) || 
+                rowUser.includes(query);
+
+            if (matchesSource && matchesQuery) {
+                row.style.display = '';
+                visibleCount++;
+                const rowNumCell = row.querySelector('.row-number');
+                if (rowNumCell) rowNumCell.textContent = visibleCount;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        const noMatch = document.getElementById('noMatchMessage');
+        if (visibleCount === 0 && rows.length > 0) {
+            noMatch.classList.remove('hidden');
+        } else {
+            noMatch.classList.add('hidden');
+        }
+    }
+
+    function clearSearchInput() {
+        document.getElementById('searchInput').value = '';
+        filterTable();
+    }
+
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        setSourceFilter('all');
+    }
+
+    // 5. AJAX Status Updater
+    async function updateStatus(id, newStatus) {
+        try {
+            const res = await fetch('/api/usulan_buku/update_status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id, status: newStatus })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                showToast(`Status pengadaan diperbarui menjadi "${newStatus}"`);
+            } else {
+                showToast(`Gagal: ${data.message || 'Terjadi kesalahan'}`);
+            }
+        } catch (err) {
+            showToast('Gagal menghubungi server!');
+        }
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toastNotification');
+        const toastMsg = document.getElementById('toastMessage');
+        toastMsg.textContent = msg;
+        toast.classList.remove('translate-y-20', 'opacity-0');
+        setTimeout(() => {
+            toast.classList.add('translate-y-20', 'opacity-0');
+        }, 3000);
+    }
+</script>
+{% endblock %}

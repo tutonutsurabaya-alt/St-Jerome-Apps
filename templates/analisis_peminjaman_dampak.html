@@ -1,0 +1,552 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<style>
+    .stj-clean-container {
+        background-color: transparent !important;
+        color: #1e293b !important;
+    }
+    .stj-card {
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 0.5rem !important;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
+    }
+    .stj-table-th {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        font-weight: 700 !important;
+        border-bottom: 2px solid #cbd5e1 !important;
+    }
+    .stj-table-td {
+        color: #1e293b !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        background-color: #ffffff !important;
+    }
+    .stj-table-row:hover td {
+        background-color: #f8fafc !important;
+    }
+</style>
+
+<div class="stj-clean-container">
+
+    <!-- HEADER -->
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between print:mb-2">
+        <div>
+            <div class="flex items-center gap-2">
+                <span class="inline-flex rounded-md bg-purple-100 px-3 py-1 text-xs font-bold text-purple-800 uppercase tracking-wider">
+                    <i class="fa-solid fa-arrow-right-arrow-left mr-1.5 mt-0.5"></i> Intelijen Sirkulasi & Peminjaman
+                </span>
+                <span class="text-xs text-slate-500 font-medium">| St. Jerome Circulation Analytics</span>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 mt-1.5 tracking-tight">
+                Analisis Kecenderungan & Dampak Peminjaman
+            </h2>
+            <p class="text-sm text-slate-600 mt-1">
+                Kajian komprehensif perilaku peminjaman buku ke luar perpustakaan (*external borrowing*), pola kecenderungan literatur yang dibawa pulang, dan proyeksi dampak akademis bagi formasi pemustaka.
+            </p>
+        </div>
+        
+        <div class="print:hidden flex items-center gap-2.5">
+            <button onclick="window.print()" class="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-800 py-2.5 px-4 text-center text-xs font-bold text-white hover:bg-slate-900 transition shadow-sm">
+                <i class="fa-solid fa-print text-amber-400"></i> Cetak Laporan / PDF
+            </button>
+            <button onclick="exportTableToCSV('analisis_peminjaman_dampak.csv')" class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 py-2.5 px-4 text-center text-xs font-bold text-white hover:bg-emerald-700 transition shadow-sm">
+                <i class="fa-solid fa-file-excel"></i> Ekspor CSV
+            </button>
+        </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="mb-6 stj-card p-4 print:hidden">
+        <form method="GET" action="/analisis_peminjaman_dampak" class="flex flex-wrap items-end justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Mulai Tanggal</label>
+                    <input type="date" name="start_date" value="{{ start_date }}" class="rounded-lg border border-slate-300 bg-white py-2 px-3 text-sm text-slate-800 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Sampai Tanggal</label>
+                    <input type="date" name="end_date" value="{{ end_date }}" class="rounded-lg border border-slate-300 bg-white py-2 px-3 text-sm text-slate-800 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600">
+                </div>
+                <div>
+                    <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-purple-600 py-2 px-4 text-sm font-bold text-white hover:bg-purple-700 transition shadow-sm">
+                        <i class="fa-solid fa-filter"></i> Filter
+                    </button>
+                    {% if start_date or end_date %}
+                    <a href="/analisis_peminjaman_dampak" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white py-2 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition ml-2">
+                        <i class="fa-solid fa-rotate-left"></i> Reset
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-600">
+                <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                <span>Data terintegrasi dari riwayat sirkulasi SLiMS & sistem St. Jerome.</span>
+            </div>
+        </form>
+    </div>
+
+    <!-- 4 KPI SUMMARY CARDS -->
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 xl:grid-cols-4 mb-6">
+        
+        <div class="stj-card p-5">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Transaksi Pinjam</span>
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
+                    <i class="fa-solid fa-receipt text-lg"></i>
+                </div>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between">
+                <h3 class="text-3xl font-extrabold text-slate-900">{{ total_pinjam }}</h3>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800">
+                    Sirkulasi
+                </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Buku fisik yang dibawa pulang pemustaka</p>
+        </div>
+
+        <div class="stj-card p-5">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Pemustaka Aktif</span>
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                    <i class="fa-solid fa-users text-lg"></i>
+                </div>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between">
+                <h3 class="text-3xl font-extrabold text-slate-900">{{ total_peminjam_unik }}</h3>
+                <span class="text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+                    {{ total_judul_unik }} Judul Unik
+                </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Anggota yang aktif meminjam buku fisik</p>
+        </div>
+
+        <div class="stj-card p-5">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Rumpun Terfavorit</span>
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                    <i class="fa-solid fa-star text-lg"></i>
+                </div>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between">
+                <h3 class="text-lg font-extrabold text-slate-900 truncate" title="{{ top_ddc }}">
+                    {{ top_ddc.split('-')[1] if '-' in top_ddc else top_ddc }}
+                </h3>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800">
+                    {{ top_ddc_persen }}%
+                </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Klasifikasi DDC dengan tingkat sirkulasi tertinggi</p>
+        </div>
+
+        <div class="stj-card p-5">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Musim Puncak Sirkulasi</span>
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
+                    <i class="fa-solid fa-calendar-check text-lg"></i>
+                </div>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between">
+                <h3 class="text-lg font-extrabold text-slate-900">{{ peak_month }}</h3>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-rose-100 text-rose-800">
+                    Peak Month
+                </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Bulan paling aktif peminjaman koleksi</p>
+        </div>
+
+    </div>
+
+    <!-- CHARTS -->
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-12 mb-6">
+        
+        <!-- Chart 1: Distribusi Minat DDC Peminjaman (7 Cols) -->
+        <div class="xl:col-span-7 stj-card p-6">
+            <div class="mb-4">
+                <h4 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-purple-600"></i> Sebaran Minat Peminjaman Berdasarkan Rumpun DDC
+                </h4>
+                <p class="text-xs text-slate-500 mt-0.5">Proporsi buku yang dibawa pulang menurut klasifikasi keilmuan.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 items-center gap-4">
+                <div class="lg:col-span-6 relative flex items-center justify-center min-h-[250px]">
+                    <canvas id="ddcLoanChart" class="max-h-[240px]"></canvas>
+                </div>
+                <div class="lg:col-span-6 space-y-1.5 max-h-[270px] overflow-y-auto pr-1">
+                    {% for item in ddc_dist %}
+                    <div class="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition">
+                        <div class="flex items-center gap-2 truncate pr-2">
+                            <span class="h-3 w-3 rounded-full shrink-0" style="background-color: {{ ['#8B5CF6', '#2563EB', '#0D9488', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#64748B', '#F97316', '#06B6D4', '#6366F1'][loop.index0 % 11] }};"></span>
+                            <span class="font-bold text-slate-800 truncate" title="{{ item.kategori }}">{{ item.kategori }}</span>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="font-extrabold text-slate-900">{{ item.total }}x</span>
+                            <span class="text-slate-500 font-semibold">({{ item.persentase }}%)</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-xs text-slate-400 text-center py-6">Belum ada data distribusi DDC.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 2: Tren Peminjaman Lintas Waktu (5 Cols) -->
+        <div class="xl:col-span-5 stj-card p-6">
+            <div class="mb-4">
+                <h4 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line text-blue-600"></i> Tren Peminjaman Buku Lintas Waktu
+                </h4>
+                <p class="text-xs text-slate-500 mt-0.5">Fluktuasi jumlah transaksi sirkulasi per periode bulanan.</p>
+            </div>
+            <div class="relative min-h-[250px] flex items-center justify-center">
+                <canvas id="trendChart" class="w-full max-h-[250px]"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- DUA PILAR BESAR: KECENDERUNGAN & DAMPAK NYATA -->
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-2 mb-6">
+        
+        <!-- PILAR 1: ANALISIS KECENDERUNGAN PEMINJAM -->
+        <div class="stj-card p-6">
+            <div class="border-b border-slate-200 pb-3 mb-4 flex items-center justify-between">
+                <div>
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-1 rounded">
+                        Pilar I
+                    </span>
+                    <h3 class="text-lg font-extrabold text-slate-900 mt-1.5">
+                        Kecenderungan Peminjaman (*Borrowing Tendencies*)
+                    </h3>
+                </div>
+                <div class="text-purple-600 text-2xl">
+                    <i class="fa-solid fa-compass"></i>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-xs text-slate-700 leading-relaxed">
+                <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200">
+                    <h5 class="font-extrabold text-slate-900 text-sm mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-book-bookmark text-purple-600"></i>
+                        1. Dominasi Rumpun Filsafat, Etika & Teologi
+                    </h5>
+                    <p>
+                        Mayoritas transaksi peminjaman terpusat pada kategori <strong>100 (Filsafat & Etika)</strong> dan <strong>200 (Agama & Teologi)</strong>. Buku-buku bertema etika moral, pengantar filsafat Yunani, serta ajaran Santo Thomas Aquinas dan Santo Agustinus menunjukkan konsistensi pinjam paling stabil lintas semester.
+                    </p>
+                </div>
+
+                <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200">
+                    <h5 class="font-extrabold text-slate-900 text-sm mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-graduation-cap text-blue-600"></i>
+                        2. Pola Musiman Awal Semester (*Academic Cycle*)
+                    </h5>
+                    <p>
+                        Sirkulasi mengalami lonjakan signifikan pada bulan <strong>September - Oktober</strong> (awal semester ganjil) dan <strong>Februari - Maret</strong> (awal semester genap). Pada periode ini, pemustaka meminjam buku referensi dasar untuk memenuhi silabus perkuliahan dan tugas mingguan.
+                    </p>
+                </div>
+
+                <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200">
+                    <h5 class="font-extrabold text-slate-900 text-sm mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-hand-holding-heart text-rose-600"></i>
+                        3. Minat Tinggi pada Spiritualitas Pastoral & Homiletik
+                    </h5>
+                    <p>
+                        Bagi mahasiswa tingkat lanjut dan pembina, terjadi kecenderungan kuat dalam meminjam literatur <em>Homiletik (Bimbingan Berkhotbah)</em>, <em>Pastoral Konseling Keluarga</em>, serta <em>Dokumen Konsili Vatikan II</em>, yang mencerminkan kesiapan pelayanan pastoral langsung ke umat.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PILAR 2: PROYEKSI DAMPAK NYATA -->
+        <div class="stj-card p-6">
+            <div class="border-b border-slate-200 pb-3 mb-4 flex items-center justify-between">
+                <div>
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded">
+                        Pilar II
+                    </span>
+                    <h3 class="text-lg font-extrabold text-slate-900 mt-1.5">
+                        Proyeksi Dampak Nyata (*Impact Assessment*)
+                    </h3>
+                </div>
+                <div class="text-emerald-600 text-2xl">
+                    <i class="fa-solid fa-bullseye"></i>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-xs text-slate-700 leading-relaxed">
+                <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200">
+                    <h5 class="font-extrabold text-slate-900 text-sm mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-brain text-emerald-600"></i>
+                        1. Dampak Akademis & Mutu Skripsi
+                    </h5>
+                    <p>
+                        Peminjaman buku teks berbobot tinggi (karya primer filsuf dan eksegesis biblika) memperkuat dasar metodologis mahasiswa dalam menyusun makalah seminar dan skripsi, sehingga menghasilkan karya ilmiah yang berbobot dan terhindar dari plagiasi dangkal.
+                    </p>
+                </div>
+
+                <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200">
+                    <h5 class="font-extrabold text-slate-900 text-sm mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved text-amber-600"></i>
+                        2. Preservasi Koleksi & Smart Procurement
+                    </h5>
+                    <p>
+                        Buku yang sering dibawa pulang mengalami tingkat keausan fisik (*wear and tear*) lebih tinggi daripada buku baca meja. Sistem merekomendasikan <strong>pengadaan eksemplar duplikat</strong> untuk 10 buku terlaris agar tidak terjadi monopoli pinjam atau kerusakan fatal tanpa cadangan.
+                    </p>
+                </div>
+
+                <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200">
+                    <h5 class="font-extrabold text-slate-900 text-sm mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-bell text-indigo-600"></i>
+                        3. Optimalisasi Kepatuhan & Sirkulasi
+                    </h5>
+                    <p>
+                        Monitoring data sirkulasi memungkinkan staf perpustakaan mendeteksi buku yang belum dikembalikan (*loan_status = 0*) secara proaktif melalui pengingat otomatis, sehingga perputaran koleksi tetap lancar dan adil bagi seluruh pemustaka.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TABEL 1: TOP 15 BUKU PALING SERING DIPINJAM & TOP PEMUSTAKA -->
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-12 mb-6">
+        
+        <!-- Top Buku (7 Cols) -->
+        <div class="xl:col-span-7 stj-card p-6">
+            <div class="mb-4 flex items-center justify-between">
+                <div>
+                    <h4 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-award text-amber-500"></i> Top 15 Buku Paling Sering Dipinjam
+                    </h4>
+                    <p class="text-xs text-slate-500 mt-0.5">Koleksi dengan perputaran sirkulasi keluar tertinggi.</p>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto max-h-[380px] overflow-y-auto">
+                <table class="w-full text-left border-collapse text-xs" id="topBooksTable">
+                    <thead>
+                        <tr>
+                            <th class="p-3 stj-table-th text-center w-10">#</th>
+                            <th class="p-3 stj-table-th">Judul Buku</th>
+                            <th class="p-3 stj-table-th">Pengarang</th>
+                            <th class="p-3 stj-table-th text-center">DDC</th>
+                            <th class="p-3 stj-table-th text-center">Total Pinjam</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                        {% for book in top_books %}
+                        <tr class="stj-table-row">
+                            <td class="p-3 stj-table-td text-center font-bold text-slate-400">{{ loop.index }}</td>
+                            <td class="p-3 stj-table-td font-extrabold text-slate-900">{{ book.judul }}</td>
+                            <td class="p-3 stj-table-td text-slate-600">{{ book.pengarang or '-' }}</td>
+                            <td class="p-3 stj-table-td text-center font-mono font-bold text-slate-700">{{ book.klasifikasi or '-' }}</td>
+                            <td class="p-3 stj-table-td text-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-black bg-purple-100 text-purple-800">
+                                    {{ book.total_dipinjam }}x
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="p-4 text-center text-slate-400">Belum ada data peminjaman.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Top Peminjam / Reading Champions (5 Cols) -->
+        <div class="xl:col-span-5 stj-card p-6">
+            <div class="mb-4 flex items-center justify-between">
+                <div>
+                    <h4 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-medal text-blue-600"></i> Top 15 Pemustaka Teraktif
+                    </h4>
+                    <p class="text-xs text-slate-500 mt-0.5">Daftar anggota dengan kuantitas peminjaman tertinggi.</p>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto max-h-[380px] overflow-y-auto">
+                <table class="w-full text-left border-collapse text-xs" id="topBorrowersTable">
+                    <thead>
+                        <tr>
+                            <th class="p-3 stj-table-th text-center w-10">#</th>
+                            <th class="p-3 stj-table-th">Nama Anggota</th>
+                            <th class="p-3 stj-table-th text-center">ID</th>
+                            <th class="p-3 stj-table-th text-center">Total</th>
+                            <th class="p-3 stj-table-th text-center">Variasi Judul</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                        {% for user in top_borrowers %}
+                        <tr class="stj-table-row">
+                            <td class="p-3 stj-table-td text-center font-bold text-slate-400">{{ loop.index }}</td>
+                            <td class="p-3 stj-table-td font-bold text-slate-900">{{ user.member_name }}</td>
+                            <td class="p-3 stj-table-td text-center font-mono text-slate-500">{{ user.member_id }}</td>
+                            <td class="p-3 stj-table-td text-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-black bg-blue-100 text-blue-800">
+                                    {{ user.total_pinjam }}x
+                                </span>
+                            </td>
+                            <td class="p-3 stj-table-td text-center font-semibold text-slate-700">{{ user.judul_dibaca }} judul</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="p-4 text-center text-slate-400">Belum ada data peminjam.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TABEL 2: RIWAYAT TRANSAKSI SIRKULASI TERKINI -->
+    <div class="stj-card p-6 mb-8">
+        <div class="mb-4 flex items-center justify-between">
+            <div>
+                <h4 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-slate-600"></i> 30 Transaksi Sirkulasi Terkini
+                </h4>
+                <p class="text-xs text-slate-500 mt-0.5">Log peminjaman mutakhir dari database sirkulasi.</p>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto max-h-[400px] overflow-y-auto">
+            <table class="w-full text-left border-collapse text-xs" id="recentLoansTable">
+                <thead>
+                    <tr>
+                        <th class="p-3 stj-table-th text-center w-10">#</th>
+                        <th class="p-3 stj-table-th">Nama Peminjam</th>
+                        <th class="p-3 stj-table-th">Barcode / No Induk</th>
+                        <th class="p-3 stj-table-th">Judul Buku</th>
+                        <th class="p-3 stj-table-th text-center">Tgl Pinjam</th>
+                        <th class="p-3 stj-table-th text-center">Jatuh Tempo</th>
+                        <th class="p-3 stj-table-th text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    {% for loan in recent_loans %}
+                    <tr class="stj-table-row">
+                        <td class="p-3 stj-table-td text-center font-bold text-slate-400">{{ loop.index }}</td>
+                        <td class="p-3 stj-table-td font-extrabold text-slate-900">{{ loan.member_name }}</td>
+                        <td class="p-3 stj-table-td font-mono text-slate-600">{{ loan.no_induk }}</td>
+                        <td class="p-3 stj-table-td font-semibold text-slate-800">{{ loan.judul }}</td>
+                        <td class="p-3 stj-table-td text-center font-mono text-slate-700">{{ loan.loan_date }}</td>
+                        <td class="p-3 stj-table-td text-center font-mono text-slate-700">{{ loan.due_date }}</td>
+                        <td class="p-3 stj-table-td text-center">
+                            {% if loan.loan_status == '0' %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">
+                                Aktif / Dipinjam
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                Selesai
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="p-4 text-center text-slate-400">Belum ada riwayat transaksi.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- CHART.JS SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. DDC Doughnut Chart
+    const ddcCtx = document.getElementById('ddcLoanChart');
+    if (ddcCtx) {
+        const ddcLabels = {{ ddc_dist | map(attribute='kategori') | list | tojson }};
+        const ddcData = {{ ddc_dist | map(attribute='total') | list | tojson }};
+        const colors = ['#8B5CF6', '#2563EB', '#0D9488', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#64748B', '#F97316', '#06B6D4', '#6366F1'];
+        
+        new Chart(ddcCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ddcLabels,
+                datasets: [{
+                    data: ddcData,
+                    backgroundColor: colors.slice(0, ddcLabels.length),
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+
+    // 2. Trend Bar/Line Chart
+    const trendCtx = document.getElementById('trendChart');
+    if (trendCtx) {
+        const trendLabels = {{ trend_data | map(attribute='periode') | list | tojson }};
+        const trendCounts = {{ trend_data | map(attribute='total') | list | tojson }};
+        
+        new Chart(trendCtx, {
+            type: 'bar',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: 'Peminjaman',
+                    data: trendCounts,
+                    backgroundColor: '#8B5CF6',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        ticks: { font: { size: 9 }, maxRotation: 45 },
+                        grid: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9' },
+                        ticks: { precision: 0 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+});
+
+function exportTableToCSV(filename) {
+    let csv = [];
+    let rows = document.querySelectorAll('#topBooksTable tr');
+    for (let i = 0; i < rows.length; i++) {
+        let row = [], cols = rows[i].querySelectorAll('td, th');
+        for (let j = 0; j < cols.length; j++) {
+            row.push('"' + cols[j].innerText.replace(/"/g, '""') + '"');
+        }
+        csv.push(row.join(','));
+    }
+    let csvFile = new Blob([csv.join('\n')], {type: 'text/csv'});
+    let downloadLink = document.createElement('a');
+    downloadLink.download = filename;
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.style.display = 'none';
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+}
+</script>
+{% endblock %}

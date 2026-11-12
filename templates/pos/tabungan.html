@@ -1,0 +1,714 @@
+{% extends "layout.html" %}
+{% block content %}
+<div x-data="posTabungan()" x-init="loadData()" class="max-w-7xl mx-auto pb-12">
+
+    <!-- Header & Navigation -->
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-xl border border-stroke shadow-xs">
+        <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xl">
+                <i class="fa-solid fa-piggy-bank"></i>
+            </span>
+            <div>
+                <h1 class="font-bold text-slate-900 text-base">Manajemen Tabungan Mahasiswa & Frater</h1>
+                <p class="text-xs text-slate-500">Pencatatan saldo deposit untuk fotocopy, print, dan jilid perpustakaan</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button type="button" @click.stop="openAddModal()" class="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
+                <i class="fa-solid fa-user-plus"></i> Tambah Rekening Baru
+            </button>
+            <a href="/pos" class="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5">
+                <i class="fa-solid fa-cash-register text-primary"></i> Ke Layar Kasir
+            </a>
+        </div>
+    </div>
+
+    <!-- STATS CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white p-4 rounded-xl border border-stroke shadow-xs">
+            <div class="text-xs font-semibold text-slate-500 mb-1">Total Saldo Tersimpan</div>
+            <div class="text-xl font-extrabold text-emerald-600 font-mono" x-text="'Rp ' + (stats.total_saldo || 0).toLocaleString('id-ID')"></div>
+            <div class="text-[11px] text-slate-400 mt-1">Dana titipan nasabah aktif</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-stroke shadow-xs">
+            <div class="text-xs font-semibold text-slate-500 mb-1">Total Rekening Nasabah</div>
+            <div class="text-xl font-extrabold text-slate-800 font-mono" x-text="stats.total_rekening || 0"></div>
+            <div class="text-[11px] text-slate-400 mt-1">Frater & Mahasiswa terdaftar</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-stroke shadow-xs">
+            <div class="text-xs font-semibold text-slate-500 mb-1">Akumulasi Setoran Masuk</div>
+            <div class="text-xl font-extrabold text-blue-600 font-mono" x-text="'Rp ' + (stats.total_setor || 0).toLocaleString('id-ID')"></div>
+            <div class="text-[11px] text-slate-400 mt-1">Total top-up sepanjang waktu</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-stroke shadow-xs">
+            <div class="text-xs font-semibold text-slate-500 mb-1">Akumulasi Pemakaian Kasir</div>
+            <div class="text-xl font-extrabold text-amber-600 font-mono" x-text="'Rp ' + (stats.total_pakai || 0).toLocaleString('id-ID')"></div>
+            <div class="text-[11px] text-slate-400 mt-1">Total terpakai untuk FC & Print</div>
+        </div>
+    </div>
+
+    <!-- TABLE CARD -->
+    <div class="bg-white rounded-xl border border-stroke shadow-xs overflow-hidden">
+        <!-- Toolbar -->
+        <div class="p-4 bg-slate-50 border-b border-stroke flex flex-wrap items-center justify-between gap-3">
+            <div class="relative flex-1 max-w-sm">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                </span>
+                <input type="text" x-model="searchQuery" @input.debounce.300ms="loadData()" placeholder="Cari No. Rekening, Nama, atau NIM..."
+                       class="w-full text-xs pl-8 pr-3 py-2 border border-stroke rounded-lg outline-none focus:border-primary bg-white">
+            </div>
+
+            <button type="button" @click="loadData()" class="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
+                <i class="fa-solid fa-arrows-rotate" :class="isLoading ? 'fa-spin' : ''"></i> Segarkan Data
+            </button>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-100 text-slate-600 border-b border-stroke font-semibold uppercase tracking-wider">
+                        <th class="py-3 px-4">No. Rekening</th>
+                        <th class="py-3 px-4">Nama Nasabah</th>
+                        <th class="py-3 px-4">Member ID / NIM</th>
+                        <th class="py-3 px-4 text-right">Saldo Saat Ini</th>
+                        <th class="py-3 px-4 text-right">Total Setor</th>
+                        <th class="py-3 px-4 text-right">Total Terpakai</th>
+                        <th class="py-3 px-4 text-center">Aksi Transaksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <template x-if="nasabahList.length === 0">
+                        <tr>
+                            <td colspan="7" class="py-12 text-center text-slate-400">
+                                Tidak ada data rekening nasabah yang cocok.
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-for="n in nasabahList" :key="n.no_rekening">
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="py-3 px-4 font-mono font-bold text-slate-900" x-text="n.no_rekening"></td>
+                            <td class="py-3 px-4">
+                                <div class="font-bold text-slate-800 text-sm" x-text="n.nama_nasabah"></div>
+                                <div class="text-[11px] text-slate-400" x-text="n.catatan || '-'"></div>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span x-show="n.member_id" class="font-mono text-primary font-medium" x-text="n.member_id"></span>
+                                <span x-show="!n.member_id" class="text-slate-400 italic">Non-Member</span>
+                            </td>
+                            <td class="py-3 px-4 text-right">
+                                <span class="font-mono font-extrabold text-sm" :class="n.saldo > 500 ? 'text-emerald-600' : 'text-amber-600'" x-text="'Rp ' + n.saldo.toLocaleString('id-ID')"></span>
+                            </td>
+                            <td class="py-3 px-4 text-right font-mono text-slate-600" x-text="'Rp ' + n.total_setor.toLocaleString('id-ID')"></td>
+                            <td class="py-3 px-4 text-right font-mono text-slate-600" x-text="'Rp ' + n.total_pakai.toLocaleString('id-ID')"></td>
+                            <td class="py-3 px-4 text-center">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <button type="button" @click.stop="openTopupModal(n)" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-700 rounded-md font-bold text-[11px] border border-emerald-200 transition">
+                                        <i class="fa-solid fa-plus mr-0.5"></i> Setor
+                                    </button>
+                                    <button type="button" @click.stop="openTarikModal(n)" class="px-2.5 py-1 bg-slate-50 hover:bg-slate-600 hover:text-white text-slate-700 rounded-md font-bold text-[11px] border border-slate-200 transition">
+                                        <i class="fa-solid fa-minus mr-0.5"></i> Tarik
+                                    </button>
+                                    <button type="button" @click.stop="openMutasiModal(n)" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-md font-bold text-[11px] border border-blue-200 transition">
+                                        <i class="fa-solid fa-receipt mr-0.5"></i> Mutasi
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+        <!-- MODAL SETOR TUNAI (TOP-UP) -->
+    <template x-teleport="body">
+    <div x-show="showTopupModal" x-cloak @click.self="showTopupModal = false" 
+         class="fixed inset-0 z-[99999] bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200 transform transition-all my-auto">
+            
+            <!-- Header with Emerald Gradient -->
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-700 px-6 py-4 text-white flex items-center justify-between shadow-xs">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center text-lg text-white border border-white/20 shadow-xs">
+                        <i class="fa-solid fa-arrow-down-to-line"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base tracking-tight leading-snug">Setor Tunai Saldo Tabungan</h3>
+                        <p class="text-[11px] text-emerald-100/90">Top-up saldo anggota untuk fotocopy & print</p>
+                    </div>
+                </div>
+                <button type="button" @click="showTopupModal = false" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <form @submit.prevent="submitTopup()" class="p-6 space-y-4">
+                <!-- Profile Nasabah Card -->
+                <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm font-mono border border-emerald-200 shadow-2xs"
+                             x-text="activeAccount ? (activeAccount.nama_nasabah || 'N').substring(0, 2).toUpperCase() : 'NA'">
+                        </div>
+                        <div>
+                            <div class="font-extrabold text-slate-800 text-sm leading-tight" x-text="activeAccount ? activeAccount.nama_nasabah : ''"></div>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-slate-200 font-mono text-[11px] font-bold text-slate-700 shadow-2xs">
+                                    <i class="fa-regular fa-credit-card text-[10px] text-slate-400"></i>
+                                    <span x-text="'Rek: ' + (activeAccount ? activeAccount.no_rekening : '')"></span>
+                                </span>
+                                <template x-if="activeAccount && activeAccount.member_id">
+                                    <span class="text-[10px] text-slate-400 font-mono" x-text="'NIM: ' + activeAccount.member_id"></span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right pl-3 border-l border-slate-200">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Saldo Saat Ini</span>
+                        <span class="font-mono text-base font-extrabold text-slate-900" x-text="'Rp ' + (activeAccount ? activeAccount.saldo.toLocaleString('id-ID') : '0')"></span>
+                    </div>
+                </div>
+
+                <!-- Input Nominal Display -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                        <span>Nominal Setoran Tunai <span class="text-red-500">*</span></span>
+                        <span class="text-[11px] font-normal text-slate-400">Min. Rp 500</span>
+                    </label>
+                    
+                    <div class="relative rounded-xl border-2 border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20 bg-white overflow-hidden transition shadow-xs">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-bold font-mono text-sm">
+                            Rp
+                        </span>
+                        <input type="number" x-model.number="topupNominal" min="500" step="500" required
+                               class="w-full pl-11 pr-4 py-2.5 text-2xl font-black font-mono text-emerald-800 placeholder-slate-300 outline-none">
+                    </div>
+                </div>
+
+                <!-- Quick Preset Grid (3 columns, 2 rows, perfectly balanced) -->
+                <div>
+                    <div class="text-[11px] font-bold text-slate-600 mb-1.5 flex items-center justify-between">
+                        <span>Pilihan Cepat Nominal:</span>
+                        <span class="text-[10px] text-slate-400">Klik untuk langsung pilih</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <template x-for="val in [2000, 5000, 10000, 20000, 50000, 100000]">
+                            <button type="button" 
+                                    @click="topupNominal = val"
+                                    :class="topupNominal === val ? 'bg-emerald-600 text-white font-bold ring-2 ring-emerald-500/30 border-emerald-600 shadow-xs' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 hover:border-slate-300 font-semibold'"
+                                    class="py-2.5 px-3 rounded-xl border text-xs font-mono text-center transition flex flex-col items-center justify-center">
+                                <span class="text-[10px] opacity-75 font-sans">Setor</span>
+                                <span class="text-xs font-bold tracking-tight" x-text="'Rp ' + val.toLocaleString('id-ID')"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Live Calculation / Estimasi Saldo Baru -->
+                <div class="bg-emerald-50/70 rounded-xl p-3.5 border border-emerald-200/80 text-xs">
+                    <div class="flex items-center justify-between text-slate-600 mb-1">
+                        <span>Saldo Saat Ini:</span>
+                        <span class="font-mono font-medium" x-text="'Rp ' + (activeAccount ? activeAccount.saldo.toLocaleString('id-ID') : '0')"></span>
+                    </div>
+                    <div class="flex items-center justify-between text-emerald-800 font-semibold mb-2">
+                        <span>Nominal Tambahan (Setor):</span>
+                        <span class="font-mono font-bold" x-text="'+ Rp ' + (topupNominal || 0).toLocaleString('id-ID')"></span>
+                    </div>
+                    <div class="pt-2 border-t border-emerald-200 flex items-center justify-between">
+                        <span class="font-bold text-slate-900 text-xs uppercase tracking-wide">Estimasi Saldo Baru:</span>
+                        <span class="font-mono text-lg font-black text-emerald-700" 
+                              x-text="'Rp ' + ((activeAccount ? activeAccount.saldo : 0) + (topupNominal || 0)).toLocaleString('id-ID')">
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Keterangan Tambahan -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Catatan / Keterangan (Opsional)</label>
+                    <input type="text" x-model="topupKeterangan" placeholder="Setor Tunai Tabungan"
+                           class="w-full text-xs border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-emerald-500 bg-white">
+                </div>
+
+                <!-- Actions -->
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button type="button" @click="showTopupModal = false" 
+                            class="py-2.5 px-4 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 font-bold text-xs transition">
+                        Batal
+                    </button>
+                    <button type="submit" :disabled="isSubmitting || topupNominal <= 0"
+                            class="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50">
+                        <span x-show="!isSubmitting" class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-check"></i> Simpan Setoran
+                        </span>
+                        <span x-show="isSubmitting" class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Memproses...
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </template>
+
+    <!-- MODAL TARIK TUNAI -->
+    <template x-teleport="body">
+    <div x-show="showTarikModal" x-cloak @click.self="showTarikModal = false" 
+         class="fixed inset-0 z-[99999] bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200 transform transition-all my-auto">
+            
+            <!-- Header with Dark Slate/Rose Gradient -->
+            <div class="bg-gradient-to-r from-slate-800 to-rose-900 px-6 py-4 text-white flex items-center justify-between shadow-xs">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center text-lg text-white border border-white/20 shadow-xs">
+                        <i class="fa-solid fa-arrow-up-from-line"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base tracking-tight leading-snug">Penarikan Saldo Tunai</h3>
+                        <p class="text-[11px] text-rose-100/90">Ambil sisa saldo tabungan nasabah/anggota</p>
+                    </div>
+                </div>
+                <button type="button" @click="showTarikModal = false" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <form @submit.prevent="submitTarik()" class="p-6 space-y-4">
+                <!-- Profile Nasabah Card -->
+                <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-rose-100 text-rose-800 flex items-center justify-center font-bold text-sm font-mono border border-rose-200 shadow-2xs"
+                             x-text="activeAccount ? (activeAccount.nama_nasabah || 'N').substring(0, 2).toUpperCase() : 'NA'">
+                        </div>
+                        <div>
+                            <div class="font-extrabold text-slate-800 text-sm leading-tight" x-text="activeAccount ? activeAccount.nama_nasabah : ''"></div>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-slate-200 font-mono text-[11px] font-bold text-slate-700 shadow-2xs">
+                                    <i class="fa-regular fa-credit-card text-[10px] text-slate-400"></i>
+                                    <span x-text="'Rek: ' + (activeAccount ? activeAccount.no_rekening : '')"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right pl-3 border-l border-slate-200">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Saldo Tersedia</span>
+                        <span class="font-mono text-base font-extrabold text-slate-900" x-text="'Rp ' + (activeAccount ? activeAccount.saldo.toLocaleString('id-ID') : '0')"></span>
+                    </div>
+                </div>
+
+                <!-- Input Nominal Penarikan -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                        <span>Nominal Penarikan Tunai <span class="text-red-500">*</span></span>
+                        <span class="text-[11px] font-normal text-slate-400" x-text="'Maks. Rp ' + (activeAccount ? activeAccount.saldo.toLocaleString('id-ID') : '0')"></span>
+                    </label>
+                    
+                    <div class="relative rounded-xl border-2 border-slate-700 focus-within:ring-2 focus-within:ring-slate-700/20 bg-white overflow-hidden transition shadow-xs">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-bold font-mono text-sm">
+                            Rp
+                        </span>
+                        <input type="number" x-model.number="tarikNominal" min="100" required
+                               class="w-full pl-11 pr-4 py-2.5 text-2xl font-black font-mono text-slate-900 placeholder-slate-300 outline-none">
+                    </div>
+                </div>
+
+                <!-- Insufficient Balance Warning -->
+                <div x-show="activeAccount && tarikNominal > activeAccount.saldo" class="bg-rose-50 border border-rose-300 text-rose-800 p-3 rounded-xl text-xs flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation text-rose-600 text-base"></i>
+                    <div>
+                        <strong class="block">Saldo Tidak Mencukupi!</strong>
+                        Nominal penarikan melebihi saldo tabungan saat ini (Rp <span x-text="activeAccount ? activeAccount.saldo.toLocaleString('id-ID') : 0"></span>).
+                    </div>
+                </div>
+
+                <!-- Quick Preset Grid -->
+                <div>
+                    <div class="text-[11px] font-bold text-slate-600 mb-1.5 flex items-center justify-between">
+                        <span>Pilihan Cepat:</span>
+                        <button type="button" @click="tarikNominal = (activeAccount ? activeAccount.saldo : 0)" class="text-[11px] text-rose-700 font-bold hover:underline">
+                            Tarik Seluruh Saldo
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <template x-for="val in [1000, 2000, 5000, 10000, 20000, 50000]">
+                            <button type="button" 
+                                    @click="tarikNominal = val"
+                                    :disabled="activeAccount && val > activeAccount.saldo"
+                                    :class="tarikNominal === val ? 'bg-slate-800 text-white font-bold ring-2 ring-slate-700/30 border-slate-800 shadow-xs' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 font-semibold disabled:opacity-40 disabled:cursor-not-allowed'"
+                                    class="py-2.5 px-3 rounded-xl border text-xs font-mono text-center transition flex flex-col items-center justify-center">
+                                <span class="text-[10px] opacity-75 font-sans">Tarik</span>
+                                <span class="text-xs font-bold tracking-tight" x-text="'Rp ' + val.toLocaleString('id-ID')"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Live Calculation Sisa Saldo -->
+                <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-200 text-xs">
+                    <div class="flex items-center justify-between text-slate-600 mb-1">
+                        <span>Saldo Saat Ini:</span>
+                        <span class="font-mono" x-text="'Rp ' + (activeAccount ? activeAccount.saldo.toLocaleString('id-ID') : '0')"></span>
+                    </div>
+                    <div class="flex items-center justify-between text-rose-700 font-semibold mb-2">
+                        <span>Nominal Ditarik:</span>
+                        <span class="font-mono font-bold" x-text="'- Rp ' + (tarikNominal || 0).toLocaleString('id-ID')"></span>
+                    </div>
+                    <div class="pt-2 border-t border-slate-200 flex items-center justify-between">
+                        <span class="font-bold text-slate-900 text-xs uppercase tracking-wide">Estimasi Sisa Saldo:</span>
+                        <span class="font-mono text-lg font-black"
+                              :class="((activeAccount ? activeAccount.saldo : 0) - (tarikNominal || 0)) >= 0 ? 'text-slate-900' : 'text-rose-600'"
+                              x-text="'Rp ' + (((activeAccount ? activeAccount.saldo : 0) - (tarikNominal || 0)) >= 0 ? ((activeAccount ? activeAccount.saldo : 0) - (tarikNominal || 0)).toLocaleString('id-ID') : '0 (Minus)')">
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Keterangan -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Keterangan Penarikan</label>
+                    <input type="text" x-model="tarikKeterangan" placeholder="Tarik Tunai Saldo"
+                           class="w-full text-xs border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-slate-700 bg-white">
+                </div>
+
+                <!-- Actions -->
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button type="button" @click="showTarikModal = false" 
+                            class="py-2.5 px-4 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 font-bold text-xs transition">
+                        Batal
+                    </button>
+                    <button type="submit" :disabled="isSubmitting || tarikNominal <= 0 || (activeAccount && tarikNominal > activeAccount.saldo)"
+                            class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50">
+                        <span x-show="!isSubmitting" class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-hand-holding-dollar"></i> Tarik Tunai
+                        </span>
+                        <span x-show="isSubmitting" class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Memproses...
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </template>
+
+    <!-- MODAL TAMBAH REKENING BARU -->
+    <template x-teleport="body">
+    <div x-show="showAddModal" x-cloak @click.self="showAddModal = false" 
+         class="fixed inset-0 z-[99999] bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200 transform transition-all my-auto">
+            
+            <!-- Header with Blue Gradient -->
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4 text-white flex items-center justify-between shadow-xs">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center text-lg text-white border border-white/20 shadow-xs">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base tracking-tight leading-snug">Buka Rekening Tabungan Baru</h3>
+                        <p class="text-[11px] text-blue-100/90">Daftarkan frater, mahasiswa, atau anggota perpustakaan</p>
+                    </div>
+                </div>
+                <button type="button" @click="showAddModal = false" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <form @submit.prevent="submitAddAccount" class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nomor Rekening *</label>
+                        <input type="text" x-model="newAcc.no_rekening" required placeholder="Cth: 1014" 
+                               class="w-full text-xs font-mono font-bold border border-slate-300 rounded-xl px-3 py-2.5 outline-none focus:border-blue-600">
+                        <p class="text-[10px] text-slate-400 mt-1">4 digit nomor unik akun</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">NIM / ID Anggota (Opsional)</label>
+                        <input type="text" x-model="newAcc.member_id" placeholder="Cth: 700125001" 
+                               class="w-full text-xs font-mono border border-slate-300 rounded-xl px-3 py-2.5 outline-none focus:border-blue-600">
+                        <p class="text-[10px] text-slate-400 mt-1">Tersambung barcode anggota</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap Nasabah *</label>
+                    <input type="text" x-model="newAcc.nama_nasabah" required placeholder="Nama lengkap frater / mahasiswa" 
+                           class="w-full text-xs border border-slate-300 rounded-xl px-3 py-2.5 outline-none focus:border-blue-600">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                        <span>Setoran Saldo Awal (Rp)</span>
+                        <span class="text-[10px] text-slate-400">Bisa Rp 0 jika belum setor</span>
+                    </label>
+                    <div class="relative rounded-xl border border-slate-300 focus-within:border-blue-600 bg-white overflow-hidden">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-bold font-mono text-xs">
+                            Rp
+                        </span>
+                        <input type="number" x-model.number="newAcc.saldo_awal" min="0" step="500" placeholder="0" 
+                               class="w-full pl-9 pr-3 py-2 text-sm font-bold font-mono text-slate-800 outline-none">
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 mt-2">
+                        <template x-for="v in [0, 5000, 10000, 20000, 50000]">
+                            <button type="button" @click="newAcc.saldo_awal = v" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700" x-text="v === 0 ? 'Rp 0' : 'Rp ' + v.toLocaleString('id-ID')"></button>
+                        </template>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan Tambahan (Opsional)</label>
+                    <input type="text" x-model="newAcc.catatan" placeholder="Cth: Frater Tingkat 1 / Komunitas A" 
+                           class="w-full text-xs border border-slate-300 rounded-xl px-3 py-2 outline-none focus:border-blue-600">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button type="button" @click="showAddModal = false" 
+                            class="py-2.5 px-4 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 font-bold text-xs transition">
+                        Batal
+                    </button>
+                    <button type="submit" :disabled="isSubmitting" 
+                            class="py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50">
+                        <span x-show="!isSubmitting"><i class="fa-solid fa-user-check mr-1"></i> Buka Rekening</span>
+                        <span x-show="isSubmitting"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Memproses...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </template>
+
+    <!-- MODAL RIWAYAT MUTASI -->
+    <template x-teleport="body">
+    <div x-show="showMutasiModal" x-cloak @click.self="showMutasiModal = false" 
+         class="fixed inset-0 z-[99999] bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl border border-slate-200 transform transition-all my-auto">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4 text-white flex items-center justify-between shadow-xs">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center text-lg text-white border border-white/20 shadow-xs">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base tracking-tight leading-snug">Buku Mutasi & Rekening Koran</h3>
+                        <p class="text-[11px] text-blue-100/90" x-text="activeAccount ? activeAccount.nama_nasabah + ' (Rek: ' + activeAccount.no_rekening + ') • Saldo: Rp ' + activeAccount.saldo.toLocaleString('id-ID') : ''"></p>
+                    </div>
+                </div>
+                <button type="button" @click="showMutasiModal = false" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <div class="p-6">
+                <div class="overflow-x-auto max-h-96">
+                    <table class="w-full text-xs text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 border-b border-stroke">
+                                <th class="p-2.5">Waktu</th>
+                                <th class="p-2.5">Jenis</th>
+                                <th class="p-2.5 text-right">Nominal</th>
+                                <th class="p-2.5 text-right">Sisa Saldo</th>
+                                <th class="p-2.5">Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <template x-if="mutasiList.length === 0">
+                                <tr>
+                                    <td colspan="5" class="py-8 text-center text-slate-400">
+                                        Belum ada riwayat mutasi untuk rekening ini.
+                                    </td>
+                                </tr>
+                            </template>
+                            <template x-for="m in mutasiList" :key="m.id">
+                                <tr class="hover:bg-slate-50">
+                                    <td class="p-2.5 text-slate-500 font-mono text-[11px]" x-text="m.tanggal"></td>
+                                    <td class="p-2.5">
+                                        <span :class="m.jenis === 'SETOR' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'" class="px-2 py-0.5 rounded text-[10px] font-bold" x-text="m.jenis"></span>
+                                    </td>
+                                    <td class="p-2.5 text-right font-mono font-bold" :class="m.jenis === 'SETOR' ? 'text-emerald-700' : 'text-red-600'" x-text="(m.jenis === 'SETOR' ? '+' : '-') + ' Rp ' + m.nominal.toLocaleString('id-ID')"></td>
+                                    <td class="p-2.5 text-right font-mono text-slate-800 font-bold" x-text="'Rp ' + m.saldo_sesudah.toLocaleString('id-ID')"></td>
+                                    <td class="p-2.5 text-slate-600" x-text="m.keterangan || '-'"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    </template>
+
+</div>
+
+<script>
+function posTabungan() {
+    return {
+        nasabahList: [],
+        stats: {},
+        searchQuery: '',
+        isLoading: false,
+        isSubmitting: false,
+
+        activeAccount: null,
+        showTopupModal: false,
+        topupNominal: 5000,
+        topupKeterangan: 'Setor Tunai Tabungan',
+
+        showTarikModal: false,
+        tarikNominal: 1000,
+        tarikKeterangan: 'Tarik Tunai Saldo',
+
+        showAddModal: false,
+        newAcc: { no_rekening: '', nama_nasabah: '', member_id: '', saldo_awal: 0, catatan: '' },
+
+        showMutasiModal: false,
+        mutasiList: [],
+
+        async loadData() {
+            this.isLoading = true;
+            try {
+                const res = await fetch('/api/pos/tabungan/list?search=' + encodeURIComponent(this.searchQuery));
+                const json = await res.json();
+                if (json.status === 'success') {
+                    this.nasabahList = json.data;
+                    this.stats = json.stats;
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        openTopupModal(acc) {
+            this.activeAccount = acc;
+            this.topupNominal = 5000;
+            this.topupKeterangan = 'Setor Tunai Tabungan';
+            this.showTopupModal = true;
+        },
+
+        async submitTopup() {
+            this.isSubmitting = true;
+            try {
+                const res = await fetch('/api/pos/tabungan/setor', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        no_rekening: this.activeAccount.no_rekening,
+                        nominal: this.topupNominal,
+                        keterangan: this.topupKeterangan
+                    })
+                });
+                const json = await res.json();
+                if (json.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Setoran Berhasil!',
+                        text: json.message,
+                        confirmButtonColor: '#059669'
+                    });
+                    this.showTopupModal = false;
+                    this.loadData();
+                } else {
+                    Swal.fire('Gagal', json.message, 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Kesalahan server', 'error');
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+
+        openTarikModal(acc) {
+            this.activeAccount = acc;
+            this.tarikNominal = 1000;
+            this.tarikKeterangan = 'Tarik Tunai Saldo';
+            this.showTarikModal = true;
+        },
+
+        async submitTarik() {
+            this.isSubmitting = true;
+            try {
+                const res = await fetch('/api/pos/tabungan/tarik', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        no_rekening: this.activeAccount.no_rekening,
+                        nominal: this.tarikNominal,
+                        keterangan: this.tarikKeterangan
+                    })
+                });
+                const json = await res.json();
+                if (json.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Penarikan Berhasil!',
+                        text: json.message,
+                        confirmButtonColor: '#1E293B'
+                    });
+                    this.showTarikModal = false;
+                    this.loadData();
+                } else {
+                    Swal.fire('Gagal', json.message, 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Kesalahan server', 'error');
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+
+        openAddModal() {
+            this.newAcc = { no_rekening: '', nama_nasabah: '', member_id: '', saldo_awal: 0, catatan: '' };
+            this.showAddModal = true;
+        },
+
+        async submitAddAccount() {
+            this.isSubmitting = true;
+            try {
+                const res = await fetch('/api/pos/tabungan/tambah', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(this.newAcc)
+                });
+                const json = await res.json();
+                if (json.status === 'success') {
+                    Swal.fire('Sukses!', json.message, 'success');
+                    this.showAddModal = false;
+                    this.loadData();
+                } else {
+                    Swal.fire('Gagal', json.message, 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Kesalahan server', 'error');
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+
+        async openMutasiModal(acc) {
+            this.activeAccount = acc;
+            try {
+                const res = await fetch('/api/pos/tabungan/mutasi/' + encodeURIComponent(acc.no_rekening));
+                const json = await res.json();
+                if (json.status === 'success') {
+                    this.mutasiList = json.mutasi;
+                    this.showMutasiModal = true;
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    };
+}
+document.addEventListener('alpine:init', () => {
+    Alpine.data('posTabungan', posTabungan);
+});
+if (window.Alpine) {
+    Alpine.data('posTabungan', posTabungan);
+}
+</script>
+{% endblock %}

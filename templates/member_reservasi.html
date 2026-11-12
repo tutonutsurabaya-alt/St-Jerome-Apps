@@ -1,0 +1,93 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Area - St. Jerome Library</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #2e1d1a; color: #FDFBF7; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col relative">
+    
+    <!-- Immersive Global Library Background -->
+    <div class="fixed inset-0 z-[-1]">
+        <!-- Dark Brown Overlay -->
+        <div class="absolute inset-0 bg-[#2e1d1a] opacity-95 mix-blend-multiply z-10"></div>
+        <!-- Library Image -->
+        <img src="/static/img/bg4.jpg" class="w-full h-full object-cover z-0 grayscale opacity-40">
+    </div>
+
+
+    <!-- Top Navigation -->
+    <nav class="sticky top-0 z-50 bg-transparent backdrop-blur-md border-b border-[#E6B325]/20 px-6 md:px-12 py-5 flex justify-between items-center">
+        <!-- Logo -->
+        <div class="flex items-center gap-4 cursor-pointer" onclick="window.location.href='/opac'">
+            <img src="/static/img/logo_imavi.png" alt="Logo" class="h-12 w-12 object-cover bg-white/95 rounded-full p-1 shadow-md">
+            <div class="flex flex-col">
+                <span class="font-serif font-bold text-xl leading-none text-white">ST. JEROME</span>
+                <span class="text-[10px] tracking-[0.2em] uppercase text-[#E6B325] mt-1">Library</span>
+            </div>
+        </div>
+
+        <!-- Center Nav -->
+        <div class="hidden md:flex gap-10 text-sm font-medium text-white/60">
+            <a href="/opac/member/dashboard" class="hover:text-white transition-colors pb-1">Dasbor</a>
+            <a href="/opac/member/reader" class="hover:text-white transition-colors pb-1">Ruang Baca Virtual</a>
+            <a href="/opac/member/reservasi" class="text-[#E6B325] border-b-2 border-[#E6B325] pb-1">Daftar Reservasi</a>
+            <a href="#" class="hover:text-white transition-colors pb-1">Riwayat</a>
+        </div>
+
+        <!-- User Profile -->
+        <div class="flex items-center gap-5">
+            <div class="text-right hidden md:block">
+                <div class="text-sm font-semibold text-white">{{ nama }}</div>
+                <div class="text-xs text-[#E6B325]">{{ tipe }}</div>
+            </div>
+            <a href="/opac/member/logout" class="w-10 h-10 rounded-full bg-[#E6B325] text-[#2e1d1a] flex items-center justify-center hover:bg-white transition-colors shadow-md" title="Keluar">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 w-full max-w-7xl mx-auto px-6 md:px-12 py-12 flex flex-col relative z-10">
+    <div class="mb-12">
+        <h1 class="text-4xl md:text-5xl font-serif font-bold text-white mb-4">Daftar Reservasi</h1>
+        <p class="text-white/60 font-light text-lg">Pantau status antrean buku cetak yang sedang Anda pesan.</p>
+    </div>
+
+    <!-- Table or List of Reservations -->
+    <div class="bg-black/30 backdrop-blur-md rounded-2xl border border-[#E6B325]/20 p-8 shadow-2xl">
+        {% if reservasi_list %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for res in reservasi_list %}
+                <div class="flex flex-col border border-white/10 p-6 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-[#E6B325] bg-[#E6B325]/10 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest">{{ res.status }}</span>
+                    </div>
+                    <h3 class="text-xl font-serif font-bold text-white leading-tight mb-4 flex-1">{{ res.judul }}</h3>
+                    <div class="flex justify-between items-end mt-auto">
+                        <p class="text-xs text-white/40">Dipesan pada:<br><span class="text-white/70">{{ res.tanggal_reservasi }}</span></p>
+                        <button class="text-[10px] uppercase font-bold tracking-widest border border-red-500/50 text-red-400 px-4 py-2 rounded hover:bg-red-500 hover:text-white transition-colors" onclick="alert('Fitur pembatalan sedang dikonfigurasi.')">Batal</button>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-20">
+                <i class="fa-solid fa-book-bookmark text-5xl text-white/10 mb-6 block"></i>
+                <h3 class="text-2xl font-serif font-bold text-white/50 mb-2">Belum ada reservasi aktif</h3>
+                <p class="text-sm text-white/30 max-w-md mx-auto mb-8">Anda belum memiliki antrean buku cetak saat ini. Temukan dan pesan buku fisik yang Anda butuhkan melalui OPAC.</p>
+                <a href="/opac" class="inline-block text-sm font-bold text-[#1a0f0d] bg-[#E6B325] px-8 py-3 rounded-full hover:bg-white hover:scale-105 transition-all shadow-[0_0_20px_rgba(230,179,37,0.3)]">Eksplorasi Katalog</a>
+            </div>
+        {% endif %}
+    </div>
+</main>
+</body>
+</html>

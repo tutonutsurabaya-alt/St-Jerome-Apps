@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Koleksi - Perpustakaan St. Jerome</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; }
+        .stj-brown { background-color: #5C4033; }
+        .stj-gold { background-color: #E6B325; }
+        .text-stj-brown { color: #5C4033; }
+        .text-stj-gold { color: #E6B325; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-[#f7f4ee] text-[#161015]" x-data="detailApp()" x-init="initApp()">
+
+    <!-- Top Navbar -->
+    <div class="bg-[#c09268] py-1.5 px-6 text-xs font-semibold text-[#2e1d1a] flex justify-between items-center shadow-sm">
+        <div class="flex gap-4">
+            <a href="/opac" class="hover:underline flex items-center gap-1.5"><i class="fa-solid fa-arrow-left"></i> Kembali ke Katalog OPAC</a>
+        </div>
+        <div class="text-[11px] opacity-90 hidden sm:block">
+            Sistem Informasi Koleksi Akademik & Tesis St. Jerome
+        </div>
+    </div>
+    
+    <nav class="bg-[#2e1d1a] px-6 md:px-8 py-4 sticky top-0 z-40 border-b border-[#4e342e] shadow-md">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="/opac" class="flex items-center gap-3">
+                <img src="/static/img/logo_imavi.png" alt="Logo" class="h-10 w-10 object-contain bg-white/95 rounded-full p-1 shadow">
+                <div class="flex flex-col">
+                    <span class="font-sans font-bold text-white text-xl tracking-tight leading-none mb-1">St. Jerome</span>
+                    <span class="text-[#E6B325] text-[10px] tracking-[0.2em] uppercase font-bold">Library &amp; Catalog</span>
+                </div>
+            </a>
+            <div class="hidden md:flex gap-8">
+                <a href="/opac" class="text-white/80 hover:text-[#E6B325] transition-colors font-medium text-sm">Pencarian</a>
+                <a href="/opac/repository" class="text-white/80 hover:text-[#E6B325] transition-colors font-medium text-sm">Repository</a>
+                <a href="/e-resources" class="text-white/80 hover:text-[#E6B325] transition-colors font-medium text-sm">E-Resources</a>
+            </div>
+            <div class="flex gap-3">
+                <a href="/opac/member/login" class="bg-[#E6B325] text-[#2e1d1a] px-5 py-2 rounded-full font-bold text-xs hover:bg-white transition-colors shadow-md flex items-center gap-1.5">
+                    <i class="fa-solid fa-user"></i> Portal Member
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+        <!-- Loading State -->
+        <div x-show="isLoading" class="text-center py-20">
+            <i class="fa-solid fa-circle-notch fa-spin text-4xl text-[#5c3a21] mb-3"></i>
+            <p class="text-sm font-medium text-[#5c3a21]">Memuat informasi koleksi...</p>
+        </div>
+
+        <!-- Not Found State -->
+        <div x-show="!isLoading && !book" class="text-center py-20 bg-white rounded-2xl shadow-sm border border-stone-200 p-8 max-w-lg mx-auto">
+            <i class="fa-solid fa-book-skull text-4xl text-stone-400 mb-3"></i>
+            <h3 class="text-xl font-bold text-stone-800 mb-2">Koleksi Tidak Ditemukan</h3>
+            <p class="text-stone-500 text-sm mb-6">Buku yang Anda cari mungkin telah dipindahkan atau ID katalog tidak valid.</p>
+            <a href="/opac" class="inline-block bg-[#3e2723] text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#5c3a21] transition-all">Kembali ke Pencarian</a>
+        </div>
+
+        <!-- Main Book Card -->
+        <div x-show="book" x-cloak class="bg-white rounded-2xl shadow-lg border border-stone-200/80 p-6 md:p-10">
+            <div class="flex flex-col md:flex-row gap-8 lg:gap-10">
+                
+                <!-- Left Column: Cover & Quick Actions -->
+                <div class="w-full md:w-1/3 lg:w-[280px] shrink-0">
+                    <div class="bg-[#f5f1ea] rounded-xl p-3 border border-stone-200/90 shadow-sm flex items-center justify-center relative overflow-hidden group">
+                        <img :src="getCoverUrl(book)" class="w-full h-auto object-cover rounded-lg shadow-md max-h-[380px] transition-transform duration-300 group-hover:scale-[1.02]">
+                    </div>
+
+                    <!-- Action Buttons under Cover -->
+                    <div class="mt-5 space-y-3">
+                        <!-- Fitur 3: Sitasi Skripsi 1-Klik -->
+                        <button @click="openCitationModal()" class="w-full flex items-center justify-center gap-2.5 bg-[#2e1d1a] hover:bg-[#4e342e] text-[#E6B325] py-3 px-4 rounded-xl font-bold shadow-md hover:shadow-lg transition-all text-sm">
+                            <i class="fa-solid fa-quote-right text-base"></i>
+                            <span>Sitasi Skripsi 1-Klik</span>
+                        </button>
+
+                        <!-- Fitur 5: WhatsApp Hold & Assistant -->
+                        <button @click="openWhatsAppHold()" class="w-full flex items-center justify-center gap-2.5 bg-[#25D366] hover:bg-[#20ba59] text-white py-3 px-4 rounded-xl font-bold shadow-md hover:shadow-lg transition-all text-sm">
+                            <i class="fa-brands fa-whatsapp text-lg"></i>
+                            <span>Tanya / Tahan via WA</span>
+                        </button>
+                    </div>
+
+                    <!-- Shelf Location Card -->
+                    <div class="mt-5 p-4 rounded-xl bg-gradient-to-br from-[#2e1d1a] to-[#4e342e] text-white shadow-md" x-show="book.lokasi_rak">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-8 h-8 rounded-full bg-[#E6B325] text-[#2e1d1a] flex items-center justify-center text-xs font-bold shrink-0">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+                            <span class="text-xs uppercase font-bold tracking-wider text-white/80">Lokasi Fisik di Rak</span>
+                        </div>
+                        <p class="text-sm font-semibold font-serif text-[#f7f4ee]" x-text="book.lokasi_rak"></p>
+                    </div>
+                </div>
+
+                <!-- Right Column: Metadata & Availability -->
+                <div class="flex-1">
+                    <div class="border-b border-stone-200 pb-5 mb-5">
+                        <div class="flex flex-wrap items-center gap-2 mb-2">
+                            <span class="bg-[#efebe9] text-[#4e342e] border border-[#d7ccc8] px-2.5 py-0.5 rounded text-xs font-mono font-bold tracking-tight shadow-sm" x-text="book.nomor_panggil || book.klasifikasi || 'Umum'"></span>
+                            <span class="px-2.5 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider"
+                                  :class="(book.eksemplar && book.eksemplar.some(e => e.status_ketersediaan === 'Tersedia')) ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-amber-100 text-amber-800 border border-amber-200'">
+                                <span x-text="(book.eksemplar && book.eksemplar.some(e => e.status_ketersediaan === 'Tersedia')) ? 'Tersedia di Perpustakaan' : 'Sedang Dipinjam'"></span>
+                            </span>
+                        </div>
+                        <h1 class="text-2xl lg:text-3xl font-bold text-[#2e1d1a] font-serif leading-snug" x-text="book.judul"></h1>
+                        <p class="text-sm text-stone-600 mt-1.5 font-medium" x-show="book.pengarang">
+                            Penulis: <span class="text-stone-900 font-semibold" x-text="book.pengarang"></span>
+                        </p>
+                    </div>
+
+                    <!-- Metadata Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 text-sm border-b border-stone-200 pb-6 mb-6">
+                        <div class="flex flex-col">
+                            <span class="text-xs text-stone-500 font-semibold uppercase tracking-wider">Penerbitan</span>
+                            <span class="text-stone-800 font-medium mt-0.5">
+                                <span x-text="book.tempat_terbit || '-'"></span> : <span x-text="book.penerbit || '-'"></span> (<span x-text="book.tahun_terbit || '-'"></span>)
+                            </span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs text-stone-500 font-semibold uppercase tracking-wider">Edisi / Seri</span>
+                            <span class="text-stone-800 font-medium mt-0.5" x-text="book.edisi || book.judul_seri || '-'"></span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs text-stone-500 font-semibold uppercase tracking-wider">ISBN</span>
+                            <span class="text-stone-800 font-mono font-medium mt-0.5" x-text="book.isbn || '-'"></span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs text-stone-500 font-semibold uppercase tracking-wider">Deskripsi Fisik</span>
+                            <span class="text-stone-800 font-medium mt-0.5" x-text="book.deskripsi_fisik || '-'"></span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs text-stone-500 font-semibold uppercase tracking-wider">Klasifikasi DDC</span>
+                            <span class="text-stone-800 font-mono font-medium mt-0.5" x-text="book.klasifikasi || '-'"></span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs text-stone-500 font-semibold uppercase tracking-wider">Bahasa</span>
+                            <span class="text-stone-800 font-medium mt-0.5" x-text="book.bahasa || 'Indonesia'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Eksemplar & Availability Table -->
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-base font-bold text-[#2e1d1a] border-l-4 border-[#c09268] pl-2.5">Status Fisik & Barcode Eksemplar</h3>
+                            <span class="text-xs text-stone-500">Total: <strong class="text-stone-800" x-text="book.eksemplar ? book.eksemplar.length : 0"></strong> eksemplar</span>
+                        </div>
+                        <div class="overflow-x-auto rounded-xl border border-stone-200">
+                            <table class="w-full border-collapse text-xs md:text-sm">
+                                <thead class="bg-stone-50 text-stone-700 font-semibold border-b border-stone-200">
+                                    <tr>
+                                        <th class="py-2.5 px-3.5 text-left">No. Barcode</th>
+                                        <th class="py-2.5 px-3.5 text-left">Nomor Panggil (DDC)</th>
+                                        <th class="py-2.5 px-3.5 text-left">Lokasi</th>
+                                        <th class="py-2.5 px-3.5 text-left">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-stone-100">
+                                    <template x-for="eks in book.eksemplar" :key="eks.no_induk">
+                                        <tr class="hover:bg-amber-50/40 transition-colors">
+                                            <td class="py-2.5 px-3.5 font-mono font-bold text-stone-800" x-text="eks.no_induk"></td>
+                                            <td class="py-2.5 px-3.5 font-mono text-[#5c3a21] font-semibold" x-text="book.nomor_panggil || '-'"></td>
+                                            <td class="py-2.5 px-3.5 text-stone-600" x-text="eks.lokasi"></td>
+                                            <td class="py-2.5 px-3.5">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
+                                                      :class="eks.status_ketersediaan == 'Tersedia' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                                    <i class="fa-solid fa-circle text-[6px] mr-1.5" :class="eks.status_ketersediaan == 'Tersedia' ? 'text-green-500' : 'text-red-500'"></i>
+                                                    <span x-text="eks.status_ketersediaan || 'Tersedia'"></span>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="!book.eksemplar || book.eksemplar.length === 0">
+                                        <td colspan="4" class="py-4 text-center text-stone-400">Tidak ada data eksemplar terdaftar.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- One-Click WhatsApp Notice Box -->
+                        <div class="mt-4 p-4 rounded-xl bg-green-50/70 border border-green-200/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-brands fa-whatsapp text-2xl text-green-600 shrink-0"></i>
+                                <div class="text-xs text-green-900">
+                                    <p class="font-bold">Ingin reservasi atau memastikan buku ini masih ada di rak?</p>
+                                    <p class="text-green-700">Hubungi petugas sirkulasi St. Jerome langsung dengan format pesan otomatis.</p>
+                                </div>
+                            </div>
+                            <button @click="openWhatsAppHold()" class="shrink-0 bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition-all flex items-center gap-1.5">
+                                <i class="fa-brands fa-whatsapp"></i> Chat WhatsApp
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Rekomendasi Koleksi Terkait -->
+                    <div class="mt-10" x-show="book.buku_serupa && book.buku_serupa.length > 0">
+                        <h3 class="text-base font-bold text-[#2e1d1a] mb-4 border-l-4 border-[#c09268] pl-2.5">Koleksi Terkait yang Sering Dibaca Bersama</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5">
+                            <template x-for="serupa in book.buku_serupa" :key="serupa.id">
+                                <a :href="'/detail-opac?id=' + serupa.id" class="block group cursor-pointer bg-white p-2 rounded-xl border border-stone-200/70 hover:shadow-md hover:border-[#c09268] transition-all">
+                                    <div class="bg-stone-100 rounded-lg mb-2 overflow-hidden aspect-[2/3] border border-stone-200">
+                                        <img :src="getCoverUrl(serupa)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                    </div>
+                                    <h4 class="text-xs font-bold text-stone-800 line-clamp-2 group-hover:text-[#5c3a21] transition-colors leading-snug" x-text="serupa.judul"></h4>
+                                    <p class="text-[10px] text-stone-500 line-clamp-1 mt-1 font-medium" x-text="serupa.pengarang"></p>
+                                </a>
+                            </template>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FITUR 3: Modal Generator Sitasi Skripsi 1-Klik -->
+    <div x-show="citationModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" x-cloak>
+        <div class="bg-white rounded-2xl w-full max-w-xl shadow-2xl border border-stone-200 overflow-hidden" @click.outside="closeCitationModal()">
+            
+            <!-- Modal Header -->
+            <div class="bg-[#2e1d1a] px-6 py-4 flex items-center justify-between text-white">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-full bg-[#E6B325] text-[#2e1d1a] flex items-center justify-center text-xs font-bold">
+                        <i class="fa-solid fa-quote-right"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base leading-tight">Generator Sitasi Skripsi 1-Klik</h3>
+                        <p class="text-[11px] text-[#E6B325] tracking-wider uppercase">Standar Akademik Filsafat & Teologi</p>
+                    </div>
+                </div>
+                <button @click="closeCitationModal()" class="text-white/60 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="p-6">
+                <!-- Style Tabs -->
+                <div class="flex border-b border-stone-200 mb-4 gap-2 text-xs font-semibold">
+                    <button @click="citationTab = 'footnote'" 
+                            class="py-2.5 px-3 border-b-2 transition-colors flex items-center gap-1.5"
+                            :class="citationTab === 'footnote' ? 'border-[#5c3a21] text-[#5c3a21] font-bold' : 'border-transparent text-stone-500 hover:text-stone-800'">
+                        <i class="fa-solid fa-file-pen"></i> Turabian (Catatan Kaki / Footnote)
+                    </button>
+                    <button @click="citationTab = 'biblio'" 
+                            class="py-2.5 px-3 border-b-2 transition-colors flex items-center gap-1.5"
+                            :class="citationTab === 'biblio' ? 'border-[#5c3a21] text-[#5c3a21] font-bold' : 'border-transparent text-stone-500 hover:text-stone-800'">
+                        <i class="fa-solid fa-book-bookmark"></i> Turabian (Daftar Pustaka)
+                    </button>
+                    <button @click="citationTab = 'apa'" 
+                            class="py-2.5 px-3 border-b-2 transition-colors flex items-center gap-1.5"
+                            :class="citationTab === 'apa' ? 'border-[#5c3a21] text-[#5c3a21] font-bold' : 'border-transparent text-stone-500 hover:text-stone-800'">
+                        <i class="fa-solid fa-graduation-cap"></i> APA (Edisi 7)
+                    </button>
+                </div>
+
+                <!-- Citation Box -->
+                <div class="relative bg-stone-50 border border-stone-200 rounded-xl p-4 min-h-[90px] flex items-center">
+                    <p class="text-sm text-stone-800 leading-relaxed font-serif" x-html="renderCitationHtml()"></p>
+                </div>
+
+                <div class="mt-2 text-[11px] text-stone-500 flex items-center justify-between">
+                    <span x-show="citationTab === 'footnote'">*Format standar skripsi IMAVI / STFT untuk catatan kaki (ganti [halaman] dengan nomor hlm Anda).</span>
+                    <span x-show="citationTab === 'biblio'">*Format standar daftar pustaka urut abjad nama belakang penulis.</span>
+                    <span x-show="citationTab === 'apa'">*Format standar American Psychological Association 7th Edition.</span>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-6 flex flex-col sm:flex-row gap-3">
+                    <button @click="copyCitation()" 
+                            class="flex-1 flex items-center justify-center gap-2 bg-[#2e1d1a] hover:bg-[#4e342e] text-[#E6B325] py-2.5 px-4 rounded-xl font-bold shadow text-xs transition-all">
+                        <i class="fa-solid fa-copy"></i>
+                        <span x-text="copyToast ? 'Tersalin ke Clipboard! ✓' : 'Salin Sitasi'"></span>
+                    </button>
+
+                    <button @click="downloadRis()" 
+                            class="flex items-center justify-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-700 py-2.5 px-4 rounded-xl font-bold border border-stone-300 text-xs transition-all">
+                        <i class="fa-solid fa-file-arrow-down text-stone-600"></i>
+                        <span>Ekspor .RIS (Zotero & Mendeley)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-stone-100/80 px-6 py-3 border-t border-stone-200 text-right">
+                <button @click="closeCitationModal()" class="text-xs font-semibold text-stone-600 hover:text-stone-900">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        function generateStJeromeCover(book) {
+            if (!book) return '';
+            let img = book.cover_url || book.image;
+            if (img && img !== 'NOT_FOUND' && img !== 'RATE_LIMIT' && img !== 'tidak_ada') {
+                if (img.startsWith('http')) return img;
+                if (img.startsWith('/static/')) return img;
+                if (img.startsWith('uploads/')) return '/static/' + img;
+                return '/static/uploads/' + img;
+            }
+
+            let title = (book.judul || 'Koleksi Perpustakaan').replace(/["'<>]/g, '');
+            if (title.length > 40) title = title.substring(0, 40) + '...';
+            
+            let words = title.split(' ');
+            let lines = [];
+            let currentLine = '';
+            words.forEach(w => {
+                if ((currentLine + ' ' + w).trim().length > 15) {
+                    if (currentLine.trim()) lines.push(currentLine.trim());
+                    currentLine = w;
+                } else {
+                    currentLine += (currentLine ? ' ' : '') + w;
+                }
+            });
+            if (currentLine.trim()) lines.push(currentLine.trim());
+            if (lines.length > 4) {
+                lines = lines.slice(0, 3);
+                lines.push('...');
+            }
+            
+            const colors = ['#2e1d1a', '#3e2723', '#4a154b', '#1a237e', '#1b5e20', '#37474f', '#4e342e'];
+            const bgColor = colors[(book.id || 0) % colors.length];
+            
+            let author = (book.pengarang || 'St. Jerome Library').replace(/["'<>]/g, '');
+            if (author.length > 24) author = author.substring(0, 24) + '...';
+
+            let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="280" viewBox="0 0 200 280">
+                <defs>
+                    <linearGradient id="g_${book.id || 0}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="${bgColor}" />
+                        <stop offset="100%" stop-color="#140f0d" />
+                    </linearGradient>
+                    <linearGradient id="spine_${book.id || 0}" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#000000" stop-opacity="0.6"/>
+                        <stop offset="50%" stop-color="#ffffff" stop-opacity="0.12"/>
+                        <stop offset="100%" stop-color="#000000" stop-opacity="0.4"/>
+                    </linearGradient>
+                </defs>
+                <rect width="200" height="280" rx="4" fill="url(#g_${book.id || 0})"/>
+                <rect x="18" y="14" width="168" height="252" rx="2" fill="none" stroke="#E6B325" stroke-width="1.5" stroke-opacity="0.6"/>
+                <rect x="22" y="18" width="160" height="244" rx="1" fill="none" stroke="#E6B325" stroke-width="0.5" stroke-opacity="0.4"/>
+                <rect width="14" height="280" fill="url(#spine_${book.id || 0})"/>
+                <line x1="14" y1="0" x2="14" y2="280" stroke="#000000" stroke-width="1" stroke-opacity="0.5"/>
+                <circle cx="106" cy="48" r="14" fill="#E6B325" fill-opacity="0.15" stroke="#E6B325" stroke-width="1"/>
+                <text x="106" y="52" fill="#E6B325" font-family="serif" font-size="11" font-weight="bold" text-anchor="middle">SJ</text>
+                <text x="106" y="90" fill="#ffffff" font-family="'Cinzel', Georgia, serif" font-size="12" font-weight="bold" text-anchor="middle">`;
+
+            lines.forEach((l, i) => {
+                svg += `<tspan x="106" dy="${i === 0 ? 0 : 16}">${l}</tspan>`;
+            });
+
+            svg += `</text>
+                <line x1="60" y1="195" x2="152" y2="195" stroke="#E6B325" stroke-width="1" stroke-opacity="0.5"/>
+                <text x="106" y="218" fill="#E6B325" font-family="sans-serif" font-size="9.5" text-anchor="middle" font-weight="500">${author}</text>
+                <text x="106" y="246" fill="#ffffff" fill-opacity="0.4" font-family="sans-serif" font-size="7.5" text-anchor="middle" letter-spacing="1.5">ST. JEROME LIBRARY</text>
+            </svg>`;
+
+            return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+        }
+
+        function detailApp() {
+            return {
+                isLoading: true,
+                book: null,
+                citationModalOpen: false,
+                citationTab: 'footnote',
+                copyToast: false,
+                
+                async initApp() {
+                    const params = new URLSearchParams(window.location.search);
+                    const id = params.get('id');
+                    if (!id) {
+                        this.isLoading = false;
+                        return;
+                    }
+                    try {
+                        const res = await fetch('/api/opac/detail?id=' + id);
+                        const data = await res.json();
+                        if (data.id) {
+                            this.book = data;
+                            if (!this.book.image || ['NOT_FOUND', 'RATE_LIMIT', 'tidak_ada'].includes(this.book.image)) {
+                                this.findGoogleCover();
+                            }
+                        }
+                    } catch(e) { console.error(e); }
+                    this.isLoading = false;
+                },
+
+                async findGoogleCover() {
+                    if (!this.book) return;
+                    {% if is_feature('ENABLE_AUTOCOVER_ONLINE') %}
+                    try {
+                        const isbn = (this.book.isbn || '').replace(/[^0-9Xx]/g, '');
+                        const q = isbn.length >= 10 ? 'isbn:' + isbn : (this.book.judul || '') + (this.book.pengarang ? ' ' + this.book.pengarang : '');
+                        const res = await fetch('https://www.googleapis.com/books/v1/volumes?q=' + encodeURIComponent(q));
+                        if (!res.ok) return;
+                        const data = await res.json();
+                        let img = data.items && data.items[0]?.volumeInfo?.imageLinks?.thumbnail;
+                        if (img) {
+                            this.book.cover_url = img.replace('http:', 'https:');
+                        }
+                    } catch(e) {}
+                    {% endif %}
+                },
+
+                getCoverUrl(book) {
+                    return generateStJeromeCover(book);
+                },
+
+                openCitationModal() {
+                    this.citationModalOpen = true;
+                },
+
+                closeCitationModal() {
+                    this.citationModalOpen = false;
+                },
+
+                getCitationRaw() {
+                    if (!this.book || !this.book.citation) return '';
+                    if (this.citationTab === 'footnote') return this.book.citation.turabian_footnote || '';
+                    if (this.citationTab === 'biblio') return this.book.citation.turabian_biblio || '';
+                    if (this.citationTab === 'apa') return this.book.citation.apa || '';
+                    return '';
+                },
+
+                renderCitationHtml() {
+                    let text = this.getCitationRaw();
+                    if (!text) return '<span class="text-stone-400 italic">Sitasi tidak tersedia.</span>';
+                    // Convert _title_ to <em>title</em>
+                    return text.replace(/_([^_]+)_/g, '<em class="font-semibold text-stone-900">$1</em>');
+                },
+
+                copyCitation() {
+                    let raw = this.getCitationRaw();
+                    if (!raw) return;
+                    // For clipboard, remove markdown underscores
+                    let clean = raw.replace(/_([^_]+)_/g, '$1');
+                    navigator.clipboard.writeText(clean).then(() => {
+                        this.copyToast = true;
+                        setTimeout(() => { this.copyToast = false; }, 2500);
+                    }).catch(() => {
+                        alert("Gagal menyalin sitasi.");
+                    });
+                },
+
+                downloadRis() {
+                    if (!this.book) return;
+                    window.location.href = `/api/opac/citation/${this.book.id}?download=ris`;
+                },
+
+                
+                cleanPhone(phone) {
+                    if (!phone) return '6281234567890';
+                    let p = phone.toString().replace(/\D/g, '');
+                    if (p.startsWith('0')) p = '62' + p.substring(1);
+                    if (p.startsWith('8')) p = '62' + p;
+                    return p || '6281234567890';
+                },
+
+                openWhatsAppHold() {
+                    if (!this.book) return;
+                    const phone = this.cleanPhone(this.book.wa_number || '6281234567890');
+                    const firstEks = (this.book.eksemplar && this.book.eksemplar.length > 0) ? this.book.eksemplar[0].no_induk : '-';
+                    const msg = `Halo Pustakawan {{ branding.library_name }},
+
+Saya melihat buku ini di katalog OPAC dan bermaksud menanyakan ketersediaan fisik di rak / mengajukan penahanan (hold):
+
+*Judul:* ${this.book.judul}
+*Pengarang:* ${this.book.pengarang || '-'}
+*Nomor Panggil (DDC):* ${this.book.nomor_panggil || this.book.klasifikasi || '-'}
+*No. Barcode:* ${firstEks}
+*Lokasi Rak:* ${this.book.lokasi_rak || 'Rak Koleksi'}
+
+Apakah buku ini saat ini masih berada di rak dan dapat saya pinjam / baca di tempat? Terima kasih!`;
+                    
+                    const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+                    window.open(url, '_blank');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

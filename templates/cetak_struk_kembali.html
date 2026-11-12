@@ -10,7 +10,7 @@
             font-family: 'Courier New', Courier, monospace; 
             font-size: 11px; 
             margin: 0; 
-            padding: 2mm 5mm; /* Tambah padding kiri-kanan agar tidak terpotong */
+            padding: 2mm 2mm 2mm 6mm; /* Safe anti-clipping margin */ /* Tambah padding kiri-kanan agar tidak terpotong */
             width: 48mm; 
             color: #000; 
             box-sizing: border-box;
@@ -29,8 +29,9 @@
 </head>
 <body class="center">
     <div class="center">
-        <div class="title">PERPUSTAKAAN ST. JEROME</div>
-        <div style="font-size: 10px;">Bukti Pengembalian</div>
+        <div class="title">ST. JEROME LIBRARY</div>
+        <div style="font-size: 9.5px;">Jl. Kalisari selatan no 1 Surabaya</div>
+        <div style="font-size: 10px; margin-top: 1px;">Bukti Pengembalian</div>
     </div>
     
     <div class="line"></div>
@@ -68,7 +69,12 @@
     
     <script>
         const now = new Date();
-        document.getElementById('datetime').textContent = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+        const d = String(now.getDate()).padStart(2, '0');
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const y = now.getFullYear();
+        const h = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('datetime').textContent = `${d}-${m}-${y} ${h}:${min} WIB`;
         
         setTimeout(() => {
             window.print();

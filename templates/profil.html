@@ -1,0 +1,256 @@
+{% extends 'layout.html' %}
+
+{% block page_title %}Profil Pengguna{% endblock %}
+{% block page_subtitle %}Kelola informasi akun, kata sandi, dan preferensi sistem perpustakaan{% endblock %}
+
+{% block content %}
+<div class="space-y-6" x-data="{ activeTab: '{{ request.args.get('tab', 'biodata') }}' }">
+
+    <!-- Flash message alert -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="p-4 rounded-xl border text-xs font-semibold flex items-center justify-between {% if category == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800{% else %}bg-rose-50 border-rose-200 text-rose-800{% endif %}">
+              <div class="flex items-center gap-2.5">
+                  <i class="fa-solid {% if category == 'success' %}fa-circle-check text-emerald-600{% else %}fa-circle-exclamation text-rose-600{% endif %} text-base"></i>
+                  <span>{{ message }}</span>
+              </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- ===== LEFT COLUMN: PROFILE CARD & TAB MENU ===== -->
+        <div class="lg:col-span-4 space-y-4">
+            
+            <!-- User Summary Card -->
+            <div class="rounded-2xl bg-white border border-stone-200 p-6 shadow-2xs text-center">
+                <div class="w-20 h-20 mx-auto rounded-full bg-stone-900 text-white flex items-center justify-center text-3xl font-extrabold shadow-sm mb-3">
+                    {{ user.nama_lengkap[:1] | upper | default('Y') }}
+                </div>
+                <h3 class="text-base font-bold text-stone-900">{{ user.nama_lengkap | default('Yosef Paskah') }}</h3>
+                <p class="text-xs text-stone-500 font-mono mt-0.5">@{{ user.username }}</p>
+                
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 text-stone-700 text-xs font-semibold mt-3 border border-stone-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>{{ user.role | default('Administrator') }}</span>
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-stone-150 text-left text-xs space-y-2 text-stone-600">
+                    <div class="flex items-center justify-between">
+                        <span class="text-stone-400">Institusi</span>
+                        <span class="font-medium text-stone-800">Institut Teologi IMAVI</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-stone-400">Status Akun</span>
+                        <span class="text-emerald-700 font-semibold flex items-center gap-1"><i class="fa-solid fa-circle-check text-[10px]"></i> Aktif</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Navigation Card -->
+            <div class="rounded-2xl bg-white border border-stone-200 p-2 shadow-2xs space-y-1">
+                <button @click="activeTab = 'biodata'" 
+                        class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors text-left"
+                        :class="activeTab === 'biodata' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900'">
+                    <i class="fa-regular fa-user w-4 text-center"></i>
+                    <span>Informasi Akun</span>
+                </button>
+
+                <button @click="activeTab = 'password'" 
+                        class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors text-left"
+                        :class="activeTab === 'password' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900'">
+                    <i class="fa-solid fa-key w-4 text-center"></i>
+                    <span>Ganti Kata Sandi</span>
+                </button>
+
+                <button @click="activeTab = 'otoritas'" 
+                        class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors text-left"
+                        :class="activeTab === 'otoritas' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900'">
+                    <i class="fa-solid fa-shield-halved w-4 text-center"></i>
+                    <span>Hak Akses & Otoritas</span>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- ===== RIGHT COLUMN: TAB CONTENT PANELS ===== -->
+        <div class="lg:col-span-8">
+            
+            <!-- PANEL 1: BIODATA / INFORMASI AKUN -->
+            <div x-show="activeTab === 'biodata'" class="rounded-2xl bg-white border border-stone-200 p-6 shadow-2xs">
+                <div class="pb-4 border-b border-stone-150 mb-5">
+                    <h3 class="text-base font-bold text-stone-900">Informasi Profil Pengguna</h3>
+                    <p class="text-xs text-stone-500 mt-0.5">Perbarui nama tampilan dan kontak administrasi Anda.</p>
+                </div>
+
+                <form method="POST" action="/profil" class="space-y-4">
+                    <input type="hidden" name="action" value="update_profile">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1.5">Username (ID Login)</label>
+                            <input type="text" value="{{ user.username }}" disabled class="w-full px-3.5 py-2 rounded-xl bg-stone-100 border border-stone-200 text-stone-500 text-xs font-mono cursor-not-allowed">
+                            <span class="text-[10px] text-stone-400 mt-1 block">Username bersifat permanen untuk integritas audit sirkulasi.</span>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1.5">Peran / Jabatan</label>
+                            <input type="text" value="{{ user.role | default('Administrator') }}" disabled class="w-full px-3.5 py-2 rounded-xl bg-stone-100 border border-stone-200 text-stone-500 text-xs font-semibold cursor-not-allowed">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1.5">Nama Lengkap Tampilan</label>
+                        <input type="text" name="nama_lengkap" value="{{ user.nama_lengkap | default('Yosef Paskah') }}" required class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-stone-800 text-xs focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400 transition-all">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1.5">Email Petugas</label>
+                        <input type="email" name="email" value="{{ user.email | default('') }}" placeholder="contoh: yosef@imavi.ac.id" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-stone-800 text-xs focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400 transition-all">
+                        <span class="text-[10px] text-stone-400 mt-1 block">Digunakan untuk notifikasi sistem dan laporan berkala.</span>
+                    </div>
+
+                    <div class="pt-3 border-t border-stone-150 flex justify-end">
+                        <button type="submit" class="px-5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-semibold text-xs transition-colors shadow-2xs">
+                            Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- PANEL 2: GANTI KATA SANDI (PASSWORD) -->
+            <div x-show="activeTab === 'password'" style="display: none;" class="rounded-2xl bg-white border border-stone-200 p-6 shadow-2xs">
+                <div class="pb-4 border-b border-stone-150 mb-5">
+                    <h3 class="text-base font-bold text-stone-900 flex items-center gap-2">
+                        <i class="fa-solid fa-lock text-stone-400 text-sm"></i>
+                        <span>Ganti Kata Sandi (Password)</span>
+                    </h3>
+                    <p class="text-xs text-stone-500 mt-0.5">Ubah kata sandi akun Yosef untuk menjaga keamanan akses perpustakaan.</p>
+                </div>
+
+                <form method="POST" action="/profil" class="space-y-4" x-data="{ showPass: false }">
+                    <input type="hidden" name="action" value="change_password">
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1.5">Kata Sandi Saat Ini (Lama)</label>
+                        <div class="relative">
+                            <input :type="showPass ? 'text' : 'password'" name="password_lama" required placeholder="Masukkan kata sandi lama Anda" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-stone-800 text-xs focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400 transition-all pr-10">
+                            <button type="button" @click="showPass = !showPass" class="absolute right-3 top-2.5 text-stone-400 hover:text-stone-700 text-xs">
+                                <i class="fa-solid" :class="showPass ? 'fa-eye-slash' : 'fa-eye'"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1.5">Kata Sandi Baru</label>
+                            <input :type="showPass ? 'text' : 'password'" name="password_baru" required placeholder="Minimal 4 karakter" minlength="4" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-stone-800 text-xs focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1.5">Konfirmasi Kata Sandi Baru</label>
+                            <input :type="showPass ? 'text' : 'password'" name="konfirmasi_password" required placeholder="Ulangi kata sandi baru" minlength="4" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-stone-800 text-xs focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400 transition-all">
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-stone-50 border border-stone-200 text-[11px] text-stone-600 flex items-start gap-2">
+                        <i class="fa-solid fa-circle-info text-amber-600 mt-0.5"></i>
+                        <span>Setelah kata sandi diganti, Anda dapat langsung menggunakannya pada sesi login berikutnya.</span>
+                    </div>
+
+                    <div class="pt-3 border-t border-stone-150 flex justify-end">
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-colors shadow-2xs">
+                            <i class="fa-solid fa-check mr-1.5"></i> Perbarui Kata Sandi
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- PANEL 3: HAK AKSES & OTORITAS -->
+            <div x-show="activeTab === 'otoritas'" style="display: none;" class="rounded-2xl bg-white border border-stone-200 p-6 shadow-2xs">
+                <div class="pb-4 border-b border-stone-150 mb-5">
+                    <h3 class="text-base font-bold text-stone-900">Hak Akses & Otoritas Sistem</h3>
+                    <p class="text-xs text-stone-500 mt-0.5">Daftar wewenang operasional untuk akun Administrator.</p>
+                </div>
+
+                <!-- Master Admin Quick Banner -->
+                <div class="p-4 rounded-xl bg-stone-900 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-base shrink-0">
+                            <i class="fa-solid fa-users-gear"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white">Manajemen Pengguna & Otoritas Petugas</h4>
+                            <p class="text-[11px] text-stone-300 mt-0.5">Buat akun staf, atur hak akses modul, atau reset password petugas.</p>
+                        </div>
+                    </div>
+                    <a href="/pengguna" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold text-xs transition-colors shrink-0">
+                        <span>Kelola Pengguna</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </a>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-stone-50 border border-stone-150">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-book"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-stone-800">Manajemen Katalog & Bibliografi</p>
+                                <p class="text-[11px] text-stone-500">Tambah buku, edit metadata ISBN, kelola sampul, cetak stiker DDC</p>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px] border border-emerald-200">Akses Penuh</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-stone-50 border border-stone-150">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-cash-register"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-stone-800">Sirkulasi & Layanan Kasir POS</p>
+                                <p class="text-[11px] text-stone-500">Peminjaman, pengembalian, perpanjangan, kasir cetak/fotokopi, tabungan</p>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px] border border-emerald-200">Akses Penuh</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-stone-50 border border-stone-150">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-800 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-chart-pie"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-stone-800">Analisis Strategis & Laporan Eksekutif</p>
+                                <p class="text-[11px] text-stone-500">Grand Sintesis, analisis dampak peminjaman, laporan klasifikasi DDC</p>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px] border border-emerald-200">Akses Penuh</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-stone-50 border border-stone-150">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-gear"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-stone-800">Konfigurasi Sistem & API Intelijen</p>
+                                <p class="text-[11px] text-stone-500">Token Telegram, kunci Gemini AI, audit integritas basis data</p>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px] border border-emerald-200">Akses Penuh</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

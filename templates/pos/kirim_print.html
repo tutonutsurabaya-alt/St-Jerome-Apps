@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiosk Cetak Mandiri - Perpustakaan St. Jerome</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #FAF8F5; color: #1E1715; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative selection:bg-[#E6B325]/30 selection:text-[#2E1D1A]"
+      x-data="printKioskApp()" x-cloak>
+
+    <!-- Warm Light Library Background -->
+    <div class="fixed inset-0 z-[-1] pointer-events-none">
+        <div class="absolute inset-0 bg-[#FAF8F5]/94 backdrop-blur-[1px] z-10"></div>
+        <img src="/static/img/bg4.jpg" alt="Background Perpustakaan" class="w-full h-full object-cover z-0 opacity-20 filter saturate-50">
+    </div>
+
+    <!-- Crisp Light Header -->
+    <header class="w-full bg-white/90 backdrop-blur-md border-b border-[#E8DEC8] px-6 lg:px-12 py-3.5 flex items-center justify-between shadow-xs">
+        <div class="flex items-center gap-3.5 cursor-pointer" onclick="window.location.href='/opac'">
+            <img src="/static/img/logo_imavi.png" alt="Logo St. Jerome" class="h-11 w-11 object-contain bg-white rounded-full p-0.5 border border-stone-200 shadow-sm">
+            <div>
+                <span class="font-serif font-bold text-lg tracking-tight text-[#2E1D1A] block leading-none">ST. JEROME</span>
+                <span class="text-[10px] tracking-[0.25em] uppercase text-[#B88018] font-bold mt-1 block">Kiosk Cetak Mandiri</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4 text-xs font-medium">
+            {% if member_data %}
+            <div class="hidden sm:flex items-center gap-2 bg-amber-50 border border-amber-200/80 rounded-full px-3.5 py-1 text-stone-800">
+                <i class="fa-solid fa-wallet text-[#B88018]"></i>
+                <span class="font-semibold">{{ member_data.nama_nasabah }}</span>
+                <span class="text-[#B88018] font-bold">Rp {{ "{:,}".format(member_data.saldo or 0).replace(",", ".") }}</span>
+            </div>
+            <a href="/opac/member/dashboard" class="text-stone-600 hover:text-[#2E1D1A] transition-colors py-1 flex items-center gap-1.5 font-semibold">
+                <i class="fa-solid fa-arrow-left text-[10px] text-[#B88018]"></i> Dasbor Member
+            </a>
+            {% else %}
+            <a href="/opac" class="text-stone-600 hover:text-[#2E1D1A] transition-colors py-1 flex items-center gap-1.5 font-semibold">
+                <i class="fa-solid fa-book text-[10px] text-[#B88018]"></i> Katalog OPAC
+            </a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Main Kiosk Body -->
+    <main class="w-full max-w-5xl mx-auto px-5 py-8 sm:py-12 flex-1 flex flex-col justify-center">
+
+        <!-- KIOSK FORM: CLEAN LIGHT 2-COLUMN DESK (NO NESTED BOXES) -->
+        <div x-show="!isSuccess">
+            <!-- Header Title -->
+            <div class="mb-8">
+                <span class="text-xs uppercase tracking-[0.2em] text-[#B88018] font-bold block mb-1">Layanan Mandiri Pemustaka</span>
+                <h2 class="text-3xl sm:text-4xl font-serif font-bold text-[#2E1D1A] tracking-tight">Kirim Dokumen Siap Cetak</h2>
+                <p class="text-stone-600 text-xs sm:text-sm mt-1 max-w-xl font-normal">
+                    Unggah tugas atau dokumen Anda langsung ke meja kasir perpustakaan. Praktis, tanpa flashdisk, dan bebas virus.
+                </p>
+            </div>
+
+            <form @submit.prevent="submitPrintForm()" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- KOLOM KIRI: DROPZONE BERKAS BESAR (5 COLS) -->
+                <div class="lg:col-span-5 flex flex-col">
+                    <label class="text-xs uppercase tracking-wider text-stone-700 font-bold mb-2 flex items-center justify-between">
+                        <span>Berkas Dokumen PDF <span class="text-red-500">*</span></span>
+                        <span class="text-[11px] text-[#B88018] font-bold" x-show="selectedFile" x-text="fileSize"></span>
+                    </label>
+
+                    <div class="relative rounded-2xl border-2 border-dashed transition-all p-6 text-center cursor-pointer min-h-[270px] flex flex-col items-center justify-center bg-white shadow-xs"
+                         :class="isDragging ? 'border-[#B88018] bg-amber-50/50 ring-4 ring-amber-100' : (selectedFile ? 'border-emerald-600/60 bg-emerald-50/30' : 'border-[#D9CDB8] hover:border-[#B88018] hover:bg-amber-50/20')"
+                         @dragover.prevent="isDragging = true"
+                         @dragleave.prevent="isDragging = false"
+                         @drop.prevent="handleFileDrop($event)"
+                         @click="$refs.fileInput.click()">
+                        
+                        <input type="file" x-ref="fileInput" class="hidden" accept=".pdf,application/pdf"
+                               @change="handleFileSelect($event)">
+                        
+                        <!-- Empty Slot State -->
+                        <div x-show="!selectedFile" class="space-y-3">
+                            <div class="w-16 h-16 rounded-full bg-red-50 border border-red-200/80 text-red-600 flex items-center justify-center mx-auto text-3xl shadow-2xs">
+                                <i class="fa-solid fa-file-pdf"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-stone-800">Sentuh atau Tarik Berkas PDF ke Sini</p>
+                                <p class="text-xs text-stone-600 mt-1">Wajib berformat <strong class="text-red-600 font-bold">PDF (.pdf)</strong></p>
+                                <div class="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-50 text-[11px] text-amber-800 border border-amber-200/70 font-medium">
+                                    <i class="fa-solid fa-ban text-red-500 text-[10px]"></i> Word (.doc/.docx) tidak diperbolehkan
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Selected File State -->
+                        <div x-show="selectedFile" class="space-y-3 w-full">
+                            <div class="w-16 h-16 rounded-2xl bg-[#B88018] text-white flex items-center justify-center mx-auto text-3xl shadow-md">
+                                <i class="fa-solid fa-file-pdf" x-show="isPdf"></i>
+                                <i class="fa-solid fa-file-lines" x-show="!isPdf"></i>
+                            </div>
+                            <div class="px-2">
+                                <div class="font-bold text-stone-900 text-sm truncate max-w-full" x-text="fileName"></div>
+                                <div class="text-xs text-emerald-700 font-semibold mt-1" x-show="isPdf">
+                                    <i class="fa-solid fa-circle-check mr-1"></i> Halaman Terbaca Otomatis
+                                </div>
+                            </div>
+                            <button type="button" @click.stop="clearFile()" class="text-xs text-red-600 hover:text-red-700 font-semibold underline transition-colors pt-1">
+                                <i class="fa-solid fa-xmark mr-1"></i> Ganti Berkas Lain
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KOLOM KANAN: IDENTITAS & INSTRUKSI (7 COLS) -->
+                <div class="lg:col-span-7 space-y-4">
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Nama Pemesan -->
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-stone-700 font-bold mb-1.5">
+                                Nama Pemesan <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" x-model="formData.nama_pemesan" required
+                                   placeholder="Nama lengkap atau Frater..."
+                                   class="w-full bg-white border border-[#D9CDB8] focus:border-[#B88018] focus:ring-2 focus:ring-amber-200/50 rounded-xl px-4 py-3 text-sm text-stone-900 placeholder-stone-400 font-medium focus:outline-none transition-all shadow-xs">
+                        </div>
+
+                        <!-- No HP / WhatsApp -->
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-stone-700 font-bold mb-1.5">
+                                No. WhatsApp (Untuk Notifikasi)
+                            </label>
+                            <input type="tel" x-model="formData.telepon"
+                                   placeholder="0812xxxxxxxx"
+                                   class="w-full bg-white border border-[#D9CDB8] focus:border-[#B88018] focus:ring-2 focus:ring-amber-200/50 rounded-xl px-4 py-3 text-sm text-stone-900 placeholder-stone-400 font-mono focus:outline-none transition-all shadow-xs">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Rekening Tabungan / NIM -->
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-stone-700 font-bold mb-1.5 flex items-center justify-between">
+                                <span>No. Rekening / NIM (Opsional)</span>
+                                {% if member_data %}
+                                <span class="text-[10px] text-[#B88018] font-bold">Terhubung</span>
+                                {% endif %}
+                            </label>
+                            <input type="text" x-model="formData.no_rekening"
+                                   placeholder="Contoh: 1001 atau NIM Anda"
+                                   class="w-full bg-white border border-[#D9CDB8] focus:border-[#B88018] focus:ring-2 focus:ring-amber-200/50 rounded-xl px-4 py-3 text-sm text-stone-900 placeholder-stone-400 font-mono focus:outline-none transition-all shadow-xs">
+                        </div>
+
+                        <!-- Pilihan Kertas -->
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-stone-700 font-bold mb-1.5">
+                                Pilihan Kertas
+                            </label>
+                            <select x-model="formData.kertas"
+                                    class="w-full bg-white border border-[#D9CDB8] focus:border-[#B88018] focus:ring-2 focus:ring-amber-200/50 rounded-xl px-4 py-3 text-sm text-stone-900 font-medium focus:outline-none transition-all shadow-xs">
+                                <option value="PERPUS">Kertas Perpustakaan (HVS 70/80gsm)</option>
+                                <option value="SENDIRI">Bawa Kertas Sendiri (Tarif Khusus)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Mode Sisi Kertas (1 Sisi vs 2 Sisi Bolak-Balik) -->
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-stone-700 font-bold mb-1.5">
+                            Mode Cetak Kertas <span class="text-red-500">*</span>
+                        </label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" 
+                                    @click="formData.mode_sisi = '1_SISI'"
+                                    :class="formData.mode_sisi === '1_SISI' ? 'border-[#B88018] bg-amber-50/70 text-[#2E1D1A] ring-2 ring-amber-400/40 shadow-xs' : 'border-[#D9CDB8] bg-white text-stone-600 hover:border-stone-400'"
+                                    class="p-3 rounded-xl border text-left transition-all flex items-start gap-2.5">
+                                <i class="fa-regular fa-file text-base mt-0.5" :class="formData.mode_sisi === '1_SISI' ? 'text-[#B88018]' : 'text-stone-400'"></i>
+                                <div>
+                                    <div class="text-xs font-bold leading-tight">1 Sisi (Biasa)</div>
+                                    <div class="text-[11px] text-stone-500 mt-0.5">Tiap halaman dicetak 1 lembar</div>
+                                </div>
+                            </button>
+                            <button type="button" 
+                                    @click="formData.mode_sisi = '2_SISI'"
+                                    :class="formData.mode_sisi === '2_SISI' ? 'border-[#B88018] bg-amber-50/70 text-[#2E1D1A] ring-2 ring-amber-400/40 shadow-xs' : 'border-[#D9CDB8] bg-white text-stone-600 hover:border-stone-400'"
+                                    class="p-3 rounded-xl border text-left transition-all flex items-start gap-2.5">
+                                <i class="fa-solid fa-arrows-split-up-and-left text-base mt-0.5" :class="formData.mode_sisi === '2_SISI' ? 'text-[#B88018]' : 'text-stone-400'"></i>
+                                <div>
+                                    <div class="text-xs font-bold leading-tight flex items-center gap-1.5">
+                                        <span>2 Sisi (Bolak-Balik)</span>
+                                        <span class="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-1.5 py-0.5 rounded">Hemat Kertas</span>
+                                    </div>
+                                    <div class="text-[11px] text-stone-500 mt-0.5">Duplex / bolak-balik 2 sisi</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Warna Tinta & Jumlah Rangkap -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Pilihan Warna Tinta -->
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-stone-700 font-bold mb-1.5">
+                                Warna / Tinta
+                            </label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" 
+                                        @click="formData.warna = 'BW'"
+                                        :class="formData.warna === 'BW' ? 'border-[#B88018] bg-amber-50/70 text-[#2E1D1A] font-bold ring-2 ring-amber-400/40 shadow-xs' : 'border-[#D9CDB8] bg-white text-stone-600'"
+                                        class="py-3 px-3 rounded-xl border text-xs text-center transition-all flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-circle-half-stroke text-stone-600"></i> Hitam-Putih
+                                </button>
+                                <button type="button" 
+                                        @click="formData.warna = 'WARNA'"
+                                        :class="formData.warna === 'WARNA' ? 'border-[#B88018] bg-amber-50/70 text-[#2E1D1A] font-bold ring-2 ring-amber-400/40 shadow-xs' : 'border-[#D9CDB8] bg-white text-stone-600'"
+                                        class="py-3 px-3 rounded-xl border text-xs text-center transition-all flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-palette text-amber-600"></i> Warna
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Jumlah Rangkap -->
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-stone-700 font-bold mb-1.5">
+                                Jumlah Rangkap (Salinan)
+                            </label>
+                            <div class="flex items-center">
+                                <button type="button" @click="if (formData.rangkap > 1) formData.rangkap--" 
+                                        class="h-[46px] px-3.5 bg-stone-100 hover:bg-stone-200 border border-[#D9CDB8] border-r-0 rounded-l-xl text-stone-700 font-bold">
+                                    <i class="fa-solid fa-minus text-xs"></i>
+                                </button>
+                                <input type="number" min="1" max="50" x-model.number="formData.rangkap" 
+                                       class="h-[46px] w-full text-center bg-white border border-[#D9CDB8] text-sm font-bold text-stone-900 focus:outline-none">
+                                <button type="button" @click="formData.rangkap++" 
+                                        class="h-[46px] px-3.5 bg-stone-100 hover:bg-stone-200 border border-[#D9CDB8] border-l-0 rounded-r-xl text-stone-700 font-bold">
+                                    <i class="fa-solid fa-plus text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ringkasan Pilihan Live -->
+                    <div class="bg-amber-50/50 rounded-xl px-3.5 py-2.5 text-xs text-stone-700 flex flex-wrap items-center justify-between gap-2 border border-amber-200/60">
+                        <span class="font-medium text-stone-600 text-[11px]">Ringkasan Pilihan:</span>
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <span class="bg-white border border-stone-200 px-2 py-0.5 rounded-md font-bold text-[11px] text-stone-800"
+                                  x-text="formData.mode_sisi === '2_SISI' ? '2 Sisi (Bolak-Balik)' : '1 Sisi (Biasa)'"></span>
+                            <span class="bg-white border border-stone-200 px-2 py-0.5 rounded-md font-bold text-[11px] text-stone-800"
+                                  x-text="formData.warna === 'WARNA' ? 'Warna' : 'Hitam-Putih'"></span>
+                            <span class="bg-white border border-stone-200 px-2 py-0.5 rounded-md font-bold text-[11px] text-stone-800"
+                                  x-text="formData.kertas === 'SENDIRI' ? 'Kertas Sendiri' : 'Kertas Perpus'"></span>
+                            <span class="bg-[#B88018] text-white px-2 py-0.5 rounded-md font-bold text-[11px]"
+                                  x-text="formData.rangkap + ' Rangkap'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Instruksi Khusus -->
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-stone-700 font-bold mb-1.5">
+                            Instruksi Tambahan untuk Kasir
+                        </label>
+                        <textarea x-model="formData.catatan" rows="2"
+                                  placeholder="Contoh: Halaman 1-5 saja; Diberi staples pojok kiri atas..."
+                                  class="w-full bg-white border border-[#D9CDB8] focus:border-[#B88018] focus:ring-2 focus:ring-amber-200/50 rounded-xl p-3 text-sm text-stone-900 placeholder-stone-400 font-normal focus:outline-none transition-all shadow-xs"></textarea>
+                    </div>
+
+                    <!-- Error Alert -->
+                    <div x-show="errorMessage" class="p-3 bg-red-50 border border-red-300 rounded-xl text-red-800 text-xs flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-red-600 text-sm"></i>
+                        <span x-text="errorMessage"></span>
+                    </div>
+
+                    <!-- Submit Kiosk Button: St. Jerome Mahogany & Gold -->
+                    <button type="submit" :disabled="isLoading || !selectedFile"
+                            class="w-full py-4 bg-[#2E1D1A] hover:bg-[#432A25] disabled:opacity-40 text-white font-serif font-bold text-sm uppercase tracking-widest rounded-xl transition-all shadow-md hover:shadow-xl flex items-center justify-center gap-2.5">
+                        <i class="fa-solid fa-paper-plane text-[#E6B325]" x-show="!isLoading"></i>
+                        <i class="fa-solid fa-circle-notch fa-spin text-[#E6B325]" x-show="isLoading"></i>
+                        <span x-text="isLoading ? 'Mengirim Dokumen ke Kasir...' : 'Kirim Berkas ke Antrean Kasir'"></span>
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- TIKET ANTREAN SUKSES: GAYA SLIP TIKET PERPUSTAKAAN TERANG -->
+        <div x-show="isSuccess" class="max-w-md mx-auto text-center py-4">
+            
+            <div class="bg-white border-2 border-[#D9CDB8] rounded-3xl p-8 sm:p-10 shadow-xl relative overflow-hidden">
+                <div class="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto mb-4 text-2xl shadow-xs">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+
+                <span class="text-[11px] uppercase tracking-[0.25em] text-[#B88018] font-bold block mb-1">Tiket Cetak Mandiri</span>
+                <h3 class="font-serif text-2xl text-[#2E1D1A] font-bold mb-6">Dokumen Siap Dicetak</h3>
+
+                <!-- Nomor Tiket Besar -->
+                <div class="py-6 px-4 bg-amber-50/50 border-y-2 border-dashed border-[#D9CDB8] mb-6 rounded-xl">
+                    <span class="text-xs text-stone-500 uppercase tracking-widest block mb-1 font-semibold">Nomor Antrean Anda</span>
+                    <div class="text-5xl sm:text-6xl font-serif font-black text-[#B88018] tracking-wider" x-text="ticketData.kode_antrean">#PRN-01</div>
+                    <div class="text-xs text-stone-700 mt-2 font-bold" x-text="ticketData.nama_pemesan"></div>
+                </div>
+
+                <!-- Rincian Berkas -->
+                <div class="text-xs space-y-2.5 text-left mb-6 border-b border-stone-200 pb-5 text-stone-700">
+                    <div class="flex justify-between">
+                        <span class="text-stone-500">Nama Berkas:</span>
+                        <span class="font-bold text-stone-900 truncate max-w-[180px]" x-text="ticketData.nama_file"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-stone-500">Halaman Dokumen:</span>
+                        <span class="font-bold text-[#B88018]" x-text="ticketData.jumlah_halaman + ' Halaman'"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-stone-500">Mode Cetak:</span>
+                        <span class="font-bold text-stone-900" x-text="ticketData.jenis_print"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-stone-500">Estimasi Kertas:</span>
+                        <span class="font-bold text-purple-700" x-text="ticketData.jumlah_lembar + ' Lembar Fisik'"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-stone-500">Status:</span>
+                        <span class="text-emerald-700 font-bold">Menunggu di Meja Kasir</span>
+                    </div>
+                </div>
+
+                <p class="text-xs text-stone-600 mb-6 leading-relaxed">
+                    Silakan menuju meja kasir perpustakaan St. Jerome dan tunjukkan nomor antrean <strong class="text-[#2E1D1A]" x-text="ticketData.kode_antrean"></strong> untuk konfirmasi cetak.
+                </p>
+
+                <!-- Tombol Aksi Tiket -->
+                <div class="space-y-3">
+                    <button @click="resetForm()" class="w-full py-3.5 bg-[#2E1D1A] hover:bg-[#432A25] text-white font-serif font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md">
+                        <i class="fa-solid fa-plus mr-1 text-[#E6B325]"></i> Unggah Dokumen Lain
+                    </button>
+                    {% if member_data %}
+                    <a href="/opac/member/dashboard" class="block w-full py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold rounded-xl transition-colors">
+                        Kembali ke Dasbor Member
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Minimalist Light Footer -->
+    <footer class="w-full border-t border-[#E8DEC8] bg-white/70 py-4 px-6 text-center text-xs text-stone-500">
+        <p>© 2026 Perpustakaan St. Jerome Surabaya &bull; Layanan Cetak Mandiri Mahasiswa & Frater</p>
+    </footer>
+
+    <script>
+        function printKioskApp() {
+            return {
+                isDragging: false,
+                isLoading: false,
+                isSuccess: false,
+                errorMessage: '',
+                selectedFile: null,
+                fileName: '',
+                fileSize: '',
+                isPdf: false,
+                formData: {
+                    nama_pemesan: '{{ member_data.nama_nasabah if member_data else "" }}',
+                    no_rekening: '{{ member_data.no_rekening if member_data else "" }}',
+                    member_id: '{{ member_data.member_id if member_data else "" }}',
+                    telepon: '',
+                    kertas: 'PERPUS',
+                    mode_sisi: '1_SISI',
+                    warna: 'BW',
+                    rangkap: 1,
+                    catatan: ''
+                },
+                ticketData: {},
+
+                handleFileSelect(event) {
+                    const file = event.target.files[0];
+                    if (file) this.setFile(file);
+                },
+
+                handleFileDrop(event) {
+                    this.isDragging = false;
+                    const file = event.dataTransfer.files[0];
+                    if (file) this.setFile(file);
+                },
+
+                setFile(file) {
+                    if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
+                        this.errorMessage = 'Format berkas ditolak! Dokumen wajib berupa PDF (.pdf). Format Word (.docx/.doc) tidak diizinkan agar tata letak cetak rapi.';
+                        if (this.$refs.fileInput) this.$refs.fileInput.value = '';
+                        this.selectedFile = null;
+                        return;
+                    }
+                    if (file.size > 25 * 1024 * 1024) {
+                        this.errorMessage = 'Ukuran berkas melebihi batas 25 MB!';
+                        if (this.$refs.fileInput) this.$refs.fileInput.value = '';
+                        return;
+                    }
+                    this.selectedFile = file;
+                    this.fileName = file.name;
+                    this.fileSize = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+                    this.isPdf = true;
+                    this.errorMessage = '';
+                },
+
+                clearFile() {
+                    this.selectedFile = null;
+                    this.fileName = '';
+                    this.fileSize = '';
+                    this.isPdf = false;
+                    if (this.$refs.fileInput) this.$refs.fileInput.value = '';
+                },
+
+                async submitPrintForm() {
+                    if (!this.selectedFile) {
+                        this.errorMessage = 'Silakan pilih berkas dokumen terlebih dahulu!';
+                        return;
+                    }
+                    if (!this.formData.nama_pemesan.trim()) {
+                        this.errorMessage = 'Nama pemesan wajib diisi!';
+                        return;
+                    }
+
+                    this.isLoading = true;
+                    this.errorMessage = '';
+
+                    const payload = new FormData();
+                    payload.append('file', this.selectedFile);
+                    payload.append('nama_pemesan', this.formData.nama_pemesan);
+                    payload.append('no_rekening', this.formData.no_rekening || '');
+                    payload.append('member_id', this.formData.member_id || '');
+                    payload.append('telepon', this.formData.telepon || '');
+                    payload.append('kertas', this.formData.kertas);
+                    payload.append('mode_sisi', this.formData.mode_sisi);
+                    payload.append('warna', this.formData.warna);
+                    payload.append('rangkap', this.formData.rangkap);
+                    payload.append('jenis_print', this.formData.kertas === 'SENDIRI' ? 'KERTAS_SENDIRI' : 'KERTAS_PERPUS');
+                    payload.append('catatan', this.formData.catatan || '');
+
+                    try {
+                        const response = await fetch('/api/pos/kirim_print', {
+                            method: 'POST',
+                            body: payload
+                        });
+                        const res = await response.json();
+                        if (res.status === 'success') {
+                            this.ticketData = res;
+                            this.isSuccess = true;
+                        } else {
+                            this.errorMessage = res.message || 'Gagal mengirim berkas.';
+                        }
+                    } catch (e) {
+                        this.errorMessage = 'Terjadi kesalahan jaringan saat mengirim berkas.';
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                resetForm() {
+                    this.isSuccess = false;
+                    this.clearFile();
+                    this.formData.catatan = '';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

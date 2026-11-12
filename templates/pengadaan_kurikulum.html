@@ -1,0 +1,248 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="space-y-6" x-data="dapurPengadaan()">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200">
+        <div>
+            <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 uppercase tracking-wider">
+                    Syllabus-to-Shelf Engine
+                </span>
+                <span class="text-xs text-stone-500">T.A. 2026/2027</span>
+            </div>
+            <h1 class="text-2xl font-serif font-bold text-stone-900 mt-1">Dapur Pengadaan Berbasis Kurikulum</h1>
+            <p class="text-xs text-stone-500 mt-0.5">
+                Audit kesiapan pustaka wajib silabus resmi IMAVI vs ketersediaan fisik di rak St. Jerome Library.
+            </p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a :href="'/pengadaan_kurikulum/cetak_proposal?prodi=' + selectedProdi + '&semester=' + selectedSemester" 
+               target="_blank"
+               class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center gap-2">
+                <i class="fa-solid fa-print"></i>
+                <span>Cetak Proposal ke Rektorat</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs">
+            <div class="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">Total Mata Kuliah</div>
+            <div class="text-2xl font-bold font-serif text-stone-900 mt-1" x-text="kpi.total_mk">93</div>
+            <div class="text-[11px] text-stone-400 mt-0.5">Semua semester aktif</div>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs">
+            <div class="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">Pustaka Wajib Silabus</div>
+            <div class="text-2xl font-bold font-serif text-stone-900 mt-1" x-text="kpi.total_pustaka">747</div>
+            <div class="text-[11px] text-stone-400 mt-0.5">Rujukan babon dosen</div>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-emerald-200 shadow-2xs bg-gradient-to-br from-emerald-50/50 to-white">
+            <div class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider flex items-center justify-between">
+                <span>Tersedia di Rak</span>
+                <i class="fa-solid fa-circle-check text-emerald-500"></i>
+            </div>
+            <div class="text-2xl font-bold font-serif text-emerald-700 mt-1" x-text="kpi.tersedia + ' (' + kpi.coverage_pct + '%)'">634 (84.9%)</div>
+            <div class="text-[11px] text-emerald-600 mt-0.5">Koleksi siap dipinjam</div>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-rose-200 shadow-2xs bg-gradient-to-br from-rose-50/50 to-white">
+            <div class="text-[11px] font-semibold text-rose-700 uppercase tracking-wider flex items-center justify-between">
+                <span>Defisit (Belum Ada)</span>
+                <i class="fa-solid fa-circle-exclamation text-rose-500"></i>
+            </div>
+            <div class="text-2xl font-bold font-serif text-rose-700 mt-1" x-text="kpi.defisit">113</div>
+            <div class="text-[11px] text-rose-600 mt-0.5">Prioritas usulan pengadaan</div>
+        </div>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="bg-stone-50 p-4 rounded-2xl border border-stone-200 flex flex-col md:flex-row items-center gap-3">
+        <!-- Prodi Selector -->
+        <div class="w-full md:w-auto">
+            <select x-model="selectedProdi" @change="filterData()" class="w-full text-xs font-semibold bg-white border border-stone-200 rounded-xl px-3 py-2 text-stone-800">
+                <option value="ALL">Semua Program Studi</option>
+                <option value="Teologi (S.T.B.)">Teologi (S.T.B.)</option>
+                <option value="Filsafat Keilahian">Filsafat Keilahian</option>
+                <option value="Magister Manajemen (MM-IMAVI)">Magister Manajemen (MM-IMAVI)</option>
+                <option value="Pastoral Leadership Management">Pastoral Leadership Management</option>
+            </select>
+        </div>
+
+        <!-- Semester Selector -->
+        <div class="w-full md:w-auto">
+            <select x-model="selectedSemester" @change="filterData()" class="w-full text-xs font-semibold bg-white border border-stone-200 rounded-xl px-3 py-2 text-stone-800">
+                <option value="ALL">Semua Semester</option>
+                <template x-for="s in [1,2,3,4,5,6,7,8,9,10,11,12]">
+                    <option :value="s" x-text="'Semester ' + s"></option>
+                </template>
+            </select>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="w-full md:w-auto">
+            <select x-model="selectedStatus" @change="filterData()" class="w-full text-xs font-semibold bg-white border border-stone-200 rounded-xl px-3 py-2 text-stone-800">
+                <option value="ALL">Status Rak: Semua</option>
+                <option value="DEFISIT">Hanya Defisit (Belum Ada di Rak)</option>
+                <option value="TERSEDIA">Hanya yang Sudah Ada di Rak</option>
+            </select>
+        </div>
+
+        <!-- Search Box -->
+        <div class="w-full md:flex-1 relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-stone-400"></i>
+            <input type="text" x-model="searchQuery" @input.debounce.300ms="filterData()" 
+                   placeholder="Cari kode MK, judul mata kuliah, atau buku rujukan..." 
+                   class="w-full pl-9 pr-3 py-2 text-xs bg-white border border-stone-200 rounded-xl text-stone-800 placeholder-stone-400 focus:outline-none focus:border-stone-400">
+        </div>
+    </div>
+
+    <!-- Course List -->
+    <div class="space-y-4">
+        <template x-for="mk in filteredCourses" :key="mk.id">
+            <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs transition-all">
+                <!-- Course Header -->
+                <div @click="toggleCourse(mk.id)" class="p-4 cursor-pointer hover:bg-stone-50/70 transition flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-10 h-10 rounded-xl bg-stone-100 border border-stone-200 flex flex-col items-center justify-center shrink-0">
+                            <span class="text-[9px] font-bold text-stone-500 uppercase">SEM</span>
+                            <span class="text-xs font-bold text-stone-900" x-text="mk.semester">1</span>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.2 rounded font-mono text-[10px] font-bold bg-stone-900 text-white" x-text="mk.kode_mk">PHL 101F</span>
+                                <span class="text-[11px] font-semibold text-stone-500" x-text="mk.prodi">Filsafat</span>
+                                <span class="text-[10px] text-stone-400" x-text="'• ' + mk.sks">5 ECTS</span>
+                            </div>
+                            <h3 class="font-serif font-bold text-sm text-stone-900 truncate mt-0.5" x-text="mk.nama_mk">Introduction to Philosophy</h3>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4 shrink-0">
+                        <!-- Coverage Badge -->
+                        <div class="text-right">
+                            <div class="text-xs font-bold" 
+                                 :class="mk.deficit_count > 0 ? 'text-amber-700' : 'text-emerald-700'">
+                                <span x-text="mk.available_count + ' / ' + mk.total_books + ' Pustaka'"></span>
+                            </div>
+                            <div class="text-[10px] text-stone-400" 
+                                 x-text="mk.deficit_count > 0 ? (mk.deficit_count + ' buku defisit') : 'Lengkap di rak'"></div>
+                        </div>
+
+                        <div class="w-7 h-7 rounded-lg bg-stone-100 flex items-center justify-center text-stone-500 text-xs">
+                            <i class="fa-solid fa-chevron-down transition-transform duration-200" 
+                               :class="{ 'rotate-180': openCourses.includes(mk.id) }"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expanded Bibliography Table -->
+                <div x-show="openCourses.includes(mk.id)" x-transition class="border-t border-stone-100 p-4 bg-stone-50/40">
+                    <div class="text-[11px] font-bold uppercase tracking-wider text-stone-500 mb-2">Daftar Pustaka Wajib Silabus:</div>
+                    <div class="space-y-2">
+                        <template x-for="(pustaka, idx) in mk.books" :key="pustaka.id">
+                            <div class="bg-white p-3 rounded-xl border border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="w-5 h-5 rounded-full bg-stone-100 text-stone-600 font-bold text-[10px] flex items-center justify-center" x-text="idx + 1">1</span>
+                                        <span class="font-semibold text-stone-900" x-text="pustaka.judul_buku"></span>
+                                        <span class="text-stone-500" x-text="pustaka.penulis ? ('oleh ' + pustaka.penulis) : ''"></span>
+                                    </div>
+                                    <p class="text-[11px] text-stone-500 font-serif italic pl-7" x-text="pustaka.sitasi_lengkap"></p>
+                                </div>
+
+                                <div class="shrink-0 flex items-center gap-2 pl-7 sm:pl-0">
+                                    <template x-if="pustaka.status_rak === 'TERSEDIA'">
+                                        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+                                            <i class="fa-solid fa-check"></i>
+                                            <span x-text="'Ada di Rak (' + pustaka.jumlah_tersedia + ' eks)'"></span>
+                                            <span class="font-mono text-[9px] text-emerald-700 border-l border-emerald-300 pl-1.5" x-text="pustaka.call_number"></span>
+                                        </div>
+                                    </template>
+                                    <template x-if="pustaka.status_rak === 'DEFISIT'">
+                                        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 text-[11px] font-bold">
+                                            <i class="fa-solid fa-triangle-exclamation"></i>
+                                            <span>Belum Ada di Rak</span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+
+<script>
+function dapurPengadaan() {
+    return {
+        allCourses: [],
+        filteredCourses: [],
+        openCourses: [],
+        kpi: { total_mk: 0, total_pustaka: 0, tersedia: 0, defisit: 0, coverage_pct: 0 },
+        selectedProdi: 'ALL',
+        selectedSemester: 'ALL',
+        selectedStatus: 'ALL',
+        searchQuery: '',
+
+        async init() {
+            await this.loadData();
+        },
+
+        async loadData() {
+            try {
+                const res = await fetch('/api/pengadaan_kurikulum/data');
+                const data = await res.json();
+                this.allCourses = data.courses;
+                this.kpi = data.kpi;
+                this.filterData();
+                if (this.allCourses.length > 0) {
+                    this.openCourses = [this.allCourses[0].id];
+                }
+            } catch (e) {
+                console.error("Gagal memuat data kurikulum:", e);
+            }
+        },
+
+        filterData() {
+            let res = this.allCourses;
+
+            if (this.selectedProdi !== 'ALL') {
+                res = res.filter(c => c.prodi === this.selectedProdi);
+            }
+
+            if (this.selectedSemester !== 'ALL') {
+                res = res.filter(c => c.semester == this.selectedSemester);
+            }
+
+            if (this.selectedStatus === 'DEFISIT') {
+                res = res.filter(c => c.deficit_count > 0);
+            } else if (this.selectedStatus === 'TERSEDIA') {
+                res = res.filter(c => c.deficit_count === 0);
+            }
+
+            if (this.searchQuery.trim()) {
+                const q = this.searchQuery.toLowerCase();
+                res = res.filter(c => 
+                    c.kode_mk.toLowerCase().includes(q) ||
+                    c.nama_mk.toLowerCase().includes(q) ||
+                    c.books.some(b => b.judul_buku.toLowerCase().includes(q) || b.penulis.toLowerCase().includes(q))
+                );
+            }
+
+            this.filteredCourses = res;
+        },
+
+        toggleCourse(id) {
+            if (this.openCourses.includes(id)) {
+                this.openCourses = this.openCourses.filter(x => x !== id);
+            } else {
+                this.openCourses.push(id);
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

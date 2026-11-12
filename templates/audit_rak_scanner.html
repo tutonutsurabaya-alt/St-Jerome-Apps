@@ -24,7 +24,7 @@
         <div class="mb-5">
             <label class="mb-2 block text-sm font-medium text-black">Target Rak Saat Ini</label>
             <select id="target_rak" class="w-full rounded border border-stroke bg-transparent py-3 px-4 outline-none transition focus:border-primary active:border-primary font-bold text-lg">
-                <option value="">-- Pilih Rak (Wajib) --</option>
+                <option value="ALL" selected>Semua Rak (Scan Cepat / Mode Bebas)</option>
                 <option value="0">000 - Karya Umum</option>
                 <option value="1">100 - Filsafat & Psikologi</option>
                 <option value="2">200 - Agama & Teologi</option>
@@ -68,7 +68,8 @@
 
 
 
-<script src="{{ url_for('static', filename='js/html5-qr.min.js') }}">
+<script src="{{ url_for('static', filename='js/html5-qr.min.js') }}"></script>
+<script>
     // Auto-focus untuk Physical Scanner
     document.addEventListener('keydown', (e) => {
         const activeTag = document.activeElement ? document.activeElement.tagName : '';
@@ -193,7 +194,22 @@
         })
         .then(res => res.json())
         .then(data => {
-            if(data.status === 'success' || data.status === 'warning') {
+            if (data.status === 'unregistered' || data.unregistered) {
+                playBeepError();
+                const inputUrl = data.input_url || ('/input_buku?no_induk=' + encodeURIComponent(data.no_induk || no_induk));
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Buku Belum Tercatat di Katalog',
+                    html: `<p class="text-sm mb-2">Barcode <strong>${data.no_induk || no_induk}</strong> tidak ada di database dan telah disimpan ke daftar <strong>Belum Tercatat</strong>.</p>`,
+                    showCancelButton: true,
+                    confirmButtonText: 'Input ke Katalog Sekarang',
+                    cancelButtonText: 'Tutup & Lanjut Scan'
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        window.location.href = inputUrl;
+                    }
+                });
+            } else if(data.status === 'success' || data.status === 'warning') {
                 if(data.status_rak === 'SALAH RAK') {
                     playBeepError();
                     Swal.fire('SALAH RAK', 'Buku ' + data.judul + ' seharusnya di rak: ' + (data.ddc_asli || 'Tidak diketahui'), 'error');
@@ -235,6 +251,6 @@
     }
 
     // Auto focus manual input
-        
+    if (barcodeInput) barcodeInput.focus();
 </script>
 {% endblock %}

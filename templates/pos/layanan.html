@@ -1,0 +1,203 @@
+{% extends "layout.html" %}
+{% block content %}
+<div x-data="posLayanan()" x-init="loadData()" class="max-w-6xl mx-auto pb-12">
+
+    <!-- Header -->
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-xl border border-stroke shadow-xs">
+        <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xl">
+                <i class="fa-solid fa-tags"></i>
+            </span>
+            <div>
+                <h1 class="font-bold text-slate-900 text-base">Master Layanan Jasa & Tarif Kasir</h1>
+                <p class="text-xs text-slate-500">Kelola daftar item fotocopy, print, jilid, dan tarif harga per satuan</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button type="button" @click.stop="openModal()" class="px-3.5 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
+                <i class="fa-solid fa-plus"></i> Tambah Layanan Baru
+            </button>
+            <a href="/pos" class="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5">
+                <i class="fa-solid fa-cash-register"></i> Ke Layar Kasir
+            </a>
+        </div>
+    </div>
+
+    <!-- Tabel Layanan -->
+    <div class="bg-white rounded-xl border border-stroke shadow-xs overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-100 text-slate-600 border-b border-stroke font-semibold uppercase tracking-wider">
+                        <th class="py-3 px-4 w-12 text-center">No</th>
+                        <th class="py-3 px-4">Kode Item</th>
+                        <th class="py-3 px-4">Nama Layanan Jasa</th>
+                        <th class="py-3 px-4">Kategori</th>
+                        <th class="py-3 px-4">Satuan</th>
+                        <th class="py-3 px-4 text-right">Tarif / Harga</th>
+                        <th class="py-3 px-4 text-center">Kertas Perpus</th>
+                        <th class="py-3 px-4 text-center">Status</th>
+                        <th class="py-3 px-4 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <template x-for="(item, idx) in list" :key="item.id">
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="py-3 px-4 text-center text-slate-400 font-mono" x-text="idx + 1"></td>
+                            <td class="py-3 px-4 font-mono font-bold text-slate-900" x-text="item.kode"></td>
+                            <td class="py-3 px-4 font-bold text-slate-800 text-sm" x-text="item.nama_layanan"></td>
+                            <td class="py-3 px-4">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700" x-text="item.kategori"></span>
+                            </td>
+                            <td class="py-3 px-4 text-slate-600" x-text="item.satuan"></td>
+                            <td class="py-3 px-4 text-right font-mono font-bold text-slate-900 text-sm" x-text="'Rp ' + item.harga.toLocaleString('id-ID')"></td>
+                            <td class="py-3 px-4 text-center">
+                                <span x-show="item.is_kertas_perpus" class="text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.5 rounded text-[10px]">Ya (Stok Perpus)</span>
+                                <span x-show="!item.is_kertas_perpus" class="text-slate-400 text-[10px]">Bawa Sendiri</span>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <span :class="item.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'" class="px-2 py-0.5 rounded text-[10px] font-bold" x-text="item.is_active ? 'Aktif' : 'Nonaktif'"></span>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <button type="button" @click.stop="openModal(item)" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-primary hover:text-white text-slate-700 font-semibold transition text-[11px]">
+                                    <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODAL EDIT / TAMBAH LAYANAN -->
+    <template x-teleport="body">
+    <div x-show="showModal" x-cloak @click.self="showModal = false" class="fixed inset-0 z-[99999] bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl border border-stroke my-auto">
+            <div class="bg-primary px-5 py-3.5 text-white flex items-center justify-between">
+                <h3 class="font-bold text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-tags"></i> <span x-text="form.id ? 'Edit Tarif Layanan' : 'Tambah Layanan Baru'"></span>
+                </h3>
+                <button type="button" @click="showModal = false" class="text-white/80 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form @submit.prevent="submitForm" class="p-5 space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Kode Item *</label>
+                        <input type="text" x-model="form.kode" required placeholder="Cth: FC 012" class="w-full text-xs font-mono font-bold uppercase border border-stroke rounded-lg px-3 py-2 outline-none focus:border-primary">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Kategori *</label>
+                        <select x-model="form.kategori" class="w-full text-xs border border-stroke rounded-lg px-3 py-2 outline-none focus:border-primary bg-white">
+                            <option value="FOTOCOPY">FOTOCOPY</option>
+                            <option value="PRINT">PRINT</option>
+                            <option value="SCAN">SCAN</option>
+                            <option value="JILID">JILID</option>
+                            <option value="LAINNYA">LAINNYA</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nama Layanan *</label>
+                    <input type="text" x-model="form.nama_layanan" required placeholder="Cth: PRINT WARNA A3 KERTAS PERPUSTAKAAN" class="w-full text-xs border border-stroke rounded-lg px-3 py-2 outline-none focus:border-primary uppercase">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Harga / Tarif (Rp) *</label>
+                        <input type="number" x-model.number="form.harga" min="0" step="100" required class="w-full text-sm font-mono font-bold border border-stroke rounded-lg px-3 py-2 outline-none focus:border-primary">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Satuan *</label>
+                        <input type="text" x-model="form.satuan" required placeholder="Lembar / Buku" class="w-full text-xs border border-stroke rounded-lg px-3 py-2 outline-none focus:border-primary">
+                    </div>
+                </div>
+
+                <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2 text-xs">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" x-model="form.is_kertas_perpus" class="w-4 h-4 accent-primary">
+                        <span class="text-slate-800 font-medium">Layanan ini memakai Kertas Milik Perpustakaan (Hitung stok kertas keluar)</span>
+                    </label>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" @click="showModal = false" class="px-3 py-1.5 rounded-lg border border-stroke text-xs text-slate-600">Batal</button>
+                    <button type="submit" :disabled="isSubmitting" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-bold transition disabled:opacity-50">
+                        Simpan Layanan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </template>
+
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('posLayanan', () => ({
+        list: [],
+        showModal: false,
+        isSubmitting: false,
+        form: { id: null, kode: '', nama_layanan: '', kategori: 'FOTOCOPY', satuan: 'Lembar', harga: 0, is_kertas_perpus: false, urutan: 99 },
+
+        async loadData() {
+            try {
+                const res = await fetch('/api/pos/layanan/list');
+                const json = await res.json();
+                if (json.status === 'success') {
+                    this.list = json.data;
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        },
+
+        openModal(item = null) {
+            if (item) {
+                this.form = { ...item, is_kertas_perpus: !!item.is_kertas_perpus };
+            } else {
+                this.form = { id: null, kode: '', nama_layanan: '', kategori: 'FOTOCOPY', satuan: 'Lembar', harga: 0, is_kertas_perpus: false, urutan: 99 };
+            }
+            this.showModal = true;
+        },
+
+        async submitForm() {
+            this.isSubmitting = true;
+            try {
+                const res = await fetch('/api/pos/layanan/simpan', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(this.form)
+                });
+                const json = await res.json();
+                if (json.status === 'success') {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: json.message,
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                    this.showModal = false;
+                    this.loadData();
+                } else {
+                    Swal.fire('Gagal', json.message, 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Kesalahan server', 'error');
+            } finally {
+                this.isSubmitting = false;
+            }
+        }
+    }));
+});
+</script>
+{% endblock %}

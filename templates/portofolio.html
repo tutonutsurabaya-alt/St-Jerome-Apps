@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeoPustaka - Sistem Manajemen Perpustakaan Modern</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .gradient-text {
+            background: linear-gradient(to right, #2563eb, #14b8a6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl">N</div>
+                <span class="font-bold text-xl tracking-tight">Neo<span class="text-blue-600">Pustaka</span></span>
+            </div>
+            <div class="hidden md:flex gap-8 text-sm font-medium text-slate-600">
+                <a href="#fitur" class="hover:text-blue-600 transition">Fitur Utama</a>
+                <a href="#demo" class="hover:text-blue-600 transition">Demo Aplikasi</a>
+                <a href="#harga" class="hover:text-blue-600 transition">Harga Layanan</a>
+            </div>
+            <a href="#kontak" class="bg-slate-900 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-blue-600 transition shadow-lg shadow-slate-900/20">Hubungi Kami</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-36 pb-20 px-6 max-w-7xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-blue-600 text-sm font-semibold mb-8 border border-blue-100 shadow-sm">
+            <span class="relative flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+            </span>
+            Sistem Perpustakaan Era Digital
+        </div>
+        <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 leading-tight">
+            Tinggalkan Cara Lama.<br>
+            <span class="gradient-text">Otomatisasi Perpustakaan Anda.</span>
+        </h1>
+        <p class="text-lg md:text-xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed">
+            Sistem Manajemen Perpustakaan cerdas yang dirancang untuk Sekolah, Kampus, dan Institusi. Super cepat, desain elegan, dan terotomatisasi penuh dengan bantuan AI.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="/opac" class="bg-blue-600 text-white px-8 py-4 rounded-full text-base font-bold hover:bg-blue-700 transition shadow-xl shadow-blue-600/30">
+                Lihat Demo OPAC <i class="fa-solid fa-arrow-right ml-2"></i>
+            </a>
+            <a href="#fitur" class="bg-white text-slate-700 border border-slate-300 px-8 py-4 rounded-full text-base font-bold hover:bg-slate-50 transition">
+                Jelajahi Fitur
+            </a>
+        </div>
+        
+        <!-- Mockup Visual -->
+        <div class="mt-20 rounded-2xl p-2 bg-slate-200 border border-slate-300 shadow-2xl overflow-hidden relative">
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900/20"></div>
+            <img src="/static/img/bg1.jpg" alt="Dashboard Preview" class="rounded-xl w-full object-cover h-[400px] md:h-[500px]">
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="fitur" class="py-24 bg-white px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold mb-4">Mengapa Memilih NeoPustaka?</h2>
+                <p class="text-slate-600 text-lg">Teknologi modern yang menyelesaikan masalah nyata pustakawan sehari-hari.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:shadow-lg transition group">
+                    <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 text-2xl mb-6 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">OPAC Super Cepat</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">Katalog pencarian online (OPAC) tanpa loading lambat. Desain antarmuka bersih, responsif di HP maupun laptop.</p>
+                </div>
+                
+                <div class="p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:shadow-lg transition group">
+                    <div class="w-14 h-14 bg-teal-100 rounded-2xl flex items-center justify-center text-teal-600 text-2xl mb-6 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Pencari Cover Otomatis</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">Tidak perlu repot memfoto cover buku. Sistem akan mendeteksi dan mengambil cover buku resmi secara otomatis dari Google Books.</p>
+                </div>
+                
+                <div class="p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:shadow-lg transition group">
+                    <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 text-2xl mb-6 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-print"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Cetak Stiker Instan</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">Generasi barcode dan label buku dalam sekali klik. Siap dicetak ke kertas stiker standar tanpa setting manual yang rumit di Word.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="harga" class="py-24 bg-slate-50 px-6 border-t border-slate-200">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold mb-4">Investasi Terjangkau</h2>
+                <p class="text-slate-600 text-lg">Pilih paket yang paling sesuai dengan kebutuhan institusi Anda.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div class="bg-white p-10 rounded-3xl border border-slate-200 shadow-sm relative">
+                    <h3 class="text-2xl font-bold mb-2">Paket Cloud (SaaS)</h3>
+                    <p class="text-slate-500 mb-6">Paling direkomendasikan. Terima beres.</p>
+                    <div class="mb-8">
+                        <span class="text-4xl font-extrabold">Rp 250k</span><span class="text-slate-500"> / bulan</span>
+                    </div>
+                    <ul class="space-y-4 mb-8 text-slate-700">
+                        <li><i class="fa-solid fa-check text-green-500 mr-2"></i> Gratis Server & Hosting</li>
+                        <li><i class="fa-solid fa-check text-green-500 mr-2"></i> Gratis Maintenance & Backup</li>
+                        <li><i class="fa-solid fa-check text-green-500 mr-2"></i> Akses dari Seluruh Dunia</li>
+                    </ul>
+                    <a href="#kontak" class="block w-full text-center bg-slate-100 text-slate-800 font-bold py-3 rounded-xl hover:bg-slate-200 transition">Pilih Cloud</a>
+                </div>
+                
+                <div class="bg-slate-900 text-white p-10 rounded-3xl border border-blue-600 shadow-xl relative transform md:-translate-y-4">
+                    <div class="absolute top-0 right-10 transform -translate-y-1/2 bg-gradient-to-r from-blue-600 to-teal-500 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
+                        Populer
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Paket On-Premise</h3>
+                    <p class="text-slate-400 mb-6">Diinstal permanen di server sekolah.</p>
+                    <div class="mb-8">
+                        <span class="text-4xl font-extrabold">Rp 5 Juta</span><span class="text-slate-400"> (Satu Kali)</span>
+                    </div>
+                    <ul class="space-y-4 mb-8 text-slate-300">
+                        <li><i class="fa-solid fa-check text-blue-400 mr-2"></i> Bayar Sekali untuk Selamanya</li>
+                        <li><i class="fa-solid fa-check text-blue-400 mr-2"></i> 100% Kepemilikan Sistem</li>
+                        <li><i class="fa-solid fa-check text-blue-400 mr-2"></i> Dapat diakses walau tanpa internet (LAN)</li>
+                    </ul>
+                    <a href="#kontak" class="block w-full text-center bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">Konsultasi Sekarang</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section id="kontak" class="py-24 bg-gradient-to-br from-blue-600 to-indigo-700 text-white px-6">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-6">Siap Mengubah Perpustakaan Anda?</h2>
+            <p class="text-blue-100 mb-10 text-lg">Hubungi kami hari ini untuk konsultasi gratis dan demonstrasi aplikasi secara langsung.</p>
+            <a href="https://wa.me/6281234567890" target="_blank" class="inline-flex items-center gap-3 bg-white text-blue-600 px-8 py-4 rounded-full text-lg font-bold hover:bg-slate-100 transition shadow-xl shadow-slate-900/20">
+                <i class="fa-brands fa-whatsapp text-2xl text-green-500"></i> Hubungi via WhatsApp
+            </a>
+            <p class="mt-6 text-sm text-blue-200">Kami bantu migrasi data dari sistem lama (Excel/SLiMS) secara gratis.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 text-slate-400 py-12 text-center border-t border-slate-800">
+        <p>&copy; 2026 NeoPustaka. Dibuat dengan cinta untuk pendidikan Indonesia.</p>
+    </footer>
+
+</body>
+</html>

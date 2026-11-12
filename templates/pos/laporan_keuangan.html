@@ -1,0 +1,412 @@
+{% extends "layout.html" %}
+{% block content %}
+<div x-data="laporanKeuanganApp()" x-init="init()" class="max-w-7xl mx-auto pb-16">
+
+    <!-- Top Navigation & Month Selector -->
+    <div class="mb-6 bg-white p-5 rounded-2xl border border-stone-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-800 border border-amber-200/60 flex items-center justify-center text-xl shadow-xs">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold text-stone-900 leading-tight">Laporan Keuangan & Buku Kas Fotocopy</h1>
+                <p class="text-xs text-stone-500 mt-0.5">Seminari Tinggi Providentia Dei & IMAVI Digital Printing</p>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-end gap-2 ml-auto">
+            <!-- Month Selector Dropdown -->
+            <div class="flex items-center bg-stone-50 border border-stone-300 rounded-xl px-3 py-1.5 shadow-xs">
+                <label class="text-xs text-stone-500 font-bold mr-2 uppercase tracking-wider text-[10px]">Periode:</label>
+                <select x-model="selectedMonth" @change="loadData()" class="bg-transparent text-xs font-bold text-stone-800 outline-none cursor-pointer">
+                    <template x-for="m in availableMonths" :key="m.kode">
+                        <option :value="m.kode" x-text="m.label" :selected="m.kode === selectedMonth"></option>
+                    </template>
+                </select>
+            </div>
+
+            <!-- Action Buttons -->
+            <button @click="openModalTambah()" class="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-plus"></i> Tambah Kas
+            </button>
+
+            <button @click="sinkronPos()" :disabled="isSyncing" class="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm disabled:opacity-50">
+                <i class="fa-solid fa-rotate" :class="{ 'fa-spin': isSyncing }"></i> Sinkron POS
+            </button>
+
+            <a :href="'/pos/laporan_keuangan/cetak?bulan=' + selectedMonth" target="_blank" class="px-3.5 py-2 rounded-xl bg-stone-900 hover:bg-black text-amber-300 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-print"></i> Cetak Laporan Bulanan
+            </a>
+
+            <button @click="openModalCustomCetak()" class="px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold transition flex items-center gap-1.5 shadow-xs border border-stone-300">
+                <i class="fa-solid fa-calendar-range text-amber-600"></i> Cetak Rentang Tanggal
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- Total Debet (Pemasukan) -->
+        <div class="bg-white rounded-2xl p-4 border border-stone-200 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider block mb-1">Total Pemasukan (Debet)</span>
+                <span class="text-xl font-bold font-mono text-stone-900" x-text="formatRupiah(summary.total_debet)"></span>
+                <span class="text-[10px] text-stone-400 block mt-0.5">Penjualan FC & Setoran</span>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-arrow-down-left"></i>
+            </div>
+        </div>
+
+        <!-- Total Kredit (Pengeluaran) -->
+        <div class="bg-white rounded-2xl p-4 border border-stone-200 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-[11px] font-bold text-rose-700 uppercase tracking-wider block mb-1">Total Pengeluaran (Kredit)</span>
+                <span class="text-xl font-bold font-mono text-stone-900" x-text="formatRupiah(summary.total_kredit)"></span>
+                <span class="text-[10px] text-stone-400 block mt-0.5">Lakban, Kertas, Tinta, dll</span>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-arrow-up-right"></i>
+            </div>
+        </div>
+
+        <!-- Sisa Saldo Kas -->
+        <div class="bg-gradient-to-br from-stone-900 to-stone-800 text-white rounded-2xl p-4 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-[11px] font-bold text-amber-300 uppercase tracking-wider block mb-1">Sisa Saldo Kas</span>
+                <span class="text-xl font-bold font-mono text-white" x-text="formatRupiah(summary.sisa_saldo)"></span>
+                <span class="text-[10px] text-stone-300 block mt-0.5">Disetor ke Kas IMAVI</span>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-white/10 text-amber-300 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-vault"></i>
+            </div>
+        </div>
+
+        <!-- Rekap Penjualan POS Real-time -->
+        <div class="bg-white rounded-2xl p-4 border border-stone-200 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-[11px] font-bold text-blue-700 uppercase tracking-wider block mb-1">Penjualan Mesin POS</span>
+                <span class="text-xl font-bold font-mono text-stone-900" x-text="formatRupiah(summary.pos_total)"></span>
+                <span class="text-[10px] text-stone-500 block mt-0.5">
+                    <strong x-text="summary.pos_count"></strong> transaksi (<span x-text="summary.pos_lembar"></span> lbr)
+                </span>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-print"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Table Container -->
+    <div class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden mb-6">
+        <div class="p-4 border-b border-stone-200 flex flex-wrap items-center justify-between gap-3 bg-stone-50/70">
+            <div>
+                <h2 class="text-sm font-bold text-stone-900" x-text="'Buku Kas Bulan: ' + periodeLabel"></h2>
+                <p class="text-xs text-stone-500">Daftar transaksi debet, kredit, dan running saldo kas perpustakaan</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button @click="exportCsv()" class="px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold transition flex items-center gap-1.5 border border-stone-300 shadow-2xs">
+                    <i class="fa-solid fa-file-csv"></i> Ekspor CSV
+                </button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="bg-stone-100/80 border-b border-stone-200 text-[11px] font-bold text-stone-700 uppercase tracking-wider">
+                        <th class="py-3 px-4 w-12 text-center">No</th>
+                        <th class="py-3 px-4 w-28">Tanggal</th>
+                        <th class="py-3 px-4">Keterangan</th>
+                        <th class="py-3 px-4 w-32 text-right">Debet (Masuk)</th>
+                        <th class="py-3 px-4 w-32 text-right">Kredit (Keluar)</th>
+                        <th class="py-3 px-4 w-36 text-right">Saldo</th>
+                        <th class="py-3 px-4 w-20 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-stone-100">
+                    <template x-for="(row, idx) in rows" :key="row.id">
+                        <tr class="hover:bg-amber-50/20 transition-colors">
+                            <td class="py-3 px-4 text-center text-stone-400 font-mono" x-text="idx + 1"></td>
+                            <td class="py-3 px-4 font-mono font-semibold text-stone-700" x-text="row.tanggal_formatted"></td>
+                            <td class="py-3 px-4">
+                                <span class="font-semibold text-stone-900 block" x-text="row.keterangan"></span>
+                                <span class="text-[10px] text-stone-400 uppercase tracking-wider" x-text="row.kategori || 'OPERASIONAL'"></span>
+                            </td>
+                            <td class="py-3 px-4 text-right font-mono font-semibold text-emerald-700" x-text="row.debet > 0 ? formatRupiah(row.debet) : '-'"></td>
+                            <td class="py-3 px-4 text-right font-mono font-semibold text-rose-700" x-text="row.kredit > 0 ? formatRupiah(row.kredit) : '-'"></td>
+                            <td class="py-3 px-4 text-right font-mono font-bold text-stone-900 bg-stone-50/50" x-text="formatRupiah(row.saldo)"></td>
+                            <td class="py-3 px-4 text-center">
+                                <button @click="hapusItem(row.id, row.keterangan)" class="w-7 h-7 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 transition flex items-center justify-center mx-auto" title="Hapus Baris">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
+                    <tr x-show="rows.length === 0">
+                        <td colspan="7" class="py-12 text-center text-stone-400 italic">
+                            Belum ada catatan kas untuk bulan ini. Klik <strong>"Sinkron POS"</strong> atau <strong>"+ Tambah Kas"</strong>.
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot x-show="rows.length > 0" class="bg-stone-100/90 font-bold border-t-2 border-stone-300">
+                    <tr>
+                        <td colspan="3" class="py-3 px-4 text-right text-stone-800 uppercase tracking-wide">TOTAL SISA SALDO AKHIR:</td>
+                        <td class="py-3 px-4 text-right font-mono text-emerald-800" x-text="formatRupiah(summary.total_debet)"></td>
+                        <td class="py-3 px-4 text-right font-mono text-rose-800" x-text="formatRupiah(summary.total_kredit)"></td>
+                        <td class="py-3 px-4 text-right font-mono text-stone-900 text-sm" x-text="formatRupiah(summary.sisa_saldo)"></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Institutional Footer Note Box -->
+        <div class="p-4 bg-amber-50/50 border-t border-amber-200/50 flex items-center justify-between text-xs text-amber-900">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-circle-info text-amber-600"></i>
+                <span><strong>Catatan Resmi:</strong> Sisa Saldo <strong x-text="formatRupiah(summary.sisa_saldo)"></strong> akan disetorkan ke Yayasan / Manajemen IMAVI.</span>
+            </div>
+            <span class="text-stone-500 font-medium">Tanda Tangan: Pustakawan (Yosef Paskah, S.Fil)</span>
+        </div>
+    </div>
+
+    <!-- MODAL TAMBAH TRANSAKSI KAS -->
+    <div x-show="modalOpen" class="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4" x-cloak>
+        <div @click.away="modalOpen = false" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 transform transition-all">
+            <div class="flex items-center justify-between pb-4 border-b border-stone-200 mb-4">
+                <h3 class="font-bold text-stone-900 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-amber-600"></i> Catat Transaksi Kas
+                </h3>
+                <button @click="modalOpen = false" class="w-8 h-8 rounded-full hover:bg-stone-100 flex items-center justify-center text-stone-400 hover:text-stone-700">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form @submit.prevent="simpanItem()" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Tanggal Transaksi:</label>
+                    <input type="date" x-model="form.tanggal" required class="w-full text-xs rounded-xl border border-stone-300 p-2.5 focus:border-amber-600 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Jenis Transaksi:</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" @click="form.jenis = 'DEBET'" :class="form.jenis === 'DEBET' ? 'bg-emerald-700 text-white font-bold' : 'bg-stone-100 text-stone-600'" class="py-2 px-3 rounded-xl text-xs transition border border-stone-200 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-plus-circle"></i> DEBET (Masuk)
+                        </button>
+                        <button type="button" @click="form.jenis = 'KREDIT'" :class="form.jenis === 'KREDIT' ? 'bg-rose-700 text-white font-bold' : 'bg-stone-100 text-stone-600'" class="py-2 px-3 rounded-xl text-xs transition border border-stone-200 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-minus-circle"></i> KREDIT (Keluar)
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Keterangan:</label>
+                    <input type="text" x-model="form.keterangan" placeholder="Contoh: Beli lakban Hitam / Beli Kertas HVS" required class="w-full text-xs rounded-xl border border-stone-300 p-2.5 focus:border-amber-600 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Kategori Biaya:</label>
+                    <select x-model="form.kategori" class="w-full text-xs rounded-xl border border-stone-300 p-2.5 focus:border-amber-600 focus:outline-none">
+                        <option value="OPERASIONAL">OPERASIONAL (ATK & Perlengkapan)</option>
+                        <option value="FOTOCOPY">FOTOCOPY & PRINT</option>
+                        <option value="PEMBANGUNAN">PEMBANGUNAN GEDUNG</option>
+                        <option value="KERTAS">KERTAS & TINTA</option>
+                        <option value="LAINNYA">LAIN-LAIN</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Nominal (Rupiah):</label>
+                    <input type="number" x-model.number="form.nominal" placeholder="Contoh: 34000" min="1" required class="w-full text-xs font-mono font-bold rounded-xl border border-stone-300 p-2.5 focus:border-amber-600 focus:outline-none">
+                </div>
+
+                <div class="pt-4 border-t border-stone-200 flex justify-end gap-2">
+                    <button type="button" @click="modalOpen = false" class="px-4 py-2 rounded-xl text-stone-600 hover:bg-stone-100 text-xs font-bold transition">Batal</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold transition shadow-sm">Simpan Transaksi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Cetak Custom Rentang Tanggal -->
+    <div x-show="modalCustomCetakOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div @click.away="modalCustomCetakOpen = false" class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200">
+            <div class="flex items-center justify-between pb-3 border-b border-stone-200">
+                <h3 class="font-bold text-base text-stone-900 flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-days text-amber-600"></i> Cetak Kas Rentang Tanggal
+                </h3>
+                <button @click="modalCustomCetakOpen = false" class="text-stone-400 hover:text-stone-600 text-xl font-bold">&times;</button>
+            </div>
+            <div class="py-4 space-y-3.5">
+                <p class="text-xs text-stone-500 leading-relaxed">
+                    Tentukan rentang tanggal kustom untuk laporan kas & omzet fotocopy (misal: 31 Agustus s.d. 31 Oktober):
+                </p>
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase mb-1">Dari Tanggal (Mulai):</label>
+                    <input type="date" x-model="customCetak.dari" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-xs font-bold text-stone-800 outline-none focus:border-amber-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase mb-1">Sampai Tanggal (Selesai):</label>
+                    <input type="date" x-model="customCetak.sampai" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-xs font-bold text-stone-800 outline-none focus:border-amber-600">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t border-stone-200">
+                <button @click="modalCustomCetakOpen = false" class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold transition">Batal</button>
+                <button @click="bukaCetakCustom()" class="px-5 py-2 rounded-xl bg-stone-900 hover:bg-black text-amber-300 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-print"></i> Buka Laporan Cetak
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function laporanKeuanganApp() {
+    return {
+        selectedMonth: '',
+        periodeLabel: '',
+        availableMonths: [],
+        rows: [],
+        summary: {
+            total_debet: 0,
+            total_kredit: 0,
+            sisa_saldo: 0,
+            pos_total: 0,
+            pos_count: 0,
+            pos_lembar: 0
+        },
+        modalOpen: false,
+        modalCustomCetakOpen: false,
+        customCetak: {
+            dari: '2026-08-31',
+            sampai: new Date().toISOString().split('T')[0]
+        },
+        openModalCustomCetak() {
+            this.modalCustomCetakOpen = true;
+        },
+        bukaCetakCustom() {
+            if (!this.customCetak.dari || !this.customCetak.sampai) {
+                alert("Silakan pilih tanggal mulai dan tanggal selesai.");
+                return;
+            }
+            const url = `/pos/laporan_keuangan/cetak?tgl_mulai=${this.customCetak.dari}&tgl_selesai=${this.customCetak.sampai}`;
+            window.open(url, '_blank');
+            this.modalCustomCetakOpen = false;
+        },
+        isSyncing: false,
+        form: {
+            tanggal: '',
+            keterangan: '',
+            jenis: 'KREDIT',
+            kategori: 'OPERASIONAL',
+            nominal: 0
+        },
+
+        async init() {
+            await this.loadData();
+        },
+
+        async loadData() {
+            try {
+                const url = '/api/pos/laporan_keuangan' + (this.selectedMonth ? '?bulan=' + this.selectedMonth : '');
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    this.selectedMonth = data.periode;
+                    this.periodeLabel = data.periode_label;
+                    this.availableMonths = data.available_months;
+                    this.rows = data.rows;
+                    this.summary = data.summary;
+                }
+            } catch(e) {
+                console.error("Gagal memuat data kas:", e);
+            }
+        },
+
+        openModalTambah() {
+            const today = new Date().toISOString().split('T')[0];
+            this.form = {
+                tanggal: today,
+                keterangan: '',
+                jenis: 'KREDIT',
+                kategori: 'OPERASIONAL',
+                nominal: null
+            };
+            this.modalOpen = true;
+        },
+
+        async simpanItem() {
+            try {
+                const res = await fetch('/api/pos/laporan_keuangan/simpan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(this.form)
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    this.modalOpen = false;
+                    await this.loadData();
+                } else {
+                    alert(data.message || 'Gagal menyimpan.');
+                }
+            } catch(e) {
+                alert('Terjadi kesalahan jaringan.');
+            }
+        },
+
+        async hapusItem(id, nama) {
+            if (!confirm(`Hapus catatan "${nama}"?`)) return;
+            try {
+                const res = await fetch('/api/pos/laporan_keuangan/hapus/' + id, { method: 'POST' });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    await this.loadData();
+                }
+            } catch(e) {
+                alert('Gagal menghapus.');
+            }
+        },
+
+        async sinkronPos() {
+            this.isSyncing = true;
+            try {
+                const res = await fetch('/api/pos/laporan_keuangan/sinkron_pos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bulan: this.selectedMonth })
+                });
+                const data = await res.json();
+                alert(data.message || 'Sinkronisasi selesai.');
+                await this.loadData();
+            } catch(e) {
+                alert('Gagal menyinkronkan dengan data POS.');
+            } finally {
+                this.isSyncing = false;
+            }
+        },
+
+        formatRupiah(num) {
+            if (!num && num !== 0) return 'Rp 0';
+            return 'Rp ' + Number(num).toLocaleString('id-ID');
+        },
+
+        exportCsv() {
+            let csv = "TANGGAL,KETERANGAN,KATEGORI,DEBET,KREDIT,SALDO\n";
+            this.rows.forEach(r => {
+                csv += `"${r.tanggal_formatted}","${r.keterangan}","${r.kategori || ''}",${r.debet},${r.kredit},${r.saldo}\n`;
+            });
+            csv += `,"TOTAL SISA SALDO",,,,"${this.summary.sisa_saldo}"\n`;
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute("download", `Laporan_Keuangan_Kas_${this.selectedMonth}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+}
+</script>
+{% endblock %}
