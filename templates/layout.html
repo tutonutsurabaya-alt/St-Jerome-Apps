@@ -118,30 +118,53 @@
         }
 
         @media (min-width: 1024px) {
-            /* State Default: Mini (72px) - cukup lebar agar icon tidak terpotong */
-            .sidebar-mini {
+            /* State Default: Mini (72px) kecuali jika sedang di-pin (is-pinned) */
+            .sidebar-mini:not(.is-pinned) {
                 width: 72px !important;
                 min-width: 72px !important;
                 transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease !important;
             }
             
-            /* Sembunyikan teks label, badge, chevron, dan submenu saat mini */
-            .sidebar-mini:not(:hover) .sidebar-collapsible-text,
-            .sidebar-mini:not(:hover) .sidebar-collapsible-submenu {
+            /* Jika sedang di-pin, tetap terbuka lebar 264px statis permanen */
+            .sidebar-mini.is-pinned {
+                width: 264px !important;
+                min-width: 264px !important;
+                box-shadow: none !important;
+            }
+            .sidebar-mini.is-pinned .sidebar-collapsible-text {
+                opacity: 1 !important;
+                visibility: visible !important;
+                display: block !important;
+            }
+            .sidebar-mini.is-pinned .sidebar-section-divider {
+                display: none !important;
+            }
+            .sidebar-mini.is-pinned a,
+            .sidebar-mini.is-pinned button {
+                width: 100% !important;
+                height: auto !important;
+                justify-content: flex-start !important;
+                padding-left: 0.625rem !important;
+                padding-right: 0.625rem !important;
+            }
+
+            /* Sembunyikan teks label hanya jika TIDAK di-pin dan TIDAK di-hover */
+            .sidebar-mini:not(.is-pinned):not(:hover) .sidebar-collapsible-text,
+            .sidebar-mini:not(.is-pinned):not(:hover) .sidebar-collapsible-submenu {
                 opacity: 0 !important;
                 visibility: hidden !important;
                 display: none !important;
                 pointer-events: none !important;
             }
 
-            /* Center logo & icon navigasi secara presisi agar tidak terpotong */
-            .sidebar-mini:not(:hover) .sidebar-brand-container {
+            /* Center logo & icon navigasi saat mini & tidak di-pin */
+            .sidebar-mini:not(.is-pinned):not(:hover) .sidebar-brand-container {
                 justify-content: center !important;
                 padding-left: 0 !important;
                 padding-right: 0 !important;
             }
-            .sidebar-mini:not(:hover) a,
-            .sidebar-mini:not(:hover) button {
+            .sidebar-mini:not(.is-pinned):not(:hover) a,
+            .sidebar-mini:not(.is-pinned):not(:hover) button {
                 justify-content: center !important;
                 padding-left: 0 !important;
                 padding-right: 0 !important;
@@ -150,26 +173,23 @@
                 width: 44px !important;
                 height: 40px !important;
             }
-            .sidebar-mini:not(:hover) a i,
-            .sidebar-mini:not(:hover) button i {
+            .sidebar-mini:not(.is-pinned):not(:hover) a i,
+            .sidebar-mini:not(.is-pinned):not(:hover) button i {
                 margin: 0 auto !important;
                 font-size: 17px !important;
                 width: auto !important;
             }
 
-            /* Pembatas garis tipis antar kategori saat mini */
-            .sidebar-mini:not(:hover) .sidebar-section-divider {
+            .sidebar-mini:not(.is-pinned):not(:hover) .sidebar-section-divider {
                 display: block !important;
                 height: 1px;
                 background-color: #E2E8F0;
                 margin: 10px 14px;
             }
-            .sidebar-mini:hover .sidebar-section-divider {
-                display: none !important;
-            }
 
-            /* State Hover: Melebar otomatis (264px) dengan smooth sliding */
-            .sidebar-mini:hover {
+            /* Hover Expand saat tidak di-pin */
+            .sidebar-mini:not(.is-pinned):hover {
+
                 width: 264px !important;
                 min-width: 264px !important;
                 box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
@@ -208,7 +228,7 @@
     <div class="flex h-screen w-screen overflow-hidden">
         
         <!-- ===== ULTRA-CLEAN SIDEBAR ===== -->
-        <aside id="sidebar" class="sidebar-mini fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-stone-200 bg-white text-stone-700 transition-all duration-300 ease-in-out lg:static lg:translate-x-0 -translate-x-full shadow-sm hover:shadow-xl overflow-hidden">
+        <aside id="sidebar" x-data="{ isPinned: localStorage.getItem('sjla_sidebar_pinned') === 'true' }" :class="{ 'is-pinned': isPinned }" class="sidebar-mini fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-stone-200 bg-white text-stone-700 transition-all duration-300 ease-in-out lg:static lg:translate-x-0 -translate-x-full shadow-sm hover:shadow-xl overflow-hidden">
             
             <!-- Brand / Logo Area -->
             <div class="sidebar-brand-container flex items-center justify-between gap-3 px-4 py-4 border-b border-stone-150 bg-stone-50/50 overflow-hidden whitespace-nowrap">
@@ -235,9 +255,19 @@
                     </div>
                 </a>
                 
-                <button id="sidebar-close" class="lg:hidden text-stone-400 hover:text-stone-700 p-1.5 rounded-lg hover:bg-stone-100 transition-colors">
-                    <i class="fa-solid fa-times text-base"></i>
-                </button>
+                <div class="flex items-center gap-1">
+                    <!-- Subtle Lock / Pin Button (Desktop Only) -->
+                    <button type="button" @click="isPinned = !isPinned; localStorage.setItem('sjla_sidebar_pinned', isPinned)" 
+                            :title="isPinned ? 'Lepas Kunci Sidebar (Auto-collapse)' : 'Kunci Sidebar Statis (Pinned)'"
+                            class="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg text-stone-300 hover:text-stone-600 hover:bg-stone-100/80 transition-colors cursor-pointer"
+                            :class="isPinned ? 'text-amber-700 bg-amber-50/70 border border-amber-200/50' : ''">
+                        <i class="fa-solid fa-thumbtack text-[11px] transition-transform duration-200" :class="isPinned ? 'rotate-45' : 'opacity-40 hover:opacity-100'"></i>
+                    </button>
+                    <!-- Mobile Close Button -->
+                    <button id="sidebar-close" class="lg:hidden text-stone-400 hover:text-stone-700 p-1.5 rounded-lg hover:bg-stone-100 transition-colors">
+                        <i class="fa-solid fa-times text-base"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- Navigation Links Scroll Area -->
