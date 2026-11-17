@@ -74,6 +74,27 @@
             main { padding: 0 !important; margin: 0 !important; }
         }
     
+        /* ===== KOMPAK & PROPORSIONAL 100% SCALE ===== */
+        html {
+            font-size: 13.5px; /* Standar proporsional desktop SaaS 100% */
+        }
+        @media (min-width: 1440px) {
+            html {
+                font-size: 14px;
+            }
+        }
+        @media (max-width: 1280px) {
+            html {
+                font-size: 13px;
+            }
+        }
+
+        /* Tabel dan Card lebih ramping & padat informasi */
+        table th, table td {
+            padding-top: 0.55rem !important;
+            padding-bottom: 0.55rem !important;
+        }
+
         /* ===== AUTO-COLLAPSE & EXPAND HOVER SIDEBAR ===== */
         @media (min-width: 1024px) {
             /* State Default: Mini (68px) */
@@ -618,7 +639,7 @@
             </header>
 
             <!-- ===== MAIN SCROLLABLE CONTENT ===== -->
-            <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+            <main class="flex-1 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5 lg:px-6 lg:py-5">
                 <div class="mx-auto max-w-screen-2xl">
                     <!-- Global Flashed Messages / Alerts -->
                     {% with messages = get_flashed_messages(with_categories=true) %}
