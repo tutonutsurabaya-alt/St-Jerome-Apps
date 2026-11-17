@@ -95,11 +95,33 @@
             padding-bottom: 0.55rem !important;
         }
 
-        /* ===== AUTO-COLLAPSE & EXPAND HOVER SIDEBAR ===== */
+        /* ===== AUTO-COLLAPSE & EXPAND HOVER SIDEBAR (MONOCHROME & UNCLIPPED) ===== */
+        /* Ikon sidebar seragam satu warna (Monochrome Slate / Stone) */
+        #sidebar .sidebar-icon,
+        #sidebar a > i,
+        #sidebar button > i,
+        #sidebar .flex > i {
+            color: #64748b !important; /* Slate 500 seragam elegan */
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        /* Ikon menu yang aktif berwarna putih bersih dengan background gelap */
+        #sidebar a.bg-stone-900 i,
+        #sidebar a.bg-stone-900 .sidebar-icon {
+            color: #ffffff !important;
+        }
+
+        /* Ikon saat di-hover menjadi lebih pekat */
+        #sidebar a:hover:not(.bg-stone-900) i,
+        #sidebar button:hover i {
+            color: #0f172a !important; /* Slate 900 */
+        }
+
         @media (min-width: 1024px) {
-            /* State Default: Mini (68px) */
+            /* State Default: Mini (72px) - cukup lebar agar icon tidak terpotong */
             .sidebar-mini {
-                width: 68px !important;
+                width: 72px !important;
+                min-width: 72px !important;
                 transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease !important;
             }
             
@@ -112,39 +134,54 @@
                 pointer-events: none !important;
             }
 
-            /* Center logo & icon navigasi saat mini */
+            /* Center logo & icon navigasi secara presisi agar tidak terpotong */
             .sidebar-mini:not(:hover) .sidebar-brand-container {
                 justify-content: center !important;
-                padding-left: 0.5rem !important;
-                padding-right: 0.5rem !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
             }
             .sidebar-mini:not(:hover) a,
             .sidebar-mini:not(:hover) button {
                 justify-content: center !important;
-                padding-left: 0.5rem !important;
-                padding-right: 0.5rem !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                width: 44px !important;
+                height: 40px !important;
             }
             .sidebar-mini:not(:hover) a i,
             .sidebar-mini:not(:hover) button i {
                 margin: 0 auto !important;
-                font-size: 16px !important;
+                font-size: 17px !important;
+                width: auto !important;
             }
 
             /* Pembatas garis tipis antar kategori saat mini */
             .sidebar-mini:not(:hover) .sidebar-section-divider {
                 display: block !important;
                 height: 1px;
-                background-color: #E7E5E4;
-                margin: 8px 10px;
+                background-color: #E2E8F0;
+                margin: 10px 14px;
             }
             .sidebar-mini:hover .sidebar-section-divider {
                 display: none !important;
             }
 
-            /* State Hover: Melebar otomatis (260px) dengan smooth sliding */
+            /* State Hover: Melebar otomatis (264px) dengan smooth sliding */
             .sidebar-mini:hover {
-                width: 260px !important;
+                width: 264px !important;
+                min-width: 264px !important;
                 box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+            }
+
+            .sidebar-mini:hover a,
+            .sidebar-mini:hover button {
+                width: 100% !important;
+                height: auto !important;
+                justify-content: flex-start !important;
+                padding-left: 0.625rem !important;
+                padding-right: 0.625rem !important;
             }
 
             .sidebar-mini:hover .sidebar-collapsible-text {
@@ -251,7 +288,7 @@
                         <li x-data="{ expanded: {{ 'true' if pos_active else 'false' }} }">
                             <button @click="expanded = !expanded" class="w-full flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if pos_active %}text-stone-900 bg-stone-100 font-semibold{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <div class="flex items-center gap-2.5 truncate">
-                                    <i class="fa-solid fa-calculator w-4 text-center text-emerald-600"></i>
+                                    <i class="fa-solid fa-calculator w-4 text-center sidebar-icon"></i>
                                     <span class="truncate sidebar-collapsible-text">Layanan Kasir POS</span>
                                 </div>
                                 <i class="sidebar-collapsible-text fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
@@ -268,7 +305,7 @@
                                     <li><a href="/pos/tabungan" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/pos/tabungan' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Tabungan Anggota</a></li>
                                     <li><a href="/pos/riwayat" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/pos/riwayat' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Riwayat & Tutup Kas</a></li>
                                     <li><a href="/pos/layanan" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/pos/layanan' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Tarif & Layanan</a></li>
-                                    <li><a href="/pos/laporan_keuangan" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/pos/laporan_keuangan' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}"><i class="fa-solid fa-file-invoice-dollar mr-1 text-amber-700"></i> Laporan Kas Bulanan</a></li>
+                                    <li><a href="/pos/laporan_keuangan" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/pos/laporan_keuangan' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}"><i class="fa-solid fa-file-invoice-dollar mr-1 sidebar-icon"></i> Laporan Kas Bulanan</a></li>
                                 </ul>
                             </div>
                         </li>
@@ -364,7 +401,7 @@
                         <li x-data="{ expanded: {{ 'true' if baca_active else 'false' }} }">
                             <button @click="expanded = !expanded" class="w-full flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if baca_active %}text-stone-900 bg-stone-100 font-semibold{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <div class="flex items-center gap-2.5 truncate">
-                                    <i class="fa-solid fa-book-open-reader w-4 text-center text-amber-600"></i>
+                                    <i class="fa-solid fa-book-open-reader w-4 text-center sidebar-icon"></i>
                                     <span class="truncate sidebar-collapsible-text">Buku yang Dibaca</span>
                                 </div>
                                 <i class="sidebar-collapsible-text fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
@@ -468,7 +505,7 @@
                         <!-- WA Broadcast -->
                         <li>
                             <a href="/wa_broadcast" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/wa_broadcast' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
-                                <i class="fa-brands fa-whatsapp w-4 text-center text-emerald-600"></i>
+                                <i class="fa-brands fa-whatsapp w-4 text-center sidebar-icon"></i>
                                 <span class="truncate sidebar-collapsible-text">WA Broadcast</span>
                             </a>
                         </li>
@@ -507,7 +544,7 @@
 
                         <!-- Keluar -->
                         <li class="pt-2">
-                            <a href="/logout" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors">
+                            <a href="/logout" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium sidebar-icon hover:bg-rose-50 hover:text-rose-700 transition-colors">
                                 <i class="fa-solid fa-power-off w-4 text-center"></i>
                                 <span class="truncate sidebar-collapsible-text">Keluar Sesi</span>
                             </a>
