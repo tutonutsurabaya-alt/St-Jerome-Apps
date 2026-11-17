@@ -33,47 +33,47 @@
         </div>
     </div>
 
-    <!-- KPI Metric Cards -->
+    <!-- KPI Metric Cards (Center Aligned) -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
         <!-- Pinjaman Aktif -->
-        <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs">
+        <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs text-center flex flex-col items-center justify-center">
             <div class="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">Total Pinjaman Aktif</div>
-            <div class="text-2xl font-bold font-serif text-stone-900 mt-1" x-text="kpi.total_active">0</div>
-            <div class="text-[10px] text-stone-400 mt-0.5">Buku beredar di tangan peminjam</div>
+            <div class="text-3xl font-bold font-serif text-stone-900 my-1" x-text="kpi.total_active">0</div>
+            <div class="text-[10px] text-stone-400">Buku beredar di tangan peminjam</div>
         </div>
 
         <!-- Terlambat (Overdue) -->
-        <div class="bg-white p-4 rounded-2xl border border-rose-200 shadow-2xs bg-rose-50/20">
-            <div class="text-[11px] font-semibold text-rose-700 uppercase tracking-wider flex items-center gap-1.5">
+        <div class="bg-white p-4 rounded-2xl border border-rose-200 shadow-2xs bg-rose-50/20 text-center flex flex-col items-center justify-center">
+            <div class="text-[11px] font-semibold text-rose-700 uppercase tracking-wider flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-triangle-exclamation"></i>
                 <span>Lewat Jatuh Tempo</span>
             </div>
-            <div class="text-2xl font-bold font-serif text-rose-700 mt-1" x-text="kpi.total_overdue">0</div>
-            <div class="text-[10px] text-rose-600 mt-0.5 font-medium">Wajib segera ditagih / dikembalikan</div>
+            <div class="text-3xl font-bold font-serif text-rose-700 my-1" x-text="kpi.total_overdue">0</div>
+            <div class="text-[10px] text-rose-600 font-medium">Wajib segera ditagih / dikembalikan</div>
         </div>
 
         <!-- Jatuh Tempo Hari Ini -->
-        <div class="bg-white p-4 rounded-2xl border border-amber-200 shadow-2xs bg-amber-50/20">
-            <div class="text-[11px] font-semibold text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
+        <div class="bg-white p-4 rounded-2xl border border-amber-200 shadow-2xs bg-amber-50/20 text-center flex flex-col items-center justify-center">
+            <div class="text-[11px] font-semibold text-amber-700 uppercase tracking-wider flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-clock"></i>
                 <span>Jatuh Tempo Hari Ini</span>
             </div>
-            <div class="text-2xl font-bold font-serif text-amber-800 mt-1" x-text="kpi.due_today">0</div>
-            <div class="text-[10px] text-amber-700 mt-0.5">Batas akhir peminjaman hari ini</div>
+            <div class="text-3xl font-bold font-serif text-amber-800 my-1" x-text="kpi.due_today">0</div>
+            <div class="text-[10px] text-amber-700">Batas akhir peminjaman hari ini</div>
         </div>
 
         <!-- Segera Jatuh Tempo -->
-        <div class="bg-white p-4 rounded-2xl border border-emerald-200 shadow-2xs">
+        <div class="bg-white p-4 rounded-2xl border border-emerald-200 shadow-2xs text-center flex flex-col items-center justify-center">
             <div class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">Mendekati Tempo (H-1 s.d H-3)</div>
-            <div class="text-2xl font-bold font-serif text-emerald-800 mt-1" x-text="kpi.due_soon">0</div>
-            <div class="text-[10px] text-stone-400 mt-0.5">Peringatan dini pengembalian</div>
+            <div class="text-3xl font-bold font-serif text-emerald-800 my-1" x-text="kpi.due_soon">0</div>
+            <div class="text-[10px] text-stone-400">Peringatan dini pengembalian</div>
         </div>
 
         <!-- Estimasi Denda Berjalan -->
-        <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs col-span-2 md:col-span-1">
+        <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs col-span-2 md:col-span-1 text-center flex flex-col items-center justify-center">
             <div class="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">Potensi Denda Berjalan</div>
-            <div class="text-xl font-bold font-serif text-rose-800 mt-1" x-text="formatRupiah(kpi.total_fines)">Rp 0</div>
-            <div class="text-[10px] text-stone-400 mt-0.5">Tarif Rp 500 / hari keterlambatan</div>
+            <div class="text-2xl font-bold font-serif text-rose-800 my-1" x-text="formatRupiah(kpi.total_fines)">Rp 0</div>
+            <div class="text-[10px] text-stone-400">Tarif Rp 500 / hari keterlambatan</div>
         </div>
     </div>
 
