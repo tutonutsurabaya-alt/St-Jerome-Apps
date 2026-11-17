@@ -73,8 +73,71 @@
             body { background: white !important; }
             main { padding: 0 !important; margin: 0 !important; }
         }
+    
+        /* ===== AUTO-COLLAPSE & EXPAND HOVER SIDEBAR ===== */
+        @media (min-width: 1024px) {
+            /* State Default: Mini (68px) */
+            .sidebar-mini {
+                width: 68px !important;
+                transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease !important;
+            }
+            
+            /* Sembunyikan teks label, badge, chevron, dan submenu saat mini */
+            .sidebar-mini:not(:hover) .sidebar-collapsible-text,
+            .sidebar-mini:not(:hover) .sidebar-collapsible-submenu {
+                opacity: 0 !important;
+                visibility: hidden !important;
+                display: none !important;
+                pointer-events: none !important;
+            }
+
+            /* Center logo & icon navigasi saat mini */
+            .sidebar-mini:not(:hover) .sidebar-brand-container {
+                justify-content: center !important;
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
+            }
+            .sidebar-mini:not(:hover) a,
+            .sidebar-mini:not(:hover) button {
+                justify-content: center !important;
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
+            }
+            .sidebar-mini:not(:hover) a i,
+            .sidebar-mini:not(:hover) button i {
+                margin: 0 auto !important;
+                font-size: 16px !important;
+            }
+
+            /* Pembatas garis tipis antar kategori saat mini */
+            .sidebar-mini:not(:hover) .sidebar-section-divider {
+                display: block !important;
+                height: 1px;
+                background-color: #E7E5E4;
+                margin: 8px 10px;
+            }
+            .sidebar-mini:hover .sidebar-section-divider {
+                display: none !important;
+            }
+
+            /* State Hover: Melebar otomatis (260px) dengan smooth sliding */
+            .sidebar-mini:hover {
+                width: 260px !important;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+            }
+
+            .sidebar-mini:hover .sidebar-collapsible-text {
+                opacity: 1 !important;
+                visibility: visible !important;
+                transition: opacity 0.25s ease 0.08s;
+            }
+        }
+
+        .sidebar-section-divider {
+            display: none;
+        }
     </style>
-    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='img/logo.jpg') }}">
+    <link rel="icon"  type="image/jpeg" href="{{ url_for('static', filename='img/logo.jpg') }}">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -87,10 +150,10 @@
     <div class="flex h-screen w-screen overflow-hidden">
         
         <!-- ===== ULTRA-CLEAN SIDEBAR ===== -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col border-r border-stone-200 bg-white text-stone-700 transition-transform duration-200 ease-out lg:static lg:translate-x-0 -translate-x-full">
+        <aside id="sidebar" class="sidebar-mini fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-stone-200 bg-white text-stone-700 transition-all duration-300 ease-in-out lg:static lg:translate-x-0 -translate-x-full shadow-sm hover:shadow-xl overflow-hidden">
             
             <!-- Brand / Logo Area -->
-            <div class="flex items-center justify-between gap-3 px-5 py-4 border-b border-stone-150 bg-stone-50/50">
+            <div class="sidebar-brand-container flex items-center justify-between gap-3 px-4 py-4 border-b border-stone-150 bg-stone-50/50 overflow-hidden whitespace-nowrap">
                 <a href="/" class="flex items-center gap-3 group min-w-0">
                     {% set cur_lokasi = request.args.get('lokasi', branding.default_lokasi) %}
                     <div class="relative shrink-0">
@@ -103,7 +166,7 @@
                         {% endif %}
                     </div>
                     
-                    <div class="overflow-hidden min-w-0">
+                    <div class="sidebar-collapsible-text overflow-hidden min-w-0 transition-opacity duration-200">
                         <div class="flex items-center gap-1.5">
                             <span class="font-bold text-stone-900 text-sm tracking-tight truncate">{{ branding.app_name }}</span>
                             {% if cur_lokasi %}
@@ -124,7 +187,8 @@
                 
                 <!-- SECTION: OPERASIONAL & SIRKULASI -->
                 <div>
-                    <div class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-stone-600">
+                    <div class="sidebar-section-divider"></div>
+                    <div class="sidebar-collapsible-text px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-stone-600 truncate whitespace-nowrap">
                         Operasional & Sirkulasi
                     </div>
                     <ul class="mt-1 space-y-0.5">
@@ -132,7 +196,7 @@
                         <li>
                             <a href="/" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <i class="fa-solid fa-house w-4 text-center {% if request.path == '/' %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
-                                <span class="truncate">Beranda Utama</span>
+                                <span class="truncate sidebar-collapsible-text">Beranda Utama</span>
                             </a>
                         </li>
 
@@ -142,9 +206,9 @@
                             <a href="/sirkulasi" class="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/sirkulasi' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <div class="flex items-center gap-2.5 truncate">
                                     <i class="fa-solid fa-cash-register w-4 text-center {% if request.path == '/sirkulasi' %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
-                                    <span class="truncate">Meja Sirkulasi</span>
+                                    <span class="truncate sidebar-collapsible-text">Meja Sirkulasi</span>
                                 </div>
-                                <span class="px-1.5 py-0.2 text-[9px] font-mono rounded font-semibold {% if request.path == '/sirkulasi' %}bg-stone-800 text-stone-300{% else %}bg-stone-100 text-stone-500 border border-stone-200{% endif %}">F2</span>
+                                <span class="sidebar-collapsible-text px-1.5 py-0.2 text-[9px] font-mono rounded font-semibold {% if request.path == '/sirkulasi' %}bg-stone-800 text-stone-300{% else %}bg-stone-100 text-stone-500 border border-stone-200{% endif %}">F2</span>
                             </a>
                         </li>
 
@@ -153,9 +217,9 @@
                             <a href="/sirkulasi/keterlambatan" class="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/sirkulasi/keterlambatan' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <div class="flex items-center gap-2.5 truncate">
                                     <i class="fa-solid fa-clock w-4 text-center {% if request.path == '/sirkulasi/keterlambatan' %}text-stone-200{% else %}text-amber-600{% endif %}"></i>
-                                    <span class="truncate">Monitoring Jatuh Tempo</span>
+                                    <span class="truncate sidebar-collapsible-text">Monitoring Jatuh Tempo</span>
                                 </div>
-                                <span class="px-1.5 py-0.2 text-[9px] font-mono rounded font-semibold {% if request.path == '/sirkulasi/keterlambatan' %}bg-amber-500 text-stone-950{% else %}bg-amber-100 text-amber-800 border border-amber-200{% endif %}">TELAT</span>
+                                <span class="sidebar-collapsible-text px-1.5 py-0.2 text-[9px] font-mono rounded font-semibold {% if request.path == '/sirkulasi/keterlambatan' %}bg-amber-500 text-stone-950{% else %}bg-amber-100 text-amber-800 border border-amber-200{% endif %}">TELAT</span>
                             </a>
                         </li>
                         {% endif %}
@@ -167,11 +231,11 @@
                             <button @click="expanded = !expanded" class="w-full flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if pos_active %}text-stone-900 bg-stone-100 font-semibold{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <div class="flex items-center gap-2.5 truncate">
                                     <i class="fa-solid fa-calculator w-4 text-center text-emerald-600"></i>
-                                    <span class="truncate">Layanan Kasir POS</span>
+                                    <span class="truncate sidebar-collapsible-text">Layanan Kasir POS</span>
                                 </div>
-                                <i class="fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
+                                <i class="sidebar-collapsible-text fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
                             </button>
-                            <div x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
+                            <div class="sidebar-collapsible-submenu" x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
                                 <ul class="ml-4 pl-3 border-l border-stone-200 space-y-0.5 text-[11px]">
                                     <li><a href="/pos" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/pos' and not request.args.get('antrean') %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Kasir POS (FC & Print)</a></li>
                                     <li>
@@ -194,7 +258,8 @@
                 {% if has_perm('koleksi') %}
                 <!-- SECTION: PENGOLAHAN KOLEKSI -->
                 <div>
-                    <div class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-stone-600">
+                    <div class="sidebar-section-divider"></div>
+                    <div class="sidebar-collapsible-text px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-stone-600 truncate whitespace-nowrap">
                         Pengolahan Koleksi
                     </div>
                     <ul class="mt-1 space-y-0.5">
@@ -202,7 +267,7 @@
                         <li>
                             <a href="/koleksi" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path.startswith('/koleksi') %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <i class="fa-solid fa-book w-4 text-center {% if request.path.startswith('/koleksi') %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
-                                <span class="truncate">Daftar Koleksi</span>
+                                <span class="truncate sidebar-collapsible-text">Daftar Koleksi</span>
                             </a>
                         </li>
 
@@ -210,7 +275,7 @@
                         <li>
                             <a href="/input_buku" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/input_buku' or request.path == '/input_majalah' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <i class="fa-solid fa-plus-circle w-4 text-center {% if request.path == '/input_buku' or request.path == '/input_majalah' %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
-                                <span class="truncate">Input Buku Baru</span>
+                                <span class="truncate sidebar-collapsible-text">Input Buku Baru</span>
                             </a>
                         </li>
 
@@ -218,7 +283,7 @@
                         <li>
                             <a href="/kelola_sampul" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/kelola_sampul' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <i class="fa-solid fa-images w-4 text-center {% if request.path == '/kelola_sampul' %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
-                                <span class="truncate">Kelola Sampul Buku</span>
+                                <span class="truncate sidebar-collapsible-text">Kelola Sampul Buku</span>
                             </a>
                         </li>
 
@@ -227,9 +292,9 @@
                             <a href="/pengadaan_kurikulum" class="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path.startswith('/pengadaan_kurikulum') %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <div class="flex items-center gap-2.5 truncate">
                                     <i class="fa-solid fa-graduation-cap w-4 text-center {% if request.path.startswith('/pengadaan_kurikulum') %}text-stone-200{% else %}text-amber-600{% endif %}"></i>
-                                    <span class="truncate">Dapur Pengadaan</span>
+                                    <span class="truncate sidebar-collapsible-text">Dapur Pengadaan</span>
                                 </div>
-                                <span class="px-1.5 py-0.2 text-[9px] font-mono rounded font-semibold {% if request.path.startswith('/pengadaan_kurikulum') %}bg-amber-500 text-stone-950{% else %}bg-amber-100 text-amber-800 border border-amber-200{% endif %}">{{ branding.default_lokasi | default('IMAVI') }}</span>
+                                <span class="sidebar-collapsible-text px-1.5 py-0.2 text-[9px] font-mono rounded font-semibold {% if request.path.startswith('/pengadaan_kurikulum') %}bg-amber-500 text-stone-950{% else %}bg-amber-100 text-amber-800 border border-amber-200{% endif %}">{{ branding.default_lokasi | default('IMAVI') }}</span>
                             </a>
                         </li>
 
@@ -239,11 +304,11 @@
                             <button @click="expanded = !expanded" class="w-full flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if cetak_active %}text-stone-900 bg-stone-100 font-semibold{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <div class="flex items-center gap-2.5 truncate">
                                     <i class="fa-solid fa-tags w-4 text-center text-stone-400"></i>
-                                    <span class="truncate">Cetak Label & Barcode</span>
+                                    <span class="truncate sidebar-collapsible-text">Cetak Label & Barcode</span>
                                 </div>
-                                <i class="fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
+                                <i class="sidebar-collapsible-text fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
                             </button>
-                            <div x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
+                            <div class="sidebar-collapsible-submenu" x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
                                 <ul class="ml-4 pl-3 border-l border-stone-200 space-y-0.5 text-[11px]">
                                     <li><a href="/cetak_khusus?mode=punggung" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/cetak_khusus' and request.args.get('mode') == 'punggung' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Label Punggung (DDC)</a></li>
                                     <li><a href="/cetak_khusus?mode=barcode" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/cetak_khusus' and request.args.get('mode') == 'barcode' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Barcode Eksemplar</a></li>
@@ -257,7 +322,7 @@
                         <li>
                             <a href="/audit_rak" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/audit_rak' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <i class="fa-solid fa-boxes-packing w-4 text-center {% if request.path == '/audit_rak' %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
-                                <span class="truncate">Stock Opname (Audit)</span>
+                                <span class="truncate sidebar-collapsible-text">Stock Opname (Audit)</span>
                             </a>
                         </li>
                     </ul>
@@ -267,7 +332,8 @@
                 {% if has_perm('baca') or has_perm('anggota') or has_perm('laporan') %}
                 <!-- SECTION: PEMUSTAKA & RISET -->
                 <div>
-                    <div class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-stone-600">
+                    <div class="sidebar-section-divider"></div>
+                    <div class="sidebar-collapsible-text px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-stone-600 truncate whitespace-nowrap">
                         Pemustaka & Riset
                     </div>
                     <ul class="mt-1 space-y-0.5">
@@ -278,11 +344,11 @@
                             <button @click="expanded = !expanded" class="w-full flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if baca_active %}text-stone-900 bg-stone-100 font-semibold{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <div class="flex items-center gap-2.5 truncate">
                                     <i class="fa-solid fa-book-open-reader w-4 text-center text-amber-600"></i>
-                                    <span class="truncate">Buku yang Dibaca</span>
+                                    <span class="truncate sidebar-collapsible-text">Buku yang Dibaca</span>
                                 </div>
-                                <i class="fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
+                                <i class="sidebar-collapsible-text fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
                             </button>
-                            <div x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
+                            <div class="sidebar-collapsible-submenu" x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
                                 <ul class="ml-4 pl-3 border-l border-stone-200 space-y-0.5 text-[11px]">
                                     <li><a href="/scan" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/scan' or request.path.startswith('/scan_baca') %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Catat Buku Dibaca</a></li>
                                     <li><a href="/laporan_buku_dibaca" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/laporan_buku_dibaca' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Rekapitulasi Baca</a></li>
@@ -299,11 +365,11 @@
                             <button @click="expanded = !expanded" class="w-full flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if anggota_active %}text-stone-900 bg-stone-100 font-semibold{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <div class="flex items-center gap-2.5 truncate">
                                     <i class="fa-solid fa-users w-4 text-center text-stone-400"></i>
-                                    <span class="truncate">Anggota & Kunjungan</span>
+                                    <span class="truncate sidebar-collapsible-text">Anggota & Kunjungan</span>
                                 </div>
-                                <i class="fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
+                                <i class="sidebar-collapsible-text fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
                             </button>
-                            <div x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
+                            <div class="sidebar-collapsible-submenu" x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
                                 <ul class="ml-4 pl-3 border-l border-stone-200 space-y-0.5 text-[11px]">
                                     <li><a href="/anggota" class="block rounded-md px-2 py-1 transition-colors {% if request.path.startswith('/anggota') %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Daftar Keanggotaan</a></li>
                                     <li><a href="/analitik_kunjungan" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/analitik_kunjungan' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Analitik Kunjungan</a></li>
@@ -319,11 +385,11 @@
                             <button @click="expanded = !expanded" class="w-full flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if lapor_active %}text-stone-900 bg-stone-100 font-semibold{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <div class="flex items-center gap-2.5 truncate">
                                     <i class="fa-solid fa-chart-pie w-4 text-center text-stone-400"></i>
-                                    <span class="truncate">Litbang (Pusat Penelitian & Pengembangan)</span>
+                                    <span class="truncate sidebar-collapsible-text">Litbang (Pusat Penelitian & Pengembangan)</span>
                                 </div>
-                                <i class="fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
+                                <i class="sidebar-collapsible-text fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
                             </button>
-                            <div x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
+                            <div class="sidebar-collapsible-submenu" x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
                                 <ul class="ml-4 pl-3 border-l border-stone-200 space-y-0.5 text-[11px]">
                                     <li><a href="/dashboard" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/dashboard' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Dasbor Analitik</a></li>
                                     <li><a href="/analisis_strategis_terpadu" class="block rounded-md px-2 py-1 transition-colors {% if request.path == '/analisis_strategis_terpadu' %}text-stone-900 font-bold bg-stone-150{% else %}text-stone-600 hover:text-stone-900 hover:bg-stone-100/70{% endif %}">Grand Sintesis</a></li>
@@ -344,7 +410,8 @@
 
                 <!-- SECTION: PUBLIK & SISTEM -->
                 <div>
-                    <div class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-stone-600">
+                    <div class="sidebar-section-divider"></div>
+                    <div class="sidebar-collapsible-text px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-stone-600 truncate whitespace-nowrap">
                         Akses Publik & Sistem
                     </div>
                     <ul class="mt-1 space-y-0.5">
@@ -353,11 +420,11 @@
                             <button @click="expanded = !expanded" class="w-full flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors">
                                 <div class="flex items-center gap-2.5 truncate">
                                     <i class="fa-solid fa-globe w-4 text-center text-stone-400"></i>
-                                    <span class="truncate">Tampilan Publik</span>
+                                    <span class="truncate sidebar-collapsible-text">Tampilan Publik</span>
                                 </div>
-                                <i class="fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
+                                <i class="sidebar-collapsible-text fa-solid fa-chevron-down text-[10px] text-stone-400 transition-transform duration-150" :class="{ 'rotate-180': expanded }"></i>
                             </button>
-                            <div x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
+                            <div class="sidebar-collapsible-submenu" x-show="expanded" style="display: none;" x-transition class="pt-0.5 pb-1">
                                 <ul class="ml-4 pl-3 border-l border-stone-200 space-y-0.5 text-[11px]">
                                     <li><a href="/opac" target="_blank" class="flex items-center justify-between rounded-md px-2 py-1 text-stone-600 hover:text-stone-900 hover:bg-stone-100/70 transition-colors"><span>Katalog OPAC</span> <i class="fa-solid fa-arrow-up-right-from-square text-[9px] text-stone-400"></i></a></li>
                                     <li><a href="/kiosk" target="_blank" class="flex items-center justify-between rounded-md px-2 py-1 text-stone-600 hover:text-stone-900 hover:bg-stone-100/70 transition-colors"><span>Buku Tamu / Kiosk</span> <i class="fa-solid fa-arrow-up-right-from-square text-[9px] text-stone-400"></i></a></li>
@@ -371,7 +438,7 @@
                         <li>
                             <a href="/laporan_koleksi" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/laporan_koleksi' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <i class="fa-solid fa-chart-bar w-4 text-center {% if request.path == '/laporan_koleksi' %}text-stone-200{% else %}text-amber-600{% endif %}"></i>
-                                <span class="truncate">Laporan Koleksi</span>
+                                <span class="truncate sidebar-collapsible-text">Laporan Koleksi</span>
                             </a>
                         </li>
                         {% endif %}
@@ -381,7 +448,7 @@
                         <li>
                             <a href="/wa_broadcast" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/wa_broadcast' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <i class="fa-brands fa-whatsapp w-4 text-center text-emerald-600"></i>
-                                <span class="truncate">WA Broadcast</span>
+                                <span class="truncate sidebar-collapsible-text">WA Broadcast</span>
                             </a>
                         </li>
                         {% endif %}
@@ -390,7 +457,7 @@
                         <li>
                             <a href="/profil" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/profil' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <i class="fa-regular fa-user w-4 text-center {% if request.path == '/profil' %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
-                                <span class="truncate">Profil & Akun Saya</span>
+                                <span class="truncate sidebar-collapsible-text">Profil & Akun Saya</span>
                             </a>
                         </li>
 
@@ -400,9 +467,9 @@
                             <a href="/pengguna" class="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/pengguna' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <div class="flex items-center gap-2.5 truncate">
                                     <i class="fa-solid fa-users-gear w-4 text-center {% if request.path == '/pengguna' %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
-                                    <span class="truncate">Kelola Pengguna</span>
+                                    <span class="truncate sidebar-collapsible-text">Kelola Pengguna</span>
                                 </div>
-                                <span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[9px] font-bold border border-amber-200">Admin</span>
+                                <span class="sidebar-collapsible-text px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[9px] font-bold border border-amber-200">Admin</span>
                             </a>
                         </li>
                         {% endif %}
@@ -412,7 +479,7 @@
                         <li>
                             <a href="/settings" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors {% if request.path == '/settings' %}bg-stone-900 text-white font-semibold shadow-2xs{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
                                 <i class="fa-solid fa-gear w-4 text-center {% if request.path == '/settings' %}text-stone-200{% else %}text-stone-400{% endif %}"></i>
-                                <span class="truncate">Pengaturan Sistem</span>
+                                <span class="truncate sidebar-collapsible-text">Pengaturan Sistem</span>
                             </a>
                         </li>
                         {% endif %}
@@ -421,7 +488,7 @@
                         <li class="pt-2">
                             <a href="/logout" class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors">
                                 <i class="fa-solid fa-power-off w-4 text-center"></i>
-                                <span class="truncate">Keluar Sesi</span>
+                                <span class="truncate sidebar-collapsible-text">Keluar Sesi</span>
                             </a>
                         </li>
                     </ul>
@@ -430,8 +497,8 @@
             </div>
             
             <!-- Sidebar System Footer -->
-            <div class="px-4 py-3 border-t border-stone-200 bg-stone-50/60 text-xs">
-                <div class="flex items-center justify-between text-stone-500">
+            <div class="sidebar-system-footer px-4 py-3 border-t border-stone-200 bg-stone-50/60 text-xs overflow-hidden whitespace-nowrap">
+                <div class="sidebar-collapsible-text flex items-center justify-between text-stone-500">
                     <span class="flex items-center gap-1.5 font-medium text-[11px]">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                         <span>St. Jerome v2.6</span>
@@ -440,6 +507,8 @@
                 </div>
             </div>
         </aside>
+
+        
 
         <!-- ===== MAIN CONTENT BODY CONTAINER ===== -->
         <div class="relative flex flex-1 flex-col h-full overflow-hidden bg-[#F8F9FA]">
