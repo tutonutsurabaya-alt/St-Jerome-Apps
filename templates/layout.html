@@ -255,19 +255,9 @@
                     </div>
                 </a>
                 
-                <div class="flex items-center gap-1">
-                    <!-- Subtle Lock / Pin Button (Desktop Only) -->
-                    <button type="button" @click="isPinned = !isPinned; localStorage.setItem('sjla_sidebar_pinned', isPinned)" 
-                            :title="isPinned ? 'Lepas Kunci Sidebar (Auto-collapse)' : 'Kunci Sidebar Statis (Pinned)'"
-                            class="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg text-stone-300 hover:text-stone-600 hover:bg-stone-100/80 transition-colors cursor-pointer"
-                            :class="isPinned ? 'text-amber-700 bg-amber-50/70 border border-amber-200/50' : ''">
-                        <i class="fa-solid fa-thumbtack text-[11px] transition-transform duration-200" :class="isPinned ? 'rotate-45' : 'opacity-40 hover:opacity-100'"></i>
-                    </button>
-                    <!-- Mobile Close Button -->
-                    <button id="sidebar-close" class="lg:hidden text-stone-400 hover:text-stone-700 p-1.5 rounded-lg hover:bg-stone-100 transition-colors">
-                        <i class="fa-solid fa-times text-base"></i>
-                    </button>
-                </div>
+<button id="sidebar-close" class="lg:hidden text-stone-400 hover:text-stone-700 p-1.5 rounded-lg hover:bg-stone-100 transition-colors">
+                    <i class="fa-solid fa-times text-base"></i>
+                </button>
             </div>
 
             <!-- Navigation Links Scroll Area -->
@@ -584,14 +574,23 @@
 
             </div>
             
-            <!-- Sidebar System Footer -->
-            <div class="sidebar-system-footer px-4 py-3 border-t border-stone-200 bg-stone-50/60 text-xs overflow-hidden whitespace-nowrap">
-                <div class="sidebar-collapsible-text flex items-center justify-between text-stone-500">
-                    <span class="flex items-center gap-1.5 font-medium text-[11px]">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                        <span>St. Jerome v2.6</span>
-                    </span>
-                    <span class="text-[11px] text-stone-400 font-semibold tracking-wide">{{ branding.default_lokasi }}</span>
+            <!-- Sidebar System Footer (With Bottom Subtle Pin) -->
+            <div class="sidebar-system-footer px-3.5 py-2.5 border-t border-stone-200 bg-stone-50/70 text-xs overflow-hidden">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="sidebar-collapsible-text min-w-0 flex items-center justify-between flex-1 text-stone-500 whitespace-nowrap">
+                        <span class="flex items-center gap-1.5 font-medium text-[11px]">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                            <span class="truncate">St. Jerome v2.6</span>
+                        </span>
+                        <span class="text-[10px] text-stone-400 font-semibold tracking-wide uppercase">{{ branding.default_lokasi }}</span>
+                    </div>
+                    <!-- Discreet Bottom Pin Button -->
+                    <button type="button" @click="isPinned = !isPinned; localStorage.setItem('sjla_sidebar_pinned', isPinned)" 
+                            :title="isPinned ? 'Lepas Kunci Sidebar (Auto-collapse)' : 'Kunci Sidebar Statis (Pinned)'"
+                            class="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 transition cursor-pointer"
+                            :class="isPinned ? 'bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs' : 'border border-transparent'">
+                        <i class="fa-solid fa-thumbtack text-[11px] transition-transform duration-200" :class="isPinned ? 'rotate-45 text-amber-800' : 'opacity-60 hover:opacity-100'"></i>
+                    </button>
                 </div>
             </div>
         </aside>
