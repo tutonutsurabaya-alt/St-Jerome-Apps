@@ -292,9 +292,13 @@ def opac_search_page():
     return render_template('search_opac.html', q=q)
 
 
+@router.route('/opac/katalog')
+def opac_catalog_page():
+    return render_template('opac.html')
+
 @router.route('/opac')
 def opac_page():
-    return render_template('opac.html')
+    return render_template('opac_gate.html')
 
 
 @router.route('/api/opac/search', methods=['GET'])

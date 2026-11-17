@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OPAC - {{ branding.library_name }}</title>
+    <title>OPAC - St. Jerome Library</title>
 
-    <!-- Google Fonts: Inter & Playfair Display -->
+    <!-- Google Fonts: Inter, Playfair Display & Great Vibes (Huruf Sambung Elegan) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Alex+Brush&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -24,29 +24,24 @@
             theme: {
                 extend: {
                     colors: {
-                        'fable-forest': '#3e2723',
-                        'storybook-sky': '#c09268',
-                        'paper-cream': '#f7f4ee',
-                        'ink': '#161015',
-                        'charcoal-plum': '#292229',
-                        'graphite': '#3f383d',
-                        'char': '#070607',
-                        'fog': '#ededed',
+                        'oxford': {
+                            50: '#f0f5fa',
+                            100: '#e1ecf5',
+                            600: '#1e3a8a',
+                            700: '#1b3b6f',
+                            900: '#0a1730',
+                        },
+                        'gold': {
+                            DEFAULT: '#C5A059',
+                            hover: '#b08b43',
+                            light: '#fdf9f0'
+                        }
                     },
+                    transitionDuration: { '2000': '2000ms' },
                     fontFamily: {
                         'sans': ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-                        'display': ['"Playfair Display"', 'ui-serif', 'serif'],
-                    },
-                    borderRadius: {
-                        'cards': '24px',
-                        'pill': '9999px',
-                    },
-                    padding: {
-                        'section': '100px',
-                    },
-                    boxShadow: {
-                        'pill': '0 20px 40px -15px rgba(22, 16, 21, 0.08)',
-                        'book': '0 10px 25px -5px rgba(22, 16, 21, 0.15)',
+                        'serif': ['"Playfair Display"', 'Georgia', 'serif'],
+                        'script': ['"Alex Brush"', '"Great Vibes"', 'cursive'],
                     }
                 }
             }
@@ -54,24 +49,12 @@
     </script>
 
     <style>
-        .headline-display {
-            font-family: 'Playfair Display', serif;
-            font-weight: 500;
-            letter-spacing: -0.02em;
+        .font-script-elegant {
+            font-family: 'Alex Brush', 'Great Vibes', cursive;
         }
 
-        .btn-pill-dark {
-            background-color: #3e2723;
-            color: #ffffff;
-            border-radius: 9999px;
-            padding: 12px 28px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(62, 39, 35, 0.15);
-        }
-        .btn-pill-dark:hover {
-            background-color: #2e1d1a;
-            transform: translateY(-1px);
+        .font-serif-academic {
+            font-family: 'Playfair Display', Georgia, Cambria, serif;
         }
 
         .hide-scrollbar::-webkit-scrollbar {
@@ -83,705 +66,343 @@
         }
 
         [x-cloak] { display: none !important; }
-
-        @keyframes scrollRight {
-            0% { transform: translateX(-50%); }
-            100% { transform: translateX(0); }
-        }
-
-        @keyframes scrollLeft {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-
-        .animate-marquee-left { animation: scrollLeft 45s linear infinite; }
-        .animate-marquee-right { animation: scrollRight 45s linear infinite; }
-        .animate-marquee-slow-right { animation: scrollRight 120s linear infinite; }
-
-        /* ITEM 1: HOVER-PAUSE ON MARQUEE (Ribbon halts on cursor hover) */
-        .marquee-wrap:hover .animate-marquee-left,
-        .marquee-wrap:hover .animate-marquee-slow-right,
-        .animate-marquee-left:hover,
-        .animate-marquee-slow-right:hover,
-        .animate-marquee-left:hover *,
-        .animate-marquee-slow-right:hover * {
-            animation-play-state: paused !important;
-        }
     </style>
 </head>
 
-<body x-data="searchApp()" x-init="initApp()" class="antialiased bg-[#f7f4ee] text-[#161015]">
+<body x-data="searchApp()" x-init="initApp()" class="antialiased bg-slate-50 text-slate-800 flex flex-col min-h-screen">
 
-    <!-- Navigation -->
-    <nav class="w-full absolute top-0 left-0 z-30 px-6 md:px-8 py-5">
-        <div class="max-w-[1200px] mx-auto flex justify-between items-center">
-            <a href="/opac" class="flex items-center gap-3">
-                <img src="/static/img/logo_imavi.png" alt="Logo" class="h-12 w-12 object-contain bg-white/20 p-1 backdrop-blur-sm rounded-full shadow">
+    <!-- Top Navigation (Clean Oxford Navbar with Circular IMAVI Logo & Elegant Script Font) -->
+    <header class="w-full bg-white/95 backdrop-blur-md border-b border-slate-200/90 sticky top-0 z-40 transition-all shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center">
+            
+            <!-- Brand Logo: Circular IMAVI + Elegant Script "St. Jerome Library" -->
+            <a href="/opac" class="flex items-center gap-3.5 group">
+                <!-- Circular IMAVI Logo -->
+                <div class="h-11 w-11 sm:h-12 sm:w-12 rounded-full overflow-hidden p-0.5 bg-white border-2 border-slate-200 group-hover:border-[#C5A059] transition-all shadow-sm flex items-center justify-center shrink-0">
+                    <img src="/static/img/logo_imavi.png" alt="Logo IMAVI" class="w-full h-full object-contain rounded-full">
+                </div>
+                
                 <div class="flex flex-col">
-                    <span class="font-sans font-bold text-white text-xl md:text-2xl tracking-tight leading-none mb-1">St. Jerome</span>
-                    <span class="text-white/80 text-[10px] tracking-[0.2em] uppercase font-bold">Library &amp; Catalog</span>
+                    <span class="font-script-elegant text-3xl sm:text-4xl text-slate-900 leading-none group-hover:text-[#1b3b6f] transition-colors pt-1">
+                        St. Jerome Library
+                    </span>
+                    <span class="text-slate-400 text-[10px] tracking-wider uppercase font-semibold">
+                        Institutum Ioannis Mariae Vianney
+                    </span>
                 </div>
             </a>
-            <div class="hidden md:flex gap-8">
-                <a href="#kategori-studi" class="text-white hover:text-[#E6B325] transition-colors font-medium text-sm">Topik Studi</a>
-                <a href="#asisten-riset" class="text-white hover:text-[#E6B325] transition-colors font-medium text-sm">Asisten Riset</a>
-                <a href="/opac/repository" class="text-white hover:text-[#E6B325] transition-colors font-medium text-sm">Repository</a>
-                <a href="/e-resources" class="text-white hover:text-[#E6B325] transition-colors font-medium text-sm">E-Resources</a>
-            </div>
-            <div class="flex gap-4">
-                <a href="/opac/member/login" class="bg-[#E6B325] text-[#2e1d1a] px-5 py-2 rounded-full font-bold text-xs md:text-sm hover:bg-white transition-colors shadow-lg flex items-center gap-1.5">
-                    <i class="fa-solid fa-user"></i> Portal Member
-                </a>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Fable Forest Hero Section -->
-    <section class="pt-28 md:pt-36 pb-12 w-full relative overflow-hidden" x-data="heroSlideshow()">
-        <!-- Background Image Slideshow with Brown Overlay -->
-        <div class="absolute inset-0 z-0 bg-[#3e2723]">
-            <template x-for="(bg, index) in bgs" :key="index">
-                <img :src="bg" class="w-full h-full object-cover absolute inset-0 transition-opacity duration-[2000ms] ease-in-out" 
-                     :class="currentBg === index ? 'opacity-40' : 'opacity-0'" alt="Library Background">
-            </template>
-            <div class="absolute inset-0 bg-[#3e2723]/70 mix-blend-multiply"></div>
-            <div class="absolute inset-0 bg-gradient-to-t from-[#3e2723] via-[#3e2723]/80 to-transparent"></div>
-        </div>
-
-        <!-- Centered Content -->
-        <div class="max-w-[1000px] mx-auto px-6 flex flex-col items-center text-center relative z-10 pt-6 pb-14">
-            <h1 class="font-sans font-bold text-white text-4xl sm:text-5xl md:text-7xl mb-4 tracking-tight leading-[0.95]">
-                Temukan<br>inspirasi bacaan<br>Anda.
-            </h1>
-            <p class="text-white/90 text-sm md:text-lg mb-8 max-w-2xl font-light">
-                Jelajahi ribuan koleksi filsafat, teologi, dan humaniora di Perpustakaan St. Jerome. Cari judul, pengarang, nomor panggil, atau topik studi.
-            </p>
-
-            <!-- Search Form -->
-            <form @submit.prevent="doSearch(false)" class="relative w-full max-w-3xl flex items-center mb-6">
-                <input type="text" x-model="searchQuery"
-                    placeholder="Cari buku, pengarang, subjek..." 
-                    class="w-full bg-white text-ink text-base md:text-xl placeholder:text-ink/40 rounded-full py-4 md:py-5 pl-7 pr-16 md:pr-20 focus:outline-none focus:ring-4 focus:ring-yellow-600/50 shadow-2xl transition-all"
-                >
-                <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 bg-[#3e2723] hover:bg-[#2e1d1a] text-[#E6B325] w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-colors shadow">
-                    <i class="fa-solid fa-magnifying-glass md:text-lg"></i>
-                </button>
-            </form>
             
-            <div class="flex flex-wrap gap-4 items-center justify-center text-xs md:text-sm">
-                <a href="#kategori-studi" class="text-white/80 hover:text-white uppercase tracking-wider font-semibold underline decoration-yellow-600 underline-offset-4">Jelajahi Rumpun Topik Studi</a>
-                <span class="text-white/40">•</span>
-                <a href="#asisten-riset" class="text-[#E6B325] hover:underline uppercase tracking-wider font-semibold flex items-center gap-1.5">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Asisten Riset Skripsi
+            <!-- Navigation Links (Konsisten & Rapi) -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+                <a href="#koleksi-terbaru" class="hover:text-slate-900 transition-colors">Koleksi Buku</a>
+                <a href="/opac/repository" class="hover:text-slate-900 transition-colors">Repository</a>
+                <a href="/e-resources" class="hover:text-slate-900 transition-colors">E-Resources</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <button type="button" @click="openRequestModal()" class="hidden sm:inline-flex items-center text-xs font-semibold text-slate-600 hover:text-slate-900 px-3.5 py-2 rounded-lg hover:bg-slate-100 transition-colors">
+                    Usul Buku
+                </button>
+                <a href="/opac/member/login" class="bg-slate-900 hover:bg-[#1b3b6f] text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full font-semibold text-xs sm:text-sm transition-all shadow-sm flex items-center gap-2">
+                    <i class="fa-solid fa-user text-[#C5A059]"></i> Portal Member
                 </a>
             </div>
         </div>
+    </header>
 
-        <!-- Running Text & Book Covers Ribbon (With Item 1: Hover Pause) -->
-        <div class="w-full relative mt-6 z-10 flex flex-col">
-            <!-- Running Text (Brown Band) -->
-            <div class="w-full bg-[#5c3a21] text-white/90 overflow-hidden py-3 shadow-xl border-y border-white/10 marquee-wrap">
-                <div class="flex w-max animate-marquee-left items-center whitespace-nowrap">
-                    <span class="text-lg md:text-xl font-black uppercase tracking-widest mx-6">ST. JEROME LIBRARY NEW ARRIVALS</span>
-                    <span class="text-lg md:text-xl font-black uppercase tracking-widest mx-6 text-white/50">•</span>
-                    <span class="text-lg md:text-xl font-black uppercase tracking-widest mx-6">KOLEKSI TERBARU & TERLENGKAP 2026</span>
-                    <span class="text-lg md:text-xl font-black uppercase tracking-widest mx-6 text-white/50">•</span>
-                    <span class="text-lg md:text-xl font-black uppercase tracking-widest mx-6">ST. JEROME LIBRARY NEW ARRIVALS</span>
-                    <span class="text-lg md:text-xl font-black uppercase tracking-widest mx-6 text-white/50">•</span>
-                    <span class="text-lg md:text-xl font-black uppercase tracking-widest mx-6">KOLEKSI TERBARU & TERLENGKAP 2026</span>
-                    <span class="text-lg md:text-xl font-black uppercase tracking-widest mx-6 text-white/50">•</span>
-                    <!-- Duplicate for seamless loop -->
-                    <span class="text-lg md:text-xl font-black uppercase tracking-widest mx-6">ST. JEROME LIBRARY NEW ARRIVALS</span>
-                    <span class="text-lg md:text-xl font-black uppercase tracking-widest mx-6 text-white/50">•</span>
-                    <span class="text-lg md:text-xl font-black uppercase tracking-widest mx-6">KOLEKSI TERBARU & TERLENGKAP 2026</span>
-                    <span class="text-lg md:text-xl font-black uppercase tracking-widest mx-6 text-white/50">•</span>
-                </div>
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col">
+        
+        <!-- HERO SECTION: Library Slideshow Background (Smooth 10-Second Transition, Full & Vivid) -->
+        <section class="w-full relative overflow-hidden pt-20 sm:pt-32 pb-24 sm:pb-36 border-b border-slate-200 min-h-[580px] flex items-center justify-center" x-data="heroSlideshow()">
+            
+            <!-- Background Image Slideshow with Smooth Crossfade (True Fade Transition) -->
+            <div class="absolute inset-0 z-0 overflow-hidden bg-slate-100">
+                <div class="absolute inset-0 bg-cover bg-center transition-opacity duration-2000 ease-in-out will-change-[opacity]"
+                     style="background-image: url('/static/img/bg3.jpg');"
+                     :class="currentBg === 0 ? 'opacity-85 pointer-events-auto' : 'opacity-0 pointer-events-none'"></div>
+                <div class="absolute inset-0 bg-cover bg-center transition-opacity duration-2000 ease-in-out will-change-[opacity]"
+                     style="background-image: url('/static/img/bg2.jpg');"
+                     :class="currentBg === 1 ? 'opacity-85 pointer-events-auto' : 'opacity-0 pointer-events-none'"></div>
+                <div class="absolute inset-0 bg-cover bg-center transition-opacity duration-2000 ease-in-out will-change-[opacity]"
+                     style="background-image: url('/static/img/bg1.jpg');"
+                     :class="currentBg === 2 ? 'opacity-85 pointer-events-auto' : 'opacity-0 pointer-events-none'"></div>
+                <div class="absolute inset-0 bg-cover bg-center transition-opacity duration-2000 ease-in-out will-change-[opacity]"
+                     style="background-image: url('/static/img/bg4.jpg');"
+                     :class="currentBg === 3 ? 'opacity-85 pointer-events-auto' : 'opacity-0 pointer-events-none'"></div>
+                <!-- Soft Warm Light Tint Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-white/70 backdrop-blur-[0.5px]"></div>
             </div>
 
-            <!-- Book Covers Ribbon (Moving Left to Right - Hover-Pause Enabled) -->
-            <div class="w-full relative h-[160px] overflow-hidden bg-[#3e2723] marquee-wrap" x-data="heroMarquee()" x-init="fetchCovers()">
-                <!-- Fade Edges -->
-                <div class="absolute inset-y-0 left-0 w-28 bg-gradient-to-r from-[#3e2723] to-transparent z-10 pointer-events-none"></div>
-                <div class="absolute inset-y-0 right-0 w-28 bg-gradient-to-l from-[#3e2723] to-transparent z-10 pointer-events-none"></div>
+            <!-- Centered Content (Kotak Jelek Telah Dihapus) -->
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center relative z-10">
+
+                <!-- Headline Display Terang & Elegan -->
+                <h1 class="font-serif-academic font-bold text-slate-900 text-3xl sm:text-5xl md:text-6xl mb-4 tracking-tight leading-[1.12]">
+                    Temukan Inspirasi Bacaan<br class="hidden sm:inline">&amp; Rujukan Studi Anda.
+                </h1>
+
+                <p class="text-slate-600 text-sm sm:text-base md:text-lg mb-8 max-w-2xl mx-auto font-normal leading-relaxed">
+                    Akses terpadu ribuan literatur filsafat, teologi, dan naskah referensi di St. Jerome Library. Ketik kata kunci dan sistem langsung menyajikan hasil pencarian secara lengkap.
+                </p>
+
+                <!-- SINGLE UNIFIED ACADEMIC SEARCH BAR (Direct Redirect to Results Page) -->
+                <div class="w-full max-w-2xl mx-auto mb-6">
+                    <form @submit.prevent="submitUnifiedSearch" class="relative flex items-center bg-white/95 backdrop-blur-md rounded-2xl border-2 border-slate-300 hover:border-sky-600 focus-within:border-sky-600 focus-within:ring-4 focus-within:ring-sky-500/15 shadow-xl transition-all p-1.5 sm:p-2">
+                        <div class="pl-4 pr-2 text-slate-400">
+                            <i class="fa-solid fa-magnifying-glass text-lg sm:text-xl text-sky-600"></i>
+                        </div>
+                        <input type="text" x-model="searchQuery" 
+                               placeholder="Cari judul buku, nama pengarang, atau nomor panggil DDC..." 
+                               class="w-full bg-transparent text-slate-900 placeholder:text-slate-400 text-sm sm:text-base font-medium py-2.5 sm:py-3 px-2 focus:outline-none"
+                               autofocus>
+                        <button type="submit" class="bg-slate-900 hover:bg-[#1b3b6f] text-white font-semibold text-xs sm:text-sm px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl transition-all shadow-md flex items-center gap-2 shrink-0">
+                            <span>Cari</span>
+                            <i class="fa-solid fa-arrow-right text-xs text-[#C5A059]"></i>
+                        </button>
+                    </form>
+                </div>
+
+
+
+            </div>
+        </section>
+
+        <!-- STATIC SPOTLIGHT SECTION: KOLEKSI BUKU PILIHAN TERBARU (Rotasi Mingguan Otomatis) -->
+        <section id="koleksi-terbaru" class="py-12 sm:py-16 bg-white w-full text-slate-900 border-b border-slate-200" x-data="showcase2026()" x-init="fetchShowcase()">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 
-                <div class="flex w-max h-full animate-marquee-slow-right gap-6 items-center opacity-95 hover:opacity-100 transition-opacity pt-4 pb-4">
-                    <template x-for="(book, index) in row1" :key="index">
-                        <div @click="window.location.href='/detail-opac?id=' + book.id" 
-                             :title="book.judul + (book.pengarang ? ' • ' + book.pengarang : '') + ' (Klik untuk Detail & Sitasi)'"
-                             class="w-[90px] md:w-[100px] shrink-0 bg-white shadow-xl rounded overflow-hidden transform transition duration-300 hover:-translate-y-2 hover:scale-110 cursor-pointer relative group/item">
-                            <img :src="getCover(book)" class="w-full h-[130px] md:h-[145px] object-cover" :alt="book.judul">
+                <!-- Section Header -->
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-10 pb-4 border-b border-slate-100 gap-3 pt-6 sm:pt-10">
+                    <div>
+                        <h2 class="font-serif-academic font-bold text-2xl sm:text-3xl text-slate-900">Buku Koleksi Pilihan</h2>
+                    </div>
+                    <div class="text-xs text-slate-500">
+                        Koleksi yang siap dibaca &amp; dipinjam di rak St. Jerome Library.
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div x-show="isLoading" class="py-16 text-center text-slate-400">
+                    <i class="fa-solid fa-circle-notch fa-spin text-2xl text-sky-600 mb-2"></i>
+                    <p class="text-xs font-medium">Memuat koleksi buku...</p>
+                </div>
+
+                <!-- 5 Book Cards Grid in 1 Horizontal Row on Desktop (Clean, Proportionate & Sharp) -->
+                <div x-show="!isLoading && displayBooks.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 sm:gap-6" x-cloak>
+                    <template x-for="book in displayBooks" :key="book.id">
+                        <div @click="window.location.href='/opac/detail?id=' + book.id" 
+                             class="flex flex-col bg-slate-50/70 hover:bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200 hover:border-[#1b3b6f] hover:shadow-xl transition-all duration-300 group cursor-pointer hover:-translate-y-1">
+                            
+                            <!-- Cover Image Container with Proper 3:4 Aspect Ratio -->
+                            <div class="w-full aspect-[3/4] bg-slate-200 rounded-xl shadow-xs mb-3 overflow-hidden relative border border-slate-200/80">
+                                <img :src="getCover(book)" 
+                                     :alt="book.judul" 
+                                     class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                     loading="lazy">
+                                
+                                <!-- Status Badge -->
+                                <div class="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[9.5px] font-bold tracking-tight uppercase shadow-xs bg-emerald-600 text-white backdrop-blur-xs">
+                                    <span>Tersedia</span>
+                                </div>
+                            </div>
+
+                            <!-- Book Metadata -->
+                            <div class="flex-1 flex flex-col justify-between">
+                                <div>
+                                    <h3 class="font-serif-academic font-bold text-sm sm:text-base leading-snug mb-1 line-clamp-2 text-slate-900 group-hover:text-[#1b3b6f] transition-colors" 
+                                        :title="book.judul"
+                                        x-text="book.judul"></h3>
+                                    <p class="text-slate-500 text-xs font-medium line-clamp-1 mb-2" 
+                                       :title="book.pengarang"
+                                       x-text="book.pengarang || '-'"></p>
+                                </div>
+
+                                <div class="pt-2.5 mt-2 border-t border-slate-200/80 flex items-center justify-between text-xs font-semibold text-[#1b3b6f]">
+                                    <span>Lihat Detail</span>
+                                    <i class="fa-solid fa-arrow-right text-[10px] transform group-hover:translate-x-1 transition-transform"></i>
+                                </div>
+                            </div>
+
                         </div>
                     </template>
                 </div>
+
+                <!-- Empty Fallback -->
+                <div x-show="!isLoading && displayBooks.length === 0" class="py-12 text-center text-slate-400 text-xs" x-cloak>
+                    Koleksi terbaru sedang disiapkan oleh pustakawan.
+                </div>
+
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- FITUR 4: Asisten Riset Skripsi & Silabus St. Jerome -->
-    <section id="asisten-riset" class="w-full bg-[#241715] text-white py-14 border-t border-[#4e342e] relative z-20">
-        <div class="max-w-[1200px] mx-auto px-6">
-            <div class="bg-gradient-to-br from-[#3e2723] to-[#1c1211] p-6 md:p-8 rounded-2xl border border-[#c09268]/40 shadow-2xl relative overflow-hidden">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
-                    <div>
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="bg-[#c09268]/20 text-[#E6B325] text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-[#c09268]/40 flex items-center gap-1.5">
-                                <i class="fa-solid fa-wand-magic-sparkles text-xs"></i> Fitur Riset Skripsi &amp; Silabus
-                            </span>
-                        </div>
-                        <h2 class="text-2xl md:text-3xl font-bold font-serif text-[#f7f4ee]">Asisten Riset Skripsi &amp; Silabus St. Jerome</h2>
-                        <p class="text-stone-300 text-xs md:text-sm mt-1 max-w-2xl font-light">
-                            Ketik rencana judul skripsi, proposal, atau topik makalah Anda. Sistem cerdas St. Jerome akan meracik paket literatur terkurasi (Sumber Primer, Ulasan Sekunder, dan Dokumen Gereja) yang siap diambil di rak perpustakaan.
-                        </p>
-                    </div>
+        <!-- SECTION: Fasilitas & Layanan (Compact 4 Cards) -->
+        <section class="py-14 sm:py-16 bg-slate-50 w-full text-slate-900 border-b border-slate-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                <div class="mb-8">
+                    <span class="text-xs font-bold uppercase tracking-widest text-slate-500">Layanan Pemustaka</span>
+                    <h2 class="font-serif-academic font-bold text-2xl sm:text-3xl text-slate-900 mt-1">Fasilitas St. Jerome Library</h2>
                 </div>
 
-                <!-- Thesis Search Form -->
-                <form @submit.prevent="runThesisMatcher" class="flex flex-col sm:flex-row gap-3">
-                    <div class="relative flex-1">
-                        <i class="fa-solid fa-book-open absolute left-4 top-1/2 -translate-y-1/2 text-stone-400"></i>
-                        <input type="text" x-model="thesisQuery" 
-                               placeholder="Ketik topik riset Anda, cth: Sakramen Rekonsiliasi, Ajaran Sosial Gereja tentang Keadilan Ekologis..." 
-                               class="w-full bg-white text-[#161015] text-sm md:text-base rounded-xl py-3.5 pl-11 pr-4 border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#E6B325] shadow-inner font-medium">
-                    </div>
-                    <button type="submit" :disabled="isMatchingThesis" class="bg-[#E6B325] hover:bg-white text-[#2e1d1a] font-bold px-6 py-3.5 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center gap-2 shrink-0">
-                        <span x-show="!isMatchingThesis"><i class="fa-solid fa-wand-magic-sparkles"></i> Racik Paket Literatur</span>
-                        <span x-show="isMatchingThesis" class="flex items-center gap-1.5"><i class="fa-solid fa-circle-notch fa-spin"></i> Meracik...</span>
-                    </button>
-                </form>
-
-                <!-- Suggested Prompt Chips & 14 Theses Gateway -->
-                <div class="mt-4 flex flex-wrap items-center gap-2 text-xs">
-                    <button type="button" @click="isThesesModalOpen = true" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-stone-950 font-bold px-3.5 py-1.5 rounded-full border border-yellow-300 shadow-md transition-all flex items-center gap-2 text-xs mr-2 cursor-pointer">
-                        <i class="fa-solid fa-graduation-cap text-stone-950"></i>
-                        <span>14 Tesis Komprehensif S.T.B. (IMAVI)</span>
-                        <span class="bg-stone-950 text-amber-300 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">14 TESIS</span>
-                    </button>
-                    <span class="text-stone-400 text-[11px] font-semibold">Topik Cepat:</span>
-                    <button type="button" @click="quickThesisTopic('Sakramen Ekaristi dan Rekonsiliasi')" class="bg-white/10 hover:bg-white/20 text-stone-200 px-3 py-1 rounded-full border border-white/10 transition-colors">🍞 Ekaristi & Sakramen</button>
-                    <button type="button" @click="quickThesisTopic('Ajaran Sosial Gereja dan Keadilan Lingkungan')" class="bg-white/10 hover:bg-white/20 text-stone-200 px-3 py-1 rounded-full border border-white/10 transition-colors">⚖️ Ajaran Sosial Gereja</button>
-                    <button type="button" @click="quickThesisTopic('Kristologi dan Penyelamatan Karl Rahner')" class="bg-white/10 hover:bg-white/20 text-stone-200 px-3 py-1 rounded-full border border-white/10 transition-colors">✝️ Kristologi</button>
-                    <button type="button" @click="quickThesisTopic('Filsafat Eksistensialisme dan Manusia')" class="bg-white/10 hover:bg-white/20 text-stone-200 px-3 py-1 rounded-full border border-white/10 transition-colors">🧠 Filsafat Manusia</button>
-                    <button type="button" @click="quickThesisTopic('Spiritualitas Doa Kontemplatif Ignasian')" class="bg-white/10 hover:bg-white/20 text-stone-200 px-3 py-1 rounded-full border border-white/10 transition-colors">🕯️ Spiritualitas</button>
-                    <button type="button" @click="quickThesisTopic('Hukum Kanonik Perkawinan Katolik')" class="bg-white/10 hover:bg-white/20 text-stone-200 px-3 py-1 rounded-full border border-white/10 transition-colors">📜 Hukum Kanonik</button>
-                </div>
-
-
-
-                <!-- Matcher Results Area -->
-                <div x-show="thesisResults" x-cloak class="mt-8 pt-6 border-t border-white/10">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <!-- 1. E-Resources -->
+                    <div @click="window.location.href='/e-resources'" class="bg-white rounded-2xl p-5 border border-slate-200 hover:border-sky-400 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group">
                         <div>
-                            <span class="text-xs text-[#E6B325] font-semibold uppercase tracking-wider">Hasil Racikan Paket Literatur:</span>
-                            <h3 class="text-xl font-bold font-serif text-white mt-0.5">
-                                Topik: "<span x-text="thesisResults ? thesisResults.topic : ''"></span>"
-                            </h3>
-                            <p class="text-xs text-stone-400 mt-1">
-                                Ditemukan <strong class="text-white" x-text="thesisResults ? thesisResults.total_found : 0"></strong> judul relevan di rak perpustakaan St. Jerome.
-                            </p>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <button @click="copyAllThesisCitations()" class="bg-white/15 hover:bg-white/25 text-white text-xs font-bold px-3.5 py-2 rounded-lg border border-white/20 transition-all flex items-center gap-1.5">
-                                <i class="fa-solid fa-copy"></i>
-                                <span x-text="thesisCopyToast ? 'Daftar Pustaka Tersalin! ✓' : 'Salin Daftar Pustaka (Turabian)'"></span>
-                            </button>
-                            <button @click="downloadThesisRis()" class="bg-[#E6B325] hover:bg-white text-[#2e1d1a] text-xs font-bold px-3.5 py-2 rounded-lg transition-all flex items-center gap-1.5 shadow">
-                                <i class="fa-solid fa-download"></i> Unduh Paket Zotero (.RIS)
-                            </button>
-                            <button @click="thesisResults = null" class="text-stone-400 hover:text-white text-xs px-2 py-2">
-                                <i class="fa-solid fa-xmark text-sm"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 3 Buckets Tabs -->
-                    <div class="flex border-b border-white/20 mb-6 gap-2 text-xs font-semibold">
-                        <button @click="thesisTab = 'primary'" 
-                                class="py-2.5 px-3 border-b-2 transition-colors flex items-center gap-1.5"
-                                :class="thesisTab === 'primary' ? 'border-[#E6B325] text-[#E6B325] font-bold' : 'border-transparent text-stone-400 hover:text-white'">
-                            <i class="fa-solid fa-star"></i> Sumber Primer &amp; Karya Pokok 
-                            <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-white/10" x-text="thesisResults ? thesisResults.primary.length : 0"></span>
-                        </button>
-                        <button @click="thesisTab = 'secondary'" 
-                                class="py-2.5 px-3 border-b-2 transition-colors flex items-center gap-1.5"
-                                :class="thesisTab === 'secondary' ? 'border-[#E6B325] text-[#E6B325] font-bold' : 'border-transparent text-stone-400 hover:text-white'">
-                            <i class="fa-solid fa-book-bookmark"></i> Ulasan Teologis &amp; Sekunder
-                            <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-white/10" x-text="thesisResults ? thesisResults.secondary.length : 0"></span>
-                        </button>
-                        <button @click="thesisTab = 'church'" 
-                                class="py-2.5 px-3 border-b-2 transition-colors flex items-center gap-1.5"
-                                :class="thesisTab === 'church' ? 'border-[#E6B325] text-[#E6B325] font-bold' : 'border-transparent text-stone-400 hover:text-white'">
-                            <i class="fa-solid fa-church"></i> Dokumen Gereja &amp; Magisterium
-                            <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-white/10" x-text="thesisResults ? thesisResults.church_docs.length : 0"></span>
-                        </button>
-                    </div>
-
-                    <!-- Book Cards in Selected Tab -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <template x-for="book in getActiveThesisBooks()" :key="book.id">
-                            <div class="bg-white/5 border border-white/10 rounded-xl p-4 flex gap-3.5 hover:bg-white/10 transition-all">
-                                <div class="w-16 h-24 shrink-0 bg-stone-800 rounded overflow-hidden shadow">
-                                    <img :src="getCoverUrl(book)" class="w-full h-full object-cover">
-                                </div>
-                                <div class="flex-1 min-w-0 flex flex-col justify-between">
-                                    <div>
-                                        <div class="flex items-center gap-1.5 mb-1">
-                                            <span class="bg-[#E6B325]/20 text-[#E6B325] border border-[#E6B325]/30 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold" x-text="book.nomor_panggil || book.klasifikasi || '-'"></span>
-                                            <span class="text-[10px] px-1.5 py-0.5 rounded font-bold" :class="book.tersedia > 0 ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'">
-                                                <span x-text="book.tersedia > 0 ? 'Tersedia di Rak' : 'Dipinjam'"></span>
-                                            </span>
-                                        </div>
-                                        <h4 class="text-sm font-bold text-white line-clamp-2 leading-tight hover:text-[#E6B325] cursor-pointer" @click="window.location.href='/detail-opac?id=' + book.id" x-text="book.judul"></h4>
-                                        <p class="text-xs text-stone-400 line-clamp-1 mt-0.5 font-medium" x-text="book.pengarang || '-'"></p>
-                                        <p class="text-[11px] text-stone-500 line-clamp-1 mt-0.5" x-text="book.lokasi_rak || ''"></p>
-                                    </div>
-                                    <div class="mt-2 pt-2 border-t border-white/10 flex items-center justify-between text-xs">
-                                        <button @click="openCitationModalFor(book)" class="text-[#E6B325] hover:underline flex items-center gap-1 font-semibold">
-                                            <i class="fa-solid fa-quote-right text-[10px]"></i> Sitasi
-                                        </button>
-                                        <button @click="openWaForBook(book)" class="text-green-400 hover:underline flex items-center gap-1 font-semibold">
-                                            <i class="fa-brands fa-whatsapp text-xs"></i> Tahan via WA
-                                        </button>
-                                        <a :href="'/detail-opac?id=' + book.id" class="text-stone-300 hover:text-white flex items-center gap-1">
-                                            Detail <i class="fa-solid fa-chevron-right text-[9px]"></i>
-                                        </a>
-                                    </div>
-                                </div>
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center text-base mb-3 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-laptop"></i>
                             </div>
-                        </template>
-                        <div x-show="getActiveThesisBooks().length === 0" class="col-span-full py-8 text-center text-stone-400 text-xs italic">
-                            Tidak ada koleksi pada kategori ini untuk topik yang dicari.
+                            <h3 class="text-base font-bold text-slate-900 mb-1 group-hover:text-blue-700 transition-colors">Akses E-Resources</h3>
+                            <p class="text-xs text-slate-600 leading-relaxed">Koleksi buku digital, repositori skripsi, dan jurnal teologi elektronik.</p>
+                        </div>
+                        <div class="pt-3 mt-3 border-t border-slate-100 text-xs font-semibold text-blue-700 flex items-center justify-between">
+                            <span>Akses Digital</span>
+                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- SECTION: Pilihan Kategori & Topik Studi (Menggantikan Tampilan Koleksi Terbaru yang Redundan) -->
-    <section class="py-16 md:py-20 bg-[#f7f4ee] w-full text-[#161015] border-t border-stone-200" id="kategori-studi">
-        <div class="max-w-[1200px] mx-auto px-6">
-            <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
-                <div>
-                    <span class="text-xs font-bold uppercase tracking-widest text-[#8c6d62]">Kurikulum &amp; Disiplin Akademik</span>
-                    <h2 class="headline-display text-3xl md:text-4xl text-[#2e1d1a] mt-1">Pilihan Kategori &amp; Topik Studi</h2>
-                    <p class="text-stone-600 text-sm mt-1 max-w-xl">
-                        Eksplorasi ribuan literatur terorganisir sesuai rumpun fakultas Filsafat, Teologi, dan Spiritualitas IMAVI.
-                    </p>
-                </div>
-                <div class="text-xs text-stone-500 font-medium">
-                    Pilih salah satu disiplin ilmu untuk melihat koleksi terkait di rak.
-                </div>
-            </div>
-
-            <!-- 8 Discipline Cards Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                <template x-for="cat in academicCategories" :key="cat.code">
-                    <div @click="selectCategory(cat)" 
-                         class="bg-white rounded-2xl p-6 border border-stone-200/90 shadow-sm hover:shadow-xl hover:border-[#c09268] cursor-pointer transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between group"
-                         :class="activeTopic === cat.code ? 'ring-2 ring-[#c09268] bg-amber-50/30' : ''">
+                    <!-- 2. Ruang Baca Tenang -->
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200 flex flex-col justify-between">
                         <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl transition-all shadow-sm"
-                                     :style="`background-color: ${cat.bgColor}; color: ${cat.color};`">
-                                    <i :class="cat.icon"></i>
-                                </div>
-                                <span class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-stone-100 text-stone-700 border border-stone-200" x-text="'DDC ' + cat.ddc"></span>
+                            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center text-base mb-3">
+                                <i class="fa-solid fa-book-open"></i>
                             </div>
-                            <h3 class="font-serif font-bold text-lg text-[#2e1d1a] mb-1.5 group-hover:text-[#5c3a21] transition-colors" x-text="cat.name"></h3>
-                            <p class="text-xs text-stone-600 leading-relaxed font-medium mb-4" x-text="cat.desc"></p>
+                            <h3 class="text-base font-bold text-slate-900 mb-1">Ruang Baca Tenang</h3>
+                            <p class="text-xs text-slate-600 leading-relaxed">Zona bebas kebisingan yang nyaman untuk konsentrasi membaca dan studi.</p>
                         </div>
-                        <div class="pt-3 border-t border-stone-100 flex items-center justify-between text-xs font-bold text-[#5c3a21] group-hover:text-[#c09268] transition-colors">
-                            <span x-text="cat.stats"></span>
-                            <span class="flex items-center gap-1">Jelajahi <i class="fa-solid fa-arrow-right text-[10px] transform group-hover:translate-x-1 transition-transform"></i></span>
+                        <div class="pt-3 mt-3 border-t border-slate-100 text-xs font-semibold text-slate-400 flex items-center justify-between">
+                            <span>Lantai Utama</span>
+                            <i class="fa-solid fa-check text-[10px] text-emerald-600"></i>
                         </div>
                     </div>
-                </template>
-            </div>
-        </div>
-    </section>
 
-    <!-- Loading State for Search / Topic -->
-    <div x-show="isLoading" class="py-20 text-center bg-paper-cream">
-        <i class="fa-solid fa-circle-notch fa-spin text-3xl text-charcoal-plum mb-4"></i>
-        <p class="text-graphite font-medium">Mencari koleksi perpustakaan...</p>
-    </div>
-
-    <!-- Results: Katalog Koleksi Section (Displays Search or Category Filter Results) -->
-    <section id="katalog" x-show="!isLoading && searchResults.length > 0" class="bg-[#e8decb]/50 py-16 w-full border-t border-stone-300/60" x-cloak>
-        <div class="max-w-[1200px] mx-auto px-6 mb-8">
-            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-                <div>
-                    <div class="flex items-center gap-2 mb-1.5">
-                        <span class="text-xs font-bold uppercase tracking-widest text-[#8c6d62]" 
-                              x-text="activeTopicName ? 'Katalog Rumpun Keilmuan' : (searchQuery ? 'Hasil Pencarian Koleksi' : 'Katalog Koleksi Perpustakaan')"></span>
-                        <template x-if="activeTopicName">
-                            <button @click="resetTopicFilter()" class="bg-[#3e2723] hover:bg-[#2e1d1a] text-[#E6B325] text-[11px] font-bold px-3 py-0.5 rounded-full shadow-sm flex items-center gap-1 transition-all">
-                                <i class="fa-solid fa-xmark"></i> Hapus Filter
-                            </button>
-                        </template>
-                        <template x-if="searchQuery && !activeTopicName">
-                            <button @click="resetSearch()" class="bg-[#3e2723] hover:bg-[#2e1d1a] text-[#E6B325] text-[11px] font-bold px-3 py-0.5 rounded-full shadow-sm flex items-center gap-1 transition-all">
-                                <i class="fa-solid fa-xmark"></i> Bersihkan
-                            </button>
-                        </template>
-                    </div>
-                    <h2 class="headline-display text-3xl md:text-4xl text-[#2e1d1a]" 
-                        x-text="activeTopicName ? activeTopicName : (searchQuery ? 'Hasil Pencarian' : 'Daftar Koleksi')"></h2>
-                </div>
-                <p class="text-ink font-medium text-xs md:text-sm">
-                    Menampilkan <span class="font-bold text-[#6d4c41]" x-text="searchResults.length"></span> buku
-                    <span x-show="searchQuery && !activeTopicName">untuk kata kunci "<span class="font-bold text-[#2e1d1a]" x-text="searchQuery"></span>"</span>
-                </p>
-            </div>
-        </div>
-
-        <!-- Modern Responsive Grid -->
-        <div class="max-w-[1200px] mx-auto px-6">
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
-                <template x-for="book in searchResults" :key="book.id">
-                    <div class="flex flex-col bg-white rounded-xl p-3 border border-stone-200 shadow-sm hover:shadow-xl transition-all duration-300 group">
-                        
-                        <!-- Book Cover Image -->
-                        <div class="w-full aspect-[2/3] bg-paper-cream rounded-lg shadow-book mb-3 overflow-hidden relative cursor-pointer" @click="window.location.href='/detail-opac?id=' + book.id">
-                            <img :src="getCoverUrl(book)" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
-                            
-                            <!-- Availability Pill -->
-                            <div class="absolute top-2 right-2 px-2 py-0.5 rounded text-[9px] font-bold tracking-tight uppercase shadow-sm"
-                                 :class="book.tersedia > 0 ? 'bg-[#3e2723] text-white' : 'bg-red-700 text-white'">
-                                <span x-text="book.tersedia > 0 ? 'Tersedia' : 'Dipinjam'"></span>
+                    <!-- 3. Ruang Kolaborasi -->
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200 flex flex-col justify-between">
+                        <div>
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-base mb-3">
+                                <i class="fa-solid fa-users"></i>
                             </div>
+                            <h3 class="text-base font-bold text-slate-900 mb-1">Ruang Kolaborasi</h3>
+                            <p class="text-xs text-slate-600 leading-relaxed">Area diskusi interaktif untuk kelompok studi, seminar, dan bedah karya ilmiah.</p>
                         </div>
-
-                        <!-- Metadata -->
-                        <div class="mb-1" x-show="book.nomor_panggil && book.nomor_panggil !== '-'">
-                            <span class="inline-block bg-[#efebe9] text-[#4e342e] border border-[#d7ccc8] px-1.5 py-0.5 rounded text-[10px] font-mono font-bold tracking-tight" x-text="book.nomor_panggil"></span>
-                        </div>
-                        <h3 class="headline-display text-sm leading-snug mb-1 line-clamp-2 text-[#2e1d1a] cursor-pointer hover:text-[#8c6d62]" 
-                            @click="window.location.href='/detail-opac?id=' + book.id" 
-                            x-text="book.judul"></h3>
-                        <p class="text-stone-500 text-[11px] font-medium line-clamp-1 mb-3" x-text="book.pengarang || '-'"></p>
-
-                        <!-- Quick Actions Footer -->
-                        <div class="mt-auto pt-2 border-t border-stone-100 flex items-center justify-between text-[11px] font-semibold">
-                            <button @click="openCitationModalFor(book)" class="text-[#8c6d62] hover:text-[#2e1d1a] flex items-center gap-1" title="Salin Sitasi Skripsi">
-                                <i class="fa-solid fa-quote-right text-[10px]"></i> Sitasi
-                            </button>
-                            <button @click="openWaForBook(book)" class="text-green-600 hover:text-green-800 flex items-center gap-1" title="Tanya Pustakawan via WA">
-                                <i class="fa-brands fa-whatsapp text-xs"></i> WA
-                            </button>
-                            <a :href="'/detail-opac?id=' + book.id" class="text-stone-400 hover:text-stone-700" title="Detail Lengkap">
-                                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                            </a>
+                        <div class="pt-3 mt-3 border-t border-slate-100 text-xs font-semibold text-slate-400 flex items-center justify-between">
+                            <span>Area Diskusi</span>
+                            <i class="fa-solid fa-check text-[10px] text-emerald-600"></i>
                         </div>
                     </div>
-                </template>
+
+                    <!-- 4. Bimbingan Riset Skripsi -->
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200 flex flex-col justify-between">
+                        <div>
+                            <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center text-base mb-3">
+                                <i class="fa-solid fa-hands-holding-circle"></i>
+                            </div>
+                            <h3 class="text-base font-bold text-slate-900 mb-1">Bimbingan Riset</h3>
+                            <p class="text-xs text-slate-600 leading-relaxed">Pendampingan pustakawan dalam penelusuran literatur dan sitasi Turabian/APA.</p>
+                        </div>
+                        <div class="pt-3 mt-3 border-t border-slate-100 text-xs font-semibold text-slate-400 flex items-center justify-between">
+                            <span>Meja Sirkulasi</span>
+                            <i class="fa-solid fa-check text-[10px] text-emerald-600"></i>
+                        </div>
+                    </div>
+                </div>
+
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Empty State -->
-    <section x-show="!isLoading && searchQuery !== '' && searchResults.length === 0" class="bg-paper-cream py-section w-full" x-cloak>
-        <div class="max-w-[1200px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div class="max-w-[520px]">
-                <h2 class="headline-display text-4xl md:text-5xl mb-4">Buku tidak ditemukan.</h2>
-                <p class="text-graphite mb-8 leading-relaxed">
-                    Kami tidak dapat menemukan "<span x-text="searchQuery" class="font-semibold text-ink"></span>" di rak kami saat ini. 
-                    Namun jangan khawatir, Anda dapat mengusulkan buku ini kepada pustakawan kami untuk ditambahkan ke koleksi.
-                </p>
-                <button @click="openRequestModal()" class="btn-pill-dark">
-                    Usulkan Buku Ini
-                </button>
-            </div>
-            <div class="hidden md:flex justify-end">
-                <div class="w-64 h-64 bg-white rounded-full flex items-center justify-center shadow-pill">
-                    <i class="fa-solid fa-book-open-reader text-6xl text-storybook-sky opacity-80"></i>
-                </div>
-            </div>
-        </div>
-    </section>
+    </main>
 
-    <!-- Section: Fasilitas & Layanan -->
-    <section x-show="searchQuery === '' && !activeTopic" x-data="{ activeImg: '/static/img/bg3.jpg' }" class="py-16 md:py-24 bg-[#2e1d1a] w-full text-white relative z-20 border-t border-[#4e342e] font-sans overflow-hidden">
-        <div class="absolute top-0 right-0 w-full lg:w-[65%] h-full opacity-20 lg:opacity-50 pointer-events-none">
-            <img :src="activeImg" class="w-full h-full object-cover mix-blend-luminosity sepia-[.4] transition-all duration-700 ease-in-out">
-            <div class="absolute inset-0 bg-gradient-to-r from-[#2e1d1a] via-[#2e1d1a]/80 to-transparent"></div>
-            <div class="absolute inset-0 bg-gradient-to-b from-[#2e1d1a] via-transparent to-[#2e1d1a]"></div>
-        </div>
-
-        <div class="max-w-[1200px] mx-auto px-6 md:px-8 relative z-10 flex">
-            <div class="w-full lg:w-1/2 flex flex-col">
-                <div @click="window.location.href='/e-resources'" @mouseenter="activeImg = '/static/img/bg3.jpg'" class="group border-b border-[#4e342e] py-8 flex items-start gap-6 cursor-pointer hover:border-white/40 transition-colors">
-                    <div class="mt-1 text-white/50 group-hover:text-[#facc15] transition-colors">
-                        <i class="fa-solid fa-laptop text-xl w-6 text-center"></i>
-                    </div>
-                    <div class="flex-1 pr-4">
-                        <h3 class="text-2xl font-bold tracking-tight mb-2 text-white">Akses E-Resources</h3>
-                        <p class="text-sm text-white/60 leading-relaxed font-medium">Jaringan eksklusif ke ribuan jurnal teologi, filsafat, dan e-book dari berbagai database akademik global ternama.</p>
-                    </div>
-                    <div class="w-8 h-8 shrink-0 rounded-full border border-[#4e342e] flex items-center justify-center text-white/50 group-hover:bg-[#facc15] group-hover:border-[#facc15] group-hover:text-[#2e1d1a] transition-all -rotate-45 group-hover:rotate-0">
-                        <i class="fa-solid fa-arrow-right text-xs"></i>
-                    </div>
-                </div>
-
-                <div @mouseenter="activeImg = '/static/img/bg2.jpg'" class="group border-b border-[#4e342e] py-8 flex items-start gap-6 cursor-pointer hover:border-white/40 transition-colors">
-                    <div class="mt-1 text-white/50 group-hover:text-[#facc15] transition-colors">
-                        <i class="fa-solid fa-book-open text-xl w-6 text-center"></i>
-                    </div>
-                    <div class="flex-1 pr-4">
-                        <h3 class="text-2xl font-bold tracking-tight mb-2 text-white">Ruang Baca Tenang</h3>
-                        <p class="text-sm text-white/60 leading-relaxed font-medium">Lingkungan kondusif dan hening yang dirancang khusus untuk kontemplasi dan studi literatur mendalam.</p>
-                    </div>
-                    <div class="w-8 h-8 shrink-0 rounded-full border border-[#4e342e] flex items-center justify-center text-white/50 group-hover:bg-[#facc15] group-hover:border-[#facc15] group-hover:text-[#2e1d1a] transition-all -rotate-45 group-hover:rotate-0">
-                        <i class="fa-solid fa-arrow-right text-xs"></i>
-                    </div>
-                </div>
-
-                <div @mouseenter="activeImg = '/static/img/bg4.jpg'" class="group border-b border-[#4e342e] py-8 flex items-start gap-6 cursor-pointer hover:border-white/40 transition-colors">
-                    <div class="mt-1 text-white/50 group-hover:text-[#facc15] transition-colors">
-                        <i class="fa-solid fa-users text-xl w-6 text-center"></i>
-                    </div>
-                    <div class="flex-1 pr-4">
-                        <h3 class="text-2xl font-bold tracking-tight mb-2 text-white">Ruang Kolaborasi</h3>
-                        <p class="text-sm text-white/60 leading-relaxed font-medium">Fasilitas ruang diskusi interaktif yang nyaman untuk kelompok studi mahasiswa maupun kegiatan bedah buku.</p>
-                    </div>
-                    <div class="w-8 h-8 shrink-0 rounded-full border border-[#4e342e] flex items-center justify-center text-white/50 group-hover:bg-[#facc15] group-hover:border-[#facc15] group-hover:text-[#2e1d1a] transition-all -rotate-45 group-hover:rotate-0">
-                        <i class="fa-solid fa-arrow-right text-xs"></i>
-                    </div>
-                </div>
-
-                <div @mouseenter="activeImg = '/static/img/bg1.jpg'" class="group border-b border-[#4e342e] py-8 flex items-start gap-6 cursor-pointer hover:border-white/40 transition-colors">
-                    <div class="mt-1 text-white/50 group-hover:text-[#facc15] transition-colors">
-                        <i class="fa-solid fa-hands-helping text-xl w-6 text-center"></i>
-                    </div>
-                    <div class="flex-1 pr-4">
-                        <h3 class="text-2xl font-bold tracking-tight mb-2 text-white">Bimbingan Riset Skripsi</h3>
-                        <p class="text-sm text-white/60 leading-relaxed font-medium">Pustakawan profesional kami siap mendampingi Anda dalam penelusuran literatur untuk kelancaran tugas akhir maupun tesis.</p>
-                    </div>
-                    <div class="w-8 h-8 shrink-0 rounded-full border border-[#4e342e] flex items-center justify-center text-white/50 group-hover:bg-[#facc15] group-hover:border-[#facc15] group-hover:text-[#2e1d1a] transition-all -rotate-45 group-hover:rotate-0">
-                        <i class="fa-solid fa-arrow-right text-xs"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-[#0f0a09] py-16 w-full text-white/70 text-sm font-sans">
-        <div class="max-w-[1200px] mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
+    <!-- FOOTER (Konsisten: St. Jerome Library & IMAVI, Rapi & Elegan) -->
+    <footer class="bg-slate-900 py-12 w-full text-slate-400 text-sm font-sans border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-10">
+            
+            <!-- Col 1: Identitas Resmi -->
             <div class="col-span-1 md:col-span-1">
-                <div class="flex items-center gap-3 mb-6">
-                    <img src="/static/img/logo_imavi.png" alt="Logo" class="h-10 w-10 object-contain bg-white/20 p-1 rounded-full backdrop-blur-sm">
-                    <h2 class="text-white text-xl font-bold tracking-wide">St. Jerome</h2>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="h-10 w-10 rounded-full overflow-hidden p-0.5 bg-white border border-slate-700 shrink-0 flex items-center justify-center">
+                        <img src="/static/img/logo_imavi.png" alt="Logo IMAVI" class="w-full h-full object-contain rounded-full">
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-script-elegant text-2xl text-white leading-none">St. Jerome Library</span>
+                        <span class="text-slate-400 text-[9px] uppercase tracking-wider font-semibold">IMAVI Surabaya</span>
+                    </div>
                 </div>
-                <p class="mb-8 leading-relaxed text-xs text-white/60">
-                    Perpustakaan St. Jerome hadir dengan visi untuk menyediakan sumber literatur teologi, filsafat, dan humaniora terlengkap bagi para pemustaka, sivitas akademika, dan masyarakat.
+                <p class="leading-relaxed text-xs text-slate-400">
+                    Katalog Online Publik (OPAC) resmi Institutum Ioannis Mariae Vianney (IMAVI) Surabaya. Menyediakan akses literatur filsafat, teologi, dan naskah ilmiah.
                 </p>
             </div>
+
+            <!-- Col 2: Navigasi OPAC -->
             <div class="col-span-1 md:col-span-1 md:ml-auto">
-                <h3 class="text-white font-bold tracking-[0.2em] uppercase mb-6 text-xs">Navigasi OPAC</h3>
-                <ul class="space-y-4 text-xs">
+                <h3 class="text-white font-bold tracking-[0.2em] uppercase mb-4 text-xs">Pintasan OPAC</h3>
+                <ul class="space-y-2.5 text-xs">
                     <li><a href="/opac" class="hover:text-white transition-colors">Beranda OPAC</a></li>
-                    <li><a href="#kategori-studi" class="hover:text-white transition-colors">Topik Studi</a></li>
-                    <li><a href="#asisten-riset" class="hover:text-white transition-colors">Asisten Riset Skripsi</a></li>
+                    <li><a href="#koleksi-terbaru" class="hover:text-white transition-colors">Buku Pilihan</a></li>
+                    <li><a href="/opac/repository" class="hover:text-white transition-colors">Repository Skripsi</a></li>
                     <li><a href="/e-resources" class="hover:text-white transition-colors">E-Resources</a></li>
-                    <li><a href="javascript:void(0)" @click.prevent="openRequestModal()" class="hover:text-white transition-colors">Usulan Buku Baru</a></li>
                 </ul>
             </div>
+
+            <!-- Col 3: Akses Sistem -->
             <div class="col-span-1 md:col-span-1 md:ml-auto">
-                <h3 class="text-white font-bold tracking-[0.2em] uppercase mb-6 text-xs">Tautan Akademik</h3>
-                <ul class="space-y-4 text-xs">
-                    <li><a href="https://imavi.org" target="_blank" class="hover:text-white transition-colors">Website IMAVI</a></li>
-                    <li><a href="https://ukwms.ac.id" target="_blank" class="hover:text-white transition-colors">Universitas Katolik Widya Mandala</a></li>
+                <h3 class="text-white font-bold tracking-[0.2em] uppercase mb-4 text-xs">Akses Sistem</h3>
+                <ul class="space-y-2.5 text-xs">
+                    <li><a href="/opac/member/login" class="hover:text-white transition-colors">Portal Anggota</a></li>
+                    <li><a href="javascript:void(0)" @click.prevent="openRequestModal()" class="hover:text-white transition-colors">Usulan Buku Baru</a></li>
+                    <li><a href="https://imavi.org" target="_blank" class="hover:text-white transition-colors">Website Resmi IMAVI</a></li>
                     <li><a href="/login" class="hover:text-white transition-colors">Login Pustakawan</a></li>
                 </ul>
             </div>
+
+            <!-- Col 4: Sirkulasi -->
             <div class="col-span-1 md:col-span-1 md:ml-auto">
-                <h3 class="text-white font-bold tracking-[0.2em] uppercase mb-6 text-xs">Kontak &amp; Bantuan</h3>
-                <p class="text-xs text-white/60 mb-4">Layanan Sirkulasi &amp; WhatsApp Perpustakaan:</p>
-                <a href="https://wa.me/6281234567890" target="_blank" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all">
+                <h3 class="text-white font-bold tracking-[0.2em] uppercase mb-4 text-xs">Bantuan Sirkulasi</h3>
+                <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                    Pertanyaan ketersediaan buku atau perpanjangan dapat diajukan langsung ke meja sirkulasi.
+                </p>
+                <a x-show="hasWaPhone()" x-cloak :href="'https://wa.me/' + cleanPhone(waPhone)" target="_blank" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all shadow-xs">
                     <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp Sirkulasi
                 </a>
             </div>
         </div>
-        <div class="max-w-[1200px] mx-auto px-6 mt-16 pt-8 border-t border-white/10 text-center text-[11px] text-white/30 tracking-widest uppercase">
-            &copy; 2026 {{ branding.library_name }} • St. Jerome Apps. Hak Cipta Dilindungi.
+
+        <!-- Bottom Copyright -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 pt-6 border-t border-slate-800 text-center text-[11px] text-slate-500 tracking-wider uppercase flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>&copy; 2026 St. Jerome Library • All Rights Reserved.</span>
+            <span class="text-[#C5A059] font-medium">Institut Filsafat &amp; Teologi St. Yohanes Maria Vianney (IMAVI)</span>
         </div>
     </footer>
 
-    <!-- Request Modal -->
-    <div x-show="isRequestModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" x-cloak>
-        <div class="bg-white rounded-2xl w-full max-w-[500px] p-8 shadow-2xl border border-stone-200" @click.outside="closeModal()">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="headline-display text-2xl text-[#2e1d1a]">Usulan Buku Baru</h3>
-                <button @click="closeModal()" class="text-stone-400 hover:text-stone-700 text-xl"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <form @submit.prevent="submitRequest" class="flex flex-col gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-stone-700 mb-1.5 uppercase tracking-wider">Judul Buku / Topik</label>
-                    <input type="text" x-model="requestForm.judul" required class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-[#c09268]">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-stone-700 mb-1.5 uppercase tracking-wider">Pengarang (Opsional)</label>
-                    <input type="text" x-model="requestForm.pengarang" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-[#c09268]">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-stone-700 mb-1.5 uppercase tracking-wider">Catatan Tambahan (Opsional)</label>
-                    <textarea x-model="requestForm.catatan" rows="3" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-[#c09268]"></textarea>
-                </div>
-                <button type="submit" class="btn-pill-dark w-full mt-2">Kirim Usulan</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 14 TESIS KOMPREHENSIF S.T.B. (IMAVI ACADEMIC GUIDEBOOK) -->
-    <div x-show="isThesesModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 overflow-y-auto" x-cloak>
-        <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] shadow-2xl border border-stone-200 flex flex-col overflow-hidden my-auto" @click.outside="isThesesModalOpen = false">
-            <!-- Modal Header -->
-            <div class="bg-[#2e1d1a] px-6 py-5 text-white flex items-center justify-between border-b border-[#4e342e] shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-[#E6B325] text-[#2e1d1a] flex items-center justify-center text-lg font-bold shadow-md">
-                        <i class="fa-solid fa-graduation-cap"></i>
-                    </div>
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <h3 class="font-bold text-lg font-serif leading-tight">14 Tesis Komprehensif S.T.B.</h3>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#E6B325]/20 text-[#E6B325] border border-[#E6B325]/40 font-mono">Buku Panduan 2026/2027</span>
-                        </div>
-                        <p class="text-xs text-stone-300 mt-0.5">Bahan Ujian Komprehensif Teologi Resmi Baccalaureate in Sacred Theology (IMAVI - Hal. 115-117)</p>
-                    </div>
-                </div>
-                <button @click="isThesesModalOpen = false" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-stone-300 hover:text-white flex items-center justify-center text-base transition">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-
-            <!-- Cluster Tabs -->
-            <div class="px-6 py-3 bg-stone-100 border-b border-stone-200 flex flex-wrap items-center gap-2 text-xs font-semibold shrink-0">
-                <span class="text-stone-500 mr-1">Rumpun Teologi:</span>
-                <button type="button" @click="activeThesesCluster = 'all'" 
-                        :class="activeThesesCluster === 'all' ? 'bg-stone-900 text-white' : 'bg-white text-stone-600 hover:bg-stone-200'"
-                        class="px-3 py-1.5 rounded-xl border border-stone-200 transition">Semua (14 Tesis)</button>
-                <button type="button" @click="activeThesesCluster = 'biblical'" 
-                        :class="activeThesesCluster === 'biblical' ? 'bg-amber-800 text-white' : 'bg-white text-stone-600 hover:bg-stone-200'"
-                        class="px-3 py-1.5 rounded-xl border border-stone-200 transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-book-bible"></i> Biblika (4)
-                </button>
-                <button type="button" @click="activeThesesCluster = 'dogmatic'" 
-                        :class="activeThesesCluster === 'dogmatic' ? 'bg-amber-800 text-white' : 'bg-white text-stone-600 hover:bg-stone-200'"
-                        class="px-3 py-1.5 rounded-xl border border-stone-200 transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-cross"></i> Dogmatika (4)
-                </button>
-                <button type="button" @click="activeThesesCluster = 'moral'" 
-                        :class="activeThesesCluster === 'moral' ? 'bg-amber-800 text-white' : 'bg-white text-stone-600 hover:bg-stone-200'"
-                        class="px-3 py-1.5 rounded-xl border border-stone-200 transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-scale-balanced"></i> Moral (4)
-                </button>
-                <button type="button" @click="activeThesesCluster = 'practical'" 
-                        :class="activeThesesCluster === 'practical' ? 'bg-amber-800 text-white' : 'bg-white text-stone-600 hover:bg-stone-200'"
-                        class="px-3 py-1.5 rounded-xl border border-stone-200 transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-hands-praying"></i> Praktika &amp; Pastoral (4)
-                </button>
-            </div>
-
-            <!-- Theses List Container -->
-            <div class="p-6 overflow-y-auto space-y-4 max-h-[60vh] bg-stone-50/50">
-                <template x-for="item in filteredThesesList" :key="item.num">
-                    <div class="bg-white rounded-2xl p-5 border border-stone-200 shadow-2xs hover:shadow-md transition">
-                        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                            <div class="space-y-1 flex-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase"
-                                          :class="getClusterBadgeClass(item.clusterKey)" x-text="item.clusterName"></span>
-                                    <span class="text-xs font-bold text-stone-900" x-text="'Tesis ' + item.num + ': ' + item.title"></span>
-                                </div>
-                                <p class="text-xs text-stone-700 italic border-l-2 border-amber-600 pl-3 py-1 bg-amber-50/30 rounded-r-lg mt-2" x-text="'“' + item.statement + '”'"></p>
-                                <p class="text-[11px] text-stone-500 pt-1" x-text="item.note"></p>
-                            </div>
-                            <button type="button" @click="selectThesis(item.query)" 
-                                    class="shrink-0 px-4 py-2 bg-[#2e1d1a] hover:bg-stone-900 text-[#E6B325] hover:text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
-                                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                                <span>Racik Literatur</span>
-                            </button>
-                        </div>
-                    </div>
-                </template>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="px-6 py-3.5 bg-white border-t border-stone-200 flex items-center justify-between text-xs text-stone-500 shrink-0">
-                <span>Klik <strong>Racik Literatur</strong> untuk otomatis menemukan Sumber Primer, Ulasan Sekunder, dan Dokumen Gereja di rak perpustakaan.</span>
-                <button type="button" @click="isThesesModalOpen = false" class="px-4 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg font-semibold transition">
-                    Tutup
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- UNIVERSAL 1-CLICK CITATION MODAL (FITUR 3) -->
-    <div x-show="citationModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" x-cloak>
-        <div class="bg-white rounded-2xl w-full max-w-xl shadow-2xl border border-stone-200 overflow-hidden" @click.outside="citationModalOpen = false">
-            <div class="bg-[#2e1d1a] px-6 py-4 flex items-center justify-between text-white">
+    <!-- MODAL USULAN BUKU BARU -->
+    <div x-show="isRequestModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4" x-cloak>
+        <div class="bg-white rounded-2xl w-full max-w-[480px] p-6 sm:p-7 shadow-2xl border border-slate-200" @click.outside="closeModal()">
+            <div class="flex justify-between items-center mb-5">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-full bg-[#E6B325] text-[#2e1d1a] flex items-center justify-center text-xs font-bold">
-                        <i class="fa-solid fa-quote-right"></i>
+                    <div class="w-8 h-8 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-file-pen"></i>
                     </div>
-                    <div>
-                        <h3 class="font-bold text-base leading-tight">Generator Sitasi Skripsi 1-Klik</h3>
-                        <p class="text-[11px] text-[#E6B325] tracking-wider uppercase">Standar Akademik Filsafat &amp; Teologi</p>
-                    </div>
+                    <h3 class="font-serif-academic font-bold text-xl text-slate-900">Usulan Pengadaan Buku</h3>
                 </div>
-                <button @click="citationModalOpen = false" class="text-white/60 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+                <button @click="closeModal()" class="text-slate-400 hover:text-slate-700 text-lg"><i class="fa-solid fa-xmark"></i></button>
             </div>
-
-            <div class="p-6">
-                <!-- Tabs -->
-                <div class="flex border-b border-stone-200 mb-4 gap-2 text-xs font-semibold">
-                    <button @click="citationTab = 'footnote'" 
-                            class="py-2.5 px-3 border-b-2 transition-colors flex items-center gap-1.5"
-                            :class="citationTab === 'footnote' ? 'border-[#5c3a21] text-[#5c3a21] font-bold' : 'border-transparent text-stone-500 hover:text-stone-800'">
-                        <i class="fa-solid fa-file-pen"></i> Turabian (Catatan Kaki)
-                    </button>
-                    <button @click="citationTab = 'biblio'" 
-                            class="py-2.5 px-3 border-b-2 transition-colors flex items-center gap-1.5"
-                            :class="citationTab === 'biblio' ? 'border-[#5c3a21] text-[#5c3a21] font-bold' : 'border-transparent text-stone-500 hover:text-stone-800'">
-                        <i class="fa-solid fa-book-bookmark"></i> Turabian (Daftar Pustaka)
-                    </button>
-                    <button @click="citationTab = 'apa'" 
-                            class="py-2.5 px-3 border-b-2 transition-colors flex items-center gap-1.5"
-                            :class="citationTab === 'apa' ? 'border-[#5c3a21] text-[#5c3a21] font-bold' : 'border-transparent text-stone-500 hover:text-stone-800'">
-                        <i class="fa-solid fa-graduation-cap"></i> APA (Edisi 7)
-                    </button>
+            <form @submit.prevent="submitRequest" class="flex flex-col gap-3.5 text-xs sm:text-sm">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Judul Buku / Topik Riset <span class="text-rose-500">*</span></label>
+                    <input type="text" x-model="requestForm.judul" required placeholder="Cth: Teologi Sakramen Ekaristi..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500">
                 </div>
-
-                <!-- Citation Box -->
-                <div class="bg-stone-50 border border-stone-200 rounded-xl p-4 min-h-[90px] flex items-center">
-                    <p class="text-sm text-stone-800 leading-relaxed font-serif" x-html="renderCitationHtml()"></p>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Nama Pengarang / Penerbit</label>
+                    <input type="text" x-model="requestForm.pengarang" placeholder="Cth: Joseph Ratzinger / Kanisius" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500">
                 </div>
-
-                <div class="mt-2 text-[11px] text-stone-500">
-                    <span x-show="citationTab === 'footnote'">*Format catatan kaki Turabian/Chicago (ganti [halaman] dengan nomor referensi skripsi Anda).</span>
-                    <span x-show="citationTab === 'biblio'">*Format daftar pustaka Turabian/Chicago urut abjad nama belakang penulis.</span>
-                    <span x-show="citationTab === 'apa'">*Format daftar pustaka APA 7th Edition.</span>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Catatan Tambahan</label>
+                    <textarea x-model="requestForm.catatan" rows="3" placeholder="Informasikan semester atau alasan urgensi kebutuhan buku..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"></textarea>
                 </div>
-
-                <!-- Actions -->
-                <div class="mt-6 flex flex-col sm:flex-row gap-3">
-                    <button @click="copyCitation()" 
-                            class="flex-1 flex items-center justify-center gap-2 bg-[#2e1d1a] hover:bg-[#4e342e] text-[#E6B325] py-2.5 px-4 rounded-xl font-bold shadow text-xs transition-all">
-                        <i class="fa-solid fa-copy"></i>
-                        <span x-text="copyToast ? 'Tersalin ke Clipboard! ✓' : 'Salin Sitasi'"></span>
-                    </button>
-                    <button @click="downloadRis()" 
-                            class="flex items-center justify-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-700 py-2.5 px-4 rounded-xl font-bold border border-stone-300 text-xs transition-all">
-                        <i class="fa-solid fa-file-arrow-down text-stone-600"></i>
-                        <span>Ekspor .RIS (Zotero &amp; Mendeley)</span>
-                    </button>
+                <div class="flex justify-end gap-2.5 mt-2 pt-2 border-t border-slate-100">
+                    <button type="button" @click="closeModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-medium">Batal</button>
+                    <button type="submit" class="px-5 py-2 bg-slate-900 hover:bg-[#1b3b6f] text-white font-semibold rounded-xl transition-all shadow-xs">Kirim Usulan</button>
                 </div>
-            </div>
-
-            <div class="bg-stone-100/80 px-6 py-3 border-t border-stone-200 text-right">
-                <button @click="citationModalOpen = false" class="text-xs font-semibold text-stone-600 hover:text-stone-900">Tutup</button>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -798,7 +419,7 @@
             }
 
             let title = (book.judul || 'Koleksi Perpustakaan').replace(/["'<>]/g, '');
-            if (title.length > 40) title = title.substring(0, 40) + '...';
+            if (title.length > 38) title = title.substring(0, 38) + '...';
             
             let words = title.split(' ');
             let lines = [];
@@ -817,648 +438,102 @@
                 lines.push('...');
             }
             
-            const colors = ['#2e1d1a', '#3e2723', '#4a154b', '#1a237e', '#1b5e20', '#37474f', '#4e342e'];
+            const colors = ['#0f172a', '#1e293b', '#1e3a5f', '#134e4a', '#334155'];
             const bgColor = colors[(book.id || 0) % colors.length];
+            const libShort = 'ST. JEROME LIBRARY';
             
-            let author = (book.pengarang || 'St. Jerome Library').replace(/["'<>]/g, '');
+            let author = (book.pengarang || 'Koleksi Akademik').replace(/["'<>]/g, '');
             if (author.length > 24) author = author.substring(0, 24) + '...';
 
             let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="280" viewBox="0 0 200 280">
                 <defs>
                     <linearGradient id="g_${book.id || 0}" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stop-color="${bgColor}" />
-                        <stop offset="100%" stop-color="#140f0d" />
+                        <stop offset="100%" stop-color="#020617" />
                     </linearGradient>
                     <linearGradient id="spine_${book.id || 0}" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color="#000000" stop-opacity="0.6"/>
-                        <stop offset="50%" stop-color="#ffffff" stop-opacity="0.12"/>
-                        <stop offset="100%" stop-color="#000000" stop-opacity="0.4"/>
+                        <stop offset="0%" stop-color="#000000" stop-opacity="0.65"/>
+                        <stop offset="45%" stop-color="#ffffff" stop-opacity="0.12"/>
+                        <stop offset="100%" stop-color="#000000" stop-opacity="0.45"/>
                     </linearGradient>
                 </defs>
-                <rect width="200" height="280" rx="4" fill="url(#g_${book.id || 0})"/>
-                <rect x="18" y="14" width="168" height="252" rx="2" fill="none" stroke="#E6B325" stroke-width="1.5" stroke-opacity="0.6"/>
-                <rect x="22" y="18" width="160" height="244" rx="1" fill="none" stroke="#E6B325" stroke-width="0.5" stroke-opacity="0.4"/>
+                <rect width="200" height="280" rx="3" fill="url(#g_${book.id || 0})"/>
+                <rect x="18" y="14" width="168" height="252" rx="2" fill="none" stroke="#94a3b8" stroke-width="1.2" stroke-opacity="0.4"/>
+                <rect x="22" y="18" width="160" height="244" rx="1" fill="none" stroke="#94a3b8" stroke-width="0.5" stroke-opacity="0.2"/>
                 <rect width="14" height="280" fill="url(#spine_${book.id || 0})"/>
-                <line x1="14" y1="0" x2="14" y2="280" stroke="#000000" stroke-width="1" stroke-opacity="0.5"/>
-                <circle cx="106" cy="48" r="14" fill="#E6B325" fill-opacity="0.15" stroke="#E6B325" stroke-width="1"/>
-                <text x="106" y="52" fill="#E6B325" font-family="serif" font-size="11" font-weight="bold" text-anchor="middle">SJ</text>
-                <text x="106" y="90" fill="#ffffff" font-family="'Cinzel', Georgia, serif" font-size="12" font-weight="bold" text-anchor="middle">`;
+                <line x1="14" y1="0" x2="14" y2="280" stroke="#000000" stroke-width="1.2" stroke-opacity="0.55"/>
+                <circle cx="106" cy="46" r="14" fill="#38bdf8" fill-opacity="0.18" stroke="#38bdf8" stroke-opacity="0.75" stroke-width="1"/>
+                <text x="106" y="50" fill="#e0f2fe" font-family="'Inter', sans-serif" font-size="8.5" font-weight="bold" text-anchor="middle">${book.klasifikasi ? String(book.klasifikasi).substring(0, 3) : 'DDC'}</text>
+                <text x="106" y="88" fill="#f8fafc" font-family="'Playfair Display', Georgia, serif" font-size="11.5" font-weight="bold" text-anchor="middle">`;
 
             lines.forEach((l, i) => {
                 svg += `<tspan x="106" dy="${i === 0 ? 0 : 16}">${l}</tspan>`;
             });
 
             svg += `</text>
-                <line x1="60" y1="195" x2="152" y2="195" stroke="#E6B325" stroke-width="1" stroke-opacity="0.5"/>
-                <text x="106" y="218" fill="#E6B325" font-family="sans-serif" font-size="9.5" text-anchor="middle" font-weight="500">${author}</text>
-                <text x="106" y="246" fill="#ffffff" fill-opacity="0.4" font-family="sans-serif" font-size="7.5" text-anchor="middle" letter-spacing="1.5">ST. JEROME LIBRARY</text>
+                <line x1="60" y1="192" x2="152" y2="192" stroke="#38bdf8" stroke-width="0.8" stroke-opacity="0.5"/>
+                <text x="106" y="215" fill="#e2e8f0" font-family="'Inter', sans-serif" font-size="9" text-anchor="middle" font-weight="500">${author}</text>
+                <text x="106" y="244" fill="#38bdf8" fill-opacity="0.8" font-family="'Inter', sans-serif" font-size="6.8" text-anchor="middle" letter-spacing="1.2">${libShort}</text>
             </svg>`;
 
             return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
         }
 
-        function searchApp() {
+        // Slideshow dengan transisi 3 detik smooth
+        function heroSlideshow() {
             return {
-                searchQuery: '',
-                searchResults: [],
-                isLoading: false,
-                requestForm: { judul: '', pengarang: '', catatan: '' },
-                isThesesModalOpen: false,
-                activeThesesCluster: 'all',
-                thesesItems: [
-                    // Biblical Theology (4)
-                    {
-                        num: 1,
-                        clusterKey: 'biblical',
-                        clusterName: 'Biblika',
-                        title: 'Inspirasi Kitab Suci oleh Roh Kudus',
-                        statement: 'What has been revealed by God and contained within Sacred Scripture has been written under the inspiration of the Holy Spirit.',
-                        note: 'Fokus refleksi: Hakikat inspirasi ilahi, kanonisitas, dan kebenaran keselamatan Kitab Suci (Dei Verbum).',
-                        query: 'Inspirasi Kitab Suci Roh Kudus Dei Verbum Hermeneutik'
-                    },
-                    {
-                        num: 2,
-                        clusterKey: 'biblical',
-                        clusterName: 'Biblika',
-                        title: 'Wahyu Diri Allah dan Tradisi Suci',
-                        statement: 'In His love, God has revealed Himself to humanity throughout history, culminating in Jesus Christ. This self-revelation is apprehended through the witness of Tradition and Sacred Scripture.',
-                        note: 'Fokus refleksi: Kesatuan integral antara Kitab Suci, Tradisi Suci, dan Magisterium.',
-                        query: 'Wahyu Allah Tradisi Suci Kitab Suci Kristus Sejarah Keselamatan'
-                    },
-                    {
-                        num: 3,
-                        clusterKey: 'biblical',
-                        clusterName: 'Biblika',
-                        title: 'Pewartaan Kerajaan Allah dan Kristus yang Bangkit',
-                        statement: 'Sacred Scripture proclaims Jesus, who announced the Kingdom of God and was crucified, as the living Christ, the Lord, and the Son of God, who sends forth the Holy Spirit from the Father.',
-                        note: 'Fokus refleksi: Kristologi biblika, misteri salib, kebangkitan, dan pneumatologi trinitaris.',
-                        query: 'Kerajaan Allah Kristus Salib Kebangkitan Roh Kudus Teologi Sinoptik Paulus'
-                    },
-                    {
-                        num: 4,
-                        clusterKey: 'biblical',
-                        clusterName: 'Biblika',
-                        title: 'Kitab Suci Sebagai Jiwa Segala Teologi',
-                        statement: 'The Seminarians are to be formed with particular care in the study of the Bible, which ought to be, as it were, the soul of all theology.',
-                        note: 'Fokus refleksi: Prinsip dasar formasi imamat dan metode eksegese akademis (Optatam Totius).',
-                        query: 'Kitab Suci Jiwa Teologi Eksegesis Formasi Imamat Studi Alkitabiah'
-                    },
-
-                    // Dogmatic Theology (4)
-                    {
-                        num: 5,
-                        clusterKey: 'dogmatic',
-                        clusterName: 'Dogmatika',
-                        title: 'Gereja Tubuh Kristus dan Komunio Komunitas',
-                        statement: 'The Church, as the People of God, the Body of Christ, and the Temple of the Holy Spirit, is present in the world manifesting its unity in the form of communion of communities guided and served by the hierarchy.',
-                        note: 'Fokus refleksi: Ekklesiologi Konsili Vatikan II, misteri kesatuan, kolegialitas episkopal, dan pelayanan hierarki.',
-                        query: 'Ekklesiologi Gereja Tubuh Kristus Umat Allah Komunio Lumen Gentium'
-                    },
-                    {
-                        num: 6,
-                        clusterKey: 'dogmatic',
-                        clusterName: 'Dogmatika',
-                        title: 'Misi Gereja di Tengah Masyarakat Indonesia',
-                        statement: 'The presence of the Church within Indonesian society, characterized by its missionary nature, will be effective only if the Church continually lives according to the spirit of the Gospel.',
-                        note: 'Fokus refleksi: Dialog antaragama, inkulturasi, misi kontekstual, dan kesaksian Injil di nusantara.',
-                        query: 'Misi Gereja Konteks Indonesia Evangelisasi Inkulturasi Dialog Agama'
-                    },
-                    {
-                        num: 7,
-                        clusterKey: 'dogmatic',
-                        clusterName: 'Dogmatika',
-                        title: 'Sakramen Inisiasi, Penyembuhan, dan Pelayanan Komunitas',
-                        statement: 'As acts of worship with moral and spiritual dimensions, the Sacraments of Initiation (Baptism, Confirmation, and Eucharist), the Sacraments of Healing (Penance and Anointing of the Sick), and the Sacraments at the Service of Community (Marriage and Holy Orders) express the living faith that bears fruit unto eternal life.',
-                        note: 'Fokus refleksi: Teologi sakramental terpadu, dimensi soteriologis dan etis buah sakramen.',
-                        query: 'Teologi Sakramental Ekaristi Baptis Pengakuan Dosa Imamat Perkawinan'
-                    },
-                    {
-                        num: 8,
-                        clusterKey: 'dogmatic',
-                        clusterName: 'Dogmatika',
-                        title: 'Devosi dan Spiritualitas Sakramental',
-                        statement: 'Devotion constitutes a spiritual treasure that enriches the life of the Church, provided it is situated within the unity of sacramental grace and in Christ the sole Mediator.',
-                        note: 'Fokus refleksi: Hubungan katekese devosi populer, liturgi gereja, dan peran perantara Kristus.',
-                        query: 'Devosi Umat Spiritualitas Katolik Liturgi Kristus Perantara Tunggal'
-                    },
-
-                    // Moral Theology (4)
-                    {
-                        num: 9,
-                        clusterKey: 'moral',
-                        clusterName: 'Moral',
-                        title: 'Tindakan Kristiani Sebagai Jawaban Panggilan Kristus',
-                        statement: 'The life and actions of Christians constitute a response to the call of Jesus to follow Him.',
-                        note: 'Fokus refleksi: Etika kristiani, panggilan kemuridan (sequela Christi), kebebasan dan suara hati.',
-                        query: 'Teologi Moral Kristiani Sequela Christi Mengikuti Kristus Suara Hati'
-                    },
-                    {
-                        num: 10,
-                        clusterKey: 'moral',
-                        clusterName: 'Moral',
-                        title: 'Keutamaan Manusiawi dan Keutamaan Ilahi',
-                        statement: 'Virtue in the life of the believer is the unity of both human and divine virtues.',
-                        note: 'Fokus refleksi: Integrasi keutamaan kardinal (kebijaksanaan, keadilan, dll) dan teologal (iman, harapan, kasih).',
-                        query: 'Keutamaan Teologal Keutamaan Kardinal Thomas Aquinas Moral Katolik'
-                    },
-                    {
-                        num: 11,
-                        clusterKey: 'moral',
-                        clusterName: 'Moral',
-                        title: 'Budaya Kehidupan vs Budaya Kematian',
-                        statement: 'The Church rejects the culture of death present in society and promotes a culture of life for the common good.',
-                        note: 'Fokus refleksi: Bioetika katolik, martabat hidup manusia sejak pembuahan, bonum commune (Evangelium Vitae).',
-                        query: 'Evangelium Vitae Bioetika Martabat Manusia Budaya Kehidupan Kebaikan Bersama'
-                    },
-                    {
-                        num: 12,
-                        clusterKey: 'moral',
-                        clusterName: 'Moral',
-                        title: 'Perkawinan Kristiani: Kudus, Monogam, Tak Terputuskan',
-                        statement: 'Christian marriage is the union of man and woman oriented toward holiness, reflecting the relationship between Christ and His Church; therefore, marriage is monogamous and indissoluble.',
-                        note: 'Fokus refleksi: Teologi tubuh, kesetiaan monogam, sifat tak terputuskan sakramen perkawinan.',
-                        query: 'Teologi Perkawinan Katolik Sakramen Perkawinan Monogami Moral Seksual'
-                    },
-
-                    // Practical Theology (4)
-                    {
-                        num: 13,
-                        clusterKey: 'practical',
-                        clusterName: 'Praktika',
-                        title: 'Reksa Pastoral Imamat Teritorial & Kategorial',
-                        statement: 'The pastoral care of the faithful by priests – embracing both territorial communities within parishes and categorical groups within the pastoral dynamics of the local Church – requires a proper vision of the priesthood, sensitivity to the realities of the faithful, and the ability to respond to contextual challenges in a relevant and transformative manner.',
-                        note: 'Fokus refleksi: Spiritualitas imamat praja/diosesan, kepemimpinan pastoral transformatif, dinamika paroki.',
-                        query: 'Teologi Pastoral Reksa Paroki Imamat Kepemimpinan Transformasi Komunitas'
-                    },
-                    {
-                        num: 14,
-                        clusterKey: 'practical',
-                        clusterName: 'Praktika',
-                        title: 'Liturgi Sebagai Perjumpaan Keselamatan & Hak Edukasi Orang Tua',
-                        statement: 'The liturgical celebration of the Church is not merely the performance of rites, but a true encounter with the mystery of Christ’s salvation; hence, the fruitfulness of liturgical pastoral ministry demands profound spiritual participation both from the priest as celebrant and from the faithful as active participants in the mystery being celebrated.',
-                        note: 'Fokus refleksi: Partisipasi aktif (actuosa participatio), teologi liturgi Sacrosanctum Concilium, dan reksa katekese keluarga.',
-                        query: 'Sacrosanctum Concilium Teologi Liturgi Partisipasi Aktif Pastoral Katekese'
-                    }
-                ],
-
-                get filteredThesesList() {
-                    if (this.activeThesesCluster === 'all') return this.thesesItems;
-                    return this.thesesItems.filter(t => t.clusterKey === this.activeThesesCluster);
-                },
-
-                getClusterBadgeClass(key) {
-                    if (key === 'biblical') return 'bg-amber-100 text-amber-800 border border-amber-300';
-                    if (key === 'dogmatic') return 'bg-blue-100 text-blue-800 border border-blue-300';
-                    if (key === 'moral') return 'bg-rose-100 text-rose-800 border border-rose-300';
-                    if (key === 'practical') return 'bg-emerald-100 text-emerald-800 border border-emerald-300';
-                    return 'bg-stone-100 text-stone-800';
-                },
-
-                selectThesis(query) {
-                    this.isThesesModalOpen = false;
-                    this.quickThesisTopic(query);
-                    setTimeout(() => {
-                        const el = document.getElementById('asisten-skripsi') || document.querySelector('form[x-model]');
-                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 100);
-                },
-                isRequestModalOpen: false,
-                waPhone: '6281234567890',
-
-                // Active Academic Topic Filter
-                activeTopic: '',
-                activeTopicName: '',
-                academicCategories: [
-                    {
-                        code: '22',
-                        ddc: '220',
-                        name: 'Kitab Suci & Eksegesis',
-                        desc: 'Tafsir Perjanjian Lama & Baru, Konkordansi, Bahasa Biblika (Ibrani/Yunani)',
-                        stats: '1.070+ Koleksi',
-                        icon: 'fa-solid fa-book-bible',
-                        bgColor: '#dcfce7',
-                        color: '#15803d'
-                    },
-                    {
-                        code: '23',
-                        ddc: '230',
-                        name: 'Teologi Dogmatik & Sistematik',
-                        desc: 'Kristologi, Tritunggal Mahakudus, Sakramentologi, Ekklesiologi & Eskatologi',
-                        stats: '1.830+ Koleksi',
-                        icon: 'fa-solid fa-cross',
-                        bgColor: '#dbeafe',
-                        color: '#1e40af'
-                    },
-                    {
-                        code: '1',
-                        ddc: '100',
-                        name: 'Filsafat, Etika & Logika',
-                        desc: 'Epistemologi, Metafisika, Filsafat Manusia, Sejarah Filsafat Barat & Timur',
-                        stats: '1.970+ Koleksi',
-                        icon: 'fa-solid fa-brain',
-                        bgColor: '#f1f5f9',
-                        color: '#334155'
-                    },
-                    {
-                        code: '241',
-                        ddc: '241',
-                        name: 'Teologi Moral & Etika Sosial',
-                        desc: 'Moral Fundamental, Bioetika, Ajaran Sosial Gereja (ASG) & Etika Profesi',
-                        stats: '400+ Koleksi',
-                        icon: 'fa-solid fa-scale-balanced',
-                        bgColor: '#fef3c7',
-                        color: '#b45309'
-                    },
-                    {
-                        code: '248',
-                        ddc: '248',
-                        name: 'Spiritualitas & Asketika',
-                        desc: 'Latihan Rohani Ignasian, Bimbingan Jiwa, Tradisi Mistik & Karmelit',
-                        stats: '610+ Koleksi',
-                        icon: 'fa-solid fa-fire',
-                        bgColor: '#f3e8ff',
-                        color: '#7e22ce'
-                    },
-                    {
-                        code: '264',
-                        ddc: '264',
-                        name: 'Liturgi & Perayaan Sakramen',
-                        desc: 'Tata Perayaan Ekaristi, Brevir Harian, Simbol & Kalender Liturgis',
-                        stats: '620+ Koleksi',
-                        icon: 'fa-solid fa-church',
-                        bgColor: '#fee2e2',
-                        color: '#991b1b'
-                    },
-                    {
-                        code: '262',
-                        ddc: '262',
-                        name: 'Hukum Kanonik (KHK)',
-                        desc: 'Kitab Hukum Kanonik 1983, Hukum Perkawinan Katolik & Tata Tertib Gereja',
-                        stats: '650+ Koleksi',
-                        icon: 'fa-solid fa-gavel',
-                        bgColor: '#fef9c3',
-                        color: '#854d0e'
-                    },
-                    {
-                        code: '27',
-                        ddc: '270',
-                        name: 'Patrologi & Sejarah Gereja',
-                        desc: 'Karya Bapa-Bapa Gereja (Patristik), Konsili Ekumenis & Sejarah Misi',
-                        stats: '350+ Koleksi',
-                        icon: 'fa-solid fa-monument',
-                        bgColor: '#ffedd5',
-                        color: '#c2410c'
-                    }
-                ],
-
-                // FITUR 4: Smart Thesis Matcher State
-                thesisQuery: '',
-                isMatchingThesis: false,
-                thesisResults: null,
-                thesisTab: 'primary', // 'primary', 'secondary', 'church'
-                thesisCopyToast: false,
-
-                // FITUR 3: Universal Citation Modal State
-                citationModalOpen: false,
-                citationTab: 'footnote',
-                selectedCitationBook: null,
-                copyToast: false,
-
-                initApp() {
-                    this.fetchLibraryInfo();
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const q = urlParams.get('q');
-                    const topic = urlParams.get('topic');
-                    if (topic) {
-                        const matchedCat = this.academicCategories.find(c => c.code === topic);
-                        this.activeTopic = topic;
-                        this.activeTopicName = matchedCat ? matchedCat.name : 'Topik DDC ' + topic;
-                        this.fetchTopicBooks(topic);
-                    } else if (q) {
-                        this.searchQuery = q;
-                        this.doSearch();
-                    } else {
-                        // Load katalog default
-                        this.doSearch(true);
-                    }
-                },
-
-                async doSearch(isInitial = false) {
-                    this.activeTopic = '';
-                    this.activeTopicName = '';
-                    if (!isInitial && !this.searchQuery.trim()) {
-                        this.searchQuery = '';
-                        window.history.replaceState({}, '', '/opac');
-                    } else if (!isInitial) {
-                        window.history.replaceState({}, '', '/opac?q=' + encodeURIComponent(this.searchQuery));
-                    }
-
-                    this.isLoading = true;
-                    try {
-                        const url = '/api/opac/search' + (this.searchQuery.trim() ? '?q=' + encodeURIComponent(this.searchQuery) : '');
-                        const res = await fetch(url);
-                        this.searchResults = await res.json();
-                        setTimeout(() => this.findCoverFromGoogle(this.searchResults), 100);
-                    } catch(e) { console.error(e); }
-                    this.isLoading = false;
-
-                    if (!isInitial && this.searchResults.length > 0) {
-                        const katalogEl = document.getElementById('katalog');
-                        if (katalogEl) katalogEl.scrollIntoView({ behavior: 'smooth' });
-                    }
-                },
-
-                async selectCategory(cat) {
-                    this.searchQuery = '';
-                    this.activeTopic = cat.code;
-                    this.activeTopicName = cat.name;
-                    window.history.replaceState({}, '', '/opac?topic=' + cat.code);
-                    await this.fetchTopicBooks(cat.code);
-
-                    const katalogEl = document.getElementById('katalog');
-                    if (katalogEl) katalogEl.scrollIntoView({ behavior: 'smooth' });
-                },
-
-                async fetchTopicBooks(topicCode) {
-                    this.isLoading = true;
-                    try {
-                        const res = await fetch('/api/opac/search?topic=' + topicCode);
-                        this.searchResults = await res.json();
-                        setTimeout(() => this.findCoverFromGoogle(this.searchResults), 100);
-                    } catch(e) { console.error(e); }
-                    this.isLoading = false;
-                },
-
-                resetTopicFilter() {
-                    this.activeTopic = '';
-                    this.activeTopicName = '';
-                    window.history.replaceState({}, '', '/opac');
-                    this.doSearch(true);
-                },
-
-                resetSearch() {
-                    this.searchQuery = '';
-                    window.history.replaceState({}, '', '/opac');
-                    this.doSearch(true);
-                },
-
-                getCoverUrl(book) {
-                    return generateStJeromeCover(book);
-                },
-
-                async findCoverFromGoogle(bookList) {
-                    {% if is_feature('ENABLE_AUTOCOVER_ONLINE') %}
-                    for (let i = 0; i < bookList.length; i++) {
-                        let book = bookList[i];
-                        if (!book.image || ['NOT_FOUND', 'RATE_LIMIT', 'tidak_ada'].includes(book.image)) {
-                            try {
-                                const isbn = (book.isbn || '').replace(/[^0-9Xx]/g, '');
-                                const query = isbn.length >= 10 ? 'isbn:' + isbn : (book.judul + (book.pengarang ? ' ' + book.pengarang : ''));
-                                const res = await fetch('https://www.googleapis.com/books/v1/volumes?q=' + encodeURIComponent(query));
-                                const data = await res.json();
-                                if (data.items && data.items.length > 0) {
-                                    let img = data.items[0].volumeInfo?.imageLinks?.thumbnail;
-                                    if (img) {
-                                        bookList[i].cover_url = img.replace('http:', 'https:');
-                                    }
-                                }
-                            } catch (e) {}
-                        }
-                    }
-                    {% endif %}
-                    this.searchResults = [...bookList];
-                },
-
-                // FITUR 4: Asisten Riset Skripsi Actions
-                quickThesisTopic(topic) {
-                    this.thesisQuery = topic;
-                    this.runThesisMatcher();
-                },
-
-                async runThesisMatcher() {
-                    if (!this.thesisQuery.trim()) return;
-                    this.isMatchingThesis = true;
-                    try {
-                        const res = await fetch('/api/opac/smart_research?topic=' + encodeURIComponent(this.thesisQuery));
-                        const data = await res.json();
-                        this.thesisResults = data;
-                        if (data.primary && data.primary.length > 0) {
-                            this.thesisTab = 'primary';
-                        } else if (data.church_docs && data.church_docs.length > 0) {
-                            this.thesisTab = 'church';
-                        } else {
-                            this.thesisTab = 'secondary';
-                        }
-                    } catch(e) {
-                        alert("Gagal meracik paket riset: " + e.message);
-                    }
-                    this.isMatchingThesis = false;
-                },
-
-                getActiveThesisBooks() {
-                    if (!this.thesisResults) return [];
-                    if (this.thesisTab === 'primary') return this.thesisResults.primary || [];
-                    if (this.thesisTab === 'secondary') return this.thesisResults.secondary || [];
-                    if (this.thesisTab === 'church') return this.thesisResults.church_docs || [];
-                    return [];
-                },
-
-                copyAllThesisCitations() {
-                    if (!this.thesisResults) return;
-                    const allBooks = [
-                        ...(this.thesisResults.primary || []),
-                        ...(this.thesisResults.church_docs || []),
-                        ...(this.thesisResults.secondary || [])
-                    ];
-                    if (allBooks.length === 0) return;
-
-                    const list = allBooks.map(b => {
-                        let c = b.citation?.turabian_biblio || `${b.pengarang || 'Anonim'}. ${b.judul}. ${b.tempat_terbit || 't.k.'}: ${b.penerbit || 't.p.'}, ${b.tahun_terbit || 't.t.'}.`;
-                        return c.replace(/_([^_]+)_/g, '$1');
-                    }).join('\n\n');
-
-                    navigator.clipboard.writeText(list).then(() => {
-                        this.thesisCopyToast = true;
-                        setTimeout(() => { this.thesisCopyToast = false; }, 2500);
-                    });
-                },
-
-                downloadThesisRis() {
-                    if (!this.thesisResults || !this.thesisQuery) return;
-                    window.location.href = '/api/opac/smart_research?topic=' + encodeURIComponent(this.thesisQuery) + '&download=ris';
-                },
-
-                // FITUR 3: Universal 1-Click Citation Modal Actions
-                async openCitationModalFor(book) {
-                    this.selectedCitationBook = book;
-                    if (!book.citation) {
-                        try {
-                            const res = await fetch('/api/opac/citation/' + book.id);
-                            const data = await res.json();
-                            this.selectedCitationBook.citation = data;
-                        } catch(e) {}
-                    }
-                    this.citationModalOpen = true;
-                },
-
-                getCitationRaw() {
-                    if (!this.selectedCitationBook || !this.selectedCitationBook.citation) return '';
-                    if (this.citationTab === 'footnote') return this.selectedCitationBook.citation.turabian_footnote || '';
-                    if (this.citationTab === 'biblio') return this.selectedCitationBook.citation.turabian_biblio || '';
-                    if (this.citationTab === 'apa') return this.selectedCitationBook.citation.apa || '';
-                    return '';
-                },
-
-                renderCitationHtml() {
-                    let text = this.getCitationRaw();
-                    if (!text) return '<span class="text-stone-400 italic">Sitasi sedang disiapkan...</span>';
-                    return text.replace(/_([^_]+)_/g, '<em class="font-semibold text-stone-900">$1</em>');
-                },
-
-                copyCitation() {
-                    let raw = this.getCitationRaw();
-                    if (!raw) return;
-                    let clean = raw.replace(/_([^_]+)_/g, '$1');
-                    navigator.clipboard.writeText(clean).then(() => {
-                        this.copyToast = true;
-                        setTimeout(() => { this.copyToast = false; }, 2500);
-                    });
-                },
-
-                downloadRis() {
-                    if (!this.selectedCitationBook) return;
-                    window.location.href = `/api/opac/citation/${this.selectedCitationBook.id}?download=ris`;
-                },
-
-                // FITUR 5: WhatsApp Hold for any book
-                
-                cleanPhone(phone) {
-                    if (!phone) return '6281234567890';
-                    let p = phone.toString().replace(/\D/g, '');
-                    if (p.startsWith('0')) p = '62' + p.substring(1);
-                    if (p.startsWith('8')) p = '62' + p;
-                    return p || '6281234567890';
-                },
-
-                openWaForBook(book) {
-                    const phone = this.cleanPhone(this.waPhone || '6281234567890');
-                    const barcode = book.sample_barcode || (book.eksemplar && book.eksemplar[0]?.no_induk) || '-';
-                    const msg = `Halo Pustakawan {{ branding.library_name }},
-
-Saya melihat buku ini di katalog OPAC dan bermaksud menanyakan ketersediaan fisik di rak / mengajukan penahanan (hold):
-
-*Judul:* ${book.judul}
-*Pengarang:* ${book.pengarang || '-'}
-*Nomor Panggil (DDC):* ${book.nomor_panggil || book.klasifikasi || '-'}
-*No. Barcode:* ${barcode}
-*Lokasi Rak:* ${book.lokasi_rak || 'Rak Koleksi Perpustakaan'}
-
-Apakah buku ini saat ini masih berada di rak dan dapat saya pinjam / baca di tempat? Terima kasih!`;
-                    
-                    const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-                    window.open(url, '_blank');
-                },
-
-                
-                async fetchLibraryInfo() {
-                    try {
-                        const res = await fetch('/api/opac/library_info');
-                        const data = await res.json();
-                        if (data.whatsapp_number) this.waPhone = data.whatsapp_number;
-                    } catch(e) {}
-                },
-
-                openRequestModal() {
-                    this.requestForm.judul = this.searchQuery;
-                    this.requestForm.pengarang = '';
-                    this.requestForm.catatan = '';
-                    this.isRequestModalOpen = true;
-                },
-
-                closeModal() {
-                    this.isRequestModalOpen = false;
-                },
-
-                async submitRequest() {
-                    try {
-                        const res = await fetch('/api/opac/request', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(this.requestForm)
-                        });
-                        if (res.ok) {
-                            alert("Usulan berhasil dikirim! Terima kasih atas partisipasi Anda.");
-                            this.closeModal();
-                        } else {
-                            alert("Gagal mengirim usulan.");
-                        }
-                    } catch (e) {
-                        alert("Error: " + e.message);
-                    }
-                }
-            }
-        }
-    </script>
-
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('heroSlideshow', () => ({
                 currentBg: 0,
-                bgs: ['/static/img/bg1.jpg', '/static/img/bg2.jpg', '/static/img/bg3.jpg', '/static/img/bg4.jpg'],
+                bgs: ['/static/img/bg3.jpg', '/static/img/bg2.jpg', '/static/img/bg1.jpg', '/static/img/bg4.jpg'],
                 init() {
                     setInterval(() => {
                         this.currentBg = (this.currentBg + 1) % this.bgs.length;
-                    }, 5000);
+                    }, 10000);
                 }
-            }));
-            
-            Alpine.data('heroMarquee', () => ({
-                row1: [],
-                async fetchCovers() {
+            }
+        }
+
+        // Showcase Component with Weekly Dynamic Rotation
+        function showcase2026() {
+            return {
+                allBooks: [],
+                displayBooks: [],
+                isLoading: true,
+                currentWeek: 1,
+
+                async fetchShowcase() {
+                    this.isLoading = true;
                     try {
-                        const [r1, r2] = await Promise.all([
-                            fetch('/api/opac/koleksi_unggulan'),
-                            fetch('/api/opac/koleksi_terbaru')
-                        ]);
-                        let b1 = await r1.json();
-                        let b2 = await r2.json();
-                        const seen = new Set();
-                        let books = b1.concat(b2).filter(b => {
-                            if (seen.has(b.id)) return false;
-                            seen.add(b.id); return true;
-                        }).map(b => Object.assign({ cover_url: null }, b));
-                        if (books.length === 0) return;
+                        const res = await fetch('/api/opac/koleksi_terbaru');
+                        let books = await res.json();
+                        
+                        let b2026 = books.filter(b => {
+                            let img = String(b.image || '');
+                            let no = String(b.no_induk || '');
+                            return img.includes('2026') || no.includes('/26') || no.includes('/2026') || (b.id >= 14000);
+                        });
 
-                        this.books = books;
-                        this.buildRows();
+                        if (b2026.length < 5) b2026 = books;
+                        this.allBooks = b2026;
 
-                        {% if is_feature('ENABLE_AUTOCOVER_ONLINE') %}
-                        // Background search for real covers
-                        await Promise.all(books.map(async (book) => {
-                            if (book.image && !['NOT_FOUND','RATE_LIMIT','tidak_ada'].includes(book.image)) return;
-                            try {
-                                const isbn = (book.isbn || '').replace(/[^0-9Xx]/g, '');
-                                const q = isbn.length >= 10 ? 'isbn:' + isbn
-                                        : (book.judul || '') + (book.pengarang ? ' ' + book.pengarang : '');
-                                const res = await fetch('https://www.googleapis.com/books/v1/volumes?q=' + encodeURIComponent(q));
-                                if (!res.ok) return;
-                                const data = await res.json();
-                                let img = data.items && data.items[0]?.volumeInfo?.imageLinks?.thumbnail;
-                                if (img) book.cover_url = img.replace('http:', 'https:');
-                            } catch (e) {}
-                        }));
+                        const now = new Date();
+                        const start = new Date(now.getFullYear(), 0, 1);
+                        const diff = now - start;
+                        const oneWeek = 1000 * 60 * 60 * 24 * 7;
+                        this.currentWeek = Math.floor(diff / oneWeek) + 1;
 
-                        this.buildRows();
-                        {% endif %}
-                    } catch(e) { console.error(e); }
-                },
+                        const batchSize = 5;
+                        const totalBatches = Math.max(1, Math.floor(this.allBooks.length / batchSize));
+                        const batchIndex = this.currentWeek % totalBatches;
+                        const startIndex = batchIndex * batchSize;
 
-                books: [],
-
-                buildRows() {
-                    let books = this.books.map(b => Object.assign({}, b));
-                    while (books.length < 20) books = books.concat(this.books.map(b => Object.assign({}, b)));
-                    this.row1 = books.concat(books).concat(books);
+                        this.displayBooks = this.allBooks.slice(startIndex, startIndex + batchSize);
+                        if (this.displayBooks.length < batchSize) {
+                            this.displayBooks = this.allBooks.slice(0, batchSize);
+                        }
+                    } catch(e) {
+                        console.error('Error loading showcase:', e);
+                    }
+                    this.isLoading = false;
                 },
 
                 getCover(book) {
@@ -1471,8 +546,78 @@ Apakah buku ini saat ini masih berada di rak dan dapat saya pinjam / baca di tem
                     }
                     return generateStJeromeCover(book);
                 }
-            }));
-        });
+            }
+        }
+
+        function searchApp() {
+            return {
+                searchQuery: '',
+                waPhone: '',
+                isRequestModalOpen: false,
+                requestForm: { judul: '', pengarang: '', catatan: '' },
+
+                initApp() {
+                    this.fetchLibraryInfo();
+                },
+
+                submitUnifiedSearch() {
+                    let q = (this.searchQuery || '').trim();
+                    if (!q) {
+                        window.location.href = '/opac/search_page';
+                    } else {
+                        window.location.href = '/opac/search_page?q=' + encodeURIComponent(q);
+                    }
+                },
+
+                async fetchLibraryInfo() {
+                    try {
+                        const res = await fetch('/api/opac/library_info');
+                        const data = await res.json();
+                        if (data && data.phone) this.waPhone = data.phone;
+                    } catch(e) {}
+                },
+
+                cleanPhone(phone) {
+                    if (!phone) return '6281234567890';
+                    let p = phone.toString().replace(/\D/g, '');
+                    if (p.startsWith('0')) p = '62' + p.substring(1);
+                    if (p.startsWith('8')) p = '62' + p;
+                    return p || '6281234567890';
+                },
+
+                hasWaPhone() {
+                    return true;
+                },
+
+                openRequestModal() {
+                    this.isRequestModalOpen = true;
+                },
+
+                closeModal() {
+                    this.isRequestModalOpen = false;
+                    this.requestForm = { judul: '', pengarang: '', catatan: '' };
+                },
+
+                async submitRequest() {
+                    try {
+                        const res = await fetch('/api/opac/usulkan', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.requestForm)
+                        });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                            alert('Terima kasih! Usulan pengadaan buku Anda telah diterima pustakawan.');
+                            this.closeModal();
+                        } else {
+                            alert(data.message || 'Gagal mengirim usulan buku.');
+                        }
+                    } catch(e) {
+                        alert('Terjadi kesalahan mengirim usulan.');
+                    }
+                }
+            }
+        }
     </script>
 </body>
 </html>

@@ -1,97 +1,213 @@
-
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="min-h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Repository - St. Jerome</title>
+    <title>Institutional Repository - St. Jerome Library</title>
+    
+    <!-- Google Fonts: Inter, Playfair Display, Alex Brush -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy': {
+                            700: '#1b3b6f',
+                            800: '#102a54',
+                            900: '#0a1730',
+                        },
+                        'gold': {
+                            DEFAULT: '#C5A059',
+                            hover: '#b08b43',
+                            light: '#fdf9f0'
+                        }
+                    },
+                    transitionDuration: { '2000': '2000ms' },
+                    fontFamily: {
+                        'sans': ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                        'serif': ['"Playfair Display"', 'Georgia', 'serif'],
+                        'script': ['"Alex Brush"', '"Great Vibes"', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Alpine.js Core -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap');
-        body { font-family: 'Poppins', sans-serif; background-color: #1a0f0d; color: white; }
-        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-script-elegant {
+            font-family: 'Alex Brush', 'Great Vibes', cursive;
+        }
+
+        .font-serif-academic {
+            font-family: 'Playfair Display', Georgia, Cambria, serif;
+        }
+
+        [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="antialiased min-h-screen flex flex-col relative" x-data="repoSearch()">
-    
-    <!-- Global Background -->
-    <div class="fixed inset-0 z-[-1]">
-        <img src="/static/img/bg4.jpg" class="w-full h-full object-cover opacity-10 mix-blend-screen grayscale">
-        <div class="absolute inset-0 bg-gradient-to-b from-[#1a0f0d]/60 to-[#1a0f0d] z-10"></div>
-    </div>
+<body class="min-h-screen flex flex-col text-slate-800 bg-slate-50 antialiased selection:bg-sky-100 selection:text-sky-900" x-data="repoHome()">
 
-    <!-- Navbar -->
-    <nav class="px-6 md:px-12 py-5 flex justify-between items-center border-b border-white/10 z-50 bg-[#1a0f0d]/80 backdrop-blur-md sticky top-0">
-        <a href="/opac" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
-            <img src="/static/img/logo_imavi.png" class="h-10 w-10 object-cover bg-white/95 rounded-full p-1 shadow-md">
-            <div class="flex flex-col">
-                <span class="font-serif font-bold text-xl leading-none tracking-wide">ST. JEROME</span>
-                <span class="text-[10px] tracking-[0.3em] uppercase text-[#E6B325] mt-1">Repository</span>
-            </div>
-        </a>
-        <div class="flex gap-4 items-center">
-            <a href="/opac" class="text-sm font-medium text-white/60 hover:text-white transition-colors hidden md:block mr-4">Kembali ke OPAC Cetak</a>
-            <a href="/opac/member/dashboard" class="text-xs md:text-sm font-bold text-[#E6B325] border border-[#E6B325] px-5 py-2 rounded-full hover:bg-[#E6B325] hover:text-[#1a0f0d] transition-all shadow-[0_0_15px_rgba(230,179,37,0.2)]">
-                Member Portal
-            </a>
-        </div>
-    </nav>
-
-    <!-- Hero Search -->
-    <main class="flex-1 w-full max-w-5xl mx-auto px-6 py-20 flex flex-col items-center">
-        <span class="text-[#E6B325] text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] mb-4 text-center">Pusat Pengetahuan Digital</span>
-        <h1 class="text-5xl md:text-6xl font-serif font-bold text-center mb-6 leading-tight">Institutional Repository</h1>
-        <p class="text-white/50 text-center max-w-2xl mb-12">Jelajahi koleksi digital eksklusif yang mencakup Tesis, Skripsi, dan Jurnal penelitian dari sivitas akademika St. Jerome.</p>
-
-        <!-- Search Bar -->
-        <div class="w-full max-w-3xl relative mb-16 group">
-            <input type="text" x-model="query" @input.debounce.300ms="search()" placeholder="Ketik judul skripsi, nama penulis, atau subjek..." class="w-full bg-white/5 border border-white/10 rounded-full px-8 py-5 pl-16 text-white text-lg placeholder-white/30 focus:outline-none focus:border-[#E6B325] focus:bg-white/10 transition-all backdrop-blur-sm shadow-xl">
-            <i class="fa-solid fa-magnifying-glass absolute left-6 top-1/2 transform -translate-y-1/2 text-white/40 text-xl group-focus-within:text-[#E6B325] transition-colors"></i>
-        </div>
-
-        <!-- Results List -->
-        <div class="w-full max-w-3xl flex flex-col gap-6 pb-20">
-            <template x-for="item in results" :key="item.id">
-                <div class="bg-white/5 border border-white/5 p-6 md:p-8 rounded-[2rem] hover:bg-white/10 hover:border-[#E6B325]/30 transition-all group backdrop-blur-sm shadow-lg hover:shadow-2xl">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-3 mb-3">
-                                <span class="bg-[#E6B325]/20 text-[#E6B325] text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full" x-text="item.gmd || 'Karya Ilmiah'"></span>
-                                <span class="text-white/30 text-xs font-bold" x-text="'ID: ' + item.id"></span>
-                            </div>
-                            <h3 class="text-2xl font-serif font-bold text-white mb-2 group-hover:text-[#E6B325] transition-colors leading-tight" x-text="item.judul"></h3>
-                            <p class="text-white/60 text-sm font-medium" x-text="'Oleh: ' + (item.pengarang || 'Tidak diketahui') + ' • ' + (item.tahun_terbit || '-')"></p>
-                        </div>
-                        <a :href="'/opac/member/reader?id=' + item.id" class="shrink-0 bg-[#E6B325] text-[#1a0f0d] flex items-center gap-3 px-6 py-3 rounded-full hover:scale-105 transition-transform shadow-[0_0_20px_rgba(230,179,37,0.3)] font-bold text-sm uppercase tracking-wider w-full md:w-auto justify-center">
-                            Baca <i class="fa-solid fa-book-open"></i>
-                        </a>
-                    </div>
-                </div>
-            </template>
+    <!-- TOP NAVBAR -->
+    <header class="w-full bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             
-            <div x-show="results.length === 0" class="text-center text-white/30 py-10 bg-white/5 rounded-[2rem] border border-white/5 border-dashed">
-                <i class="fa-solid fa-folder-open text-4xl mb-4 opacity-30"></i>
-                <p>Tidak ada dokumen yang ditemukan.</p>
+            <!-- Brand Identity -->
+            <a href="/opac" class="flex items-center gap-3.5 group">
+                <img src="/static/img/logo_imavi.png" 
+                     alt="Logo IMAVI" 
+                     class="h-12 w-12 rounded-full border border-slate-200 shadow-xs object-contain p-1 bg-white group-hover:scale-105 transition-transform">
+                <div class="flex flex-col">
+                    <span class="font-script-elegant text-3xl sm:text-4xl text-slate-900 leading-none group-hover:text-[#1b3b6f] transition-colors pt-1">
+                        St. Jerome Library
+                    </span>
+                    <span class="text-slate-400 text-[10px] tracking-wider uppercase font-semibold">
+                        Institutum Ioannis Mariae Vianney
+                    </span>
+                </div>
+            </a>
+            
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+                <a href="/opac" class="hover:text-slate-900 transition-colors">OPAC Buku Cetak</a>
+                <a href="/opac/repository" class="text-slate-900 font-semibold border-b-2 border-slate-900 pb-0.5">Repository</a>
+                <a href="/e-resources" class="hover:text-slate-900 transition-colors">E-Resources</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <a href="/opac/member/login" class="bg-slate-900 hover:bg-[#1b3b6f] text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full font-semibold text-xs sm:text-sm transition-all shadow-sm flex items-center gap-2">
+                    <i class="fa-solid fa-user text-[#C5A059]"></i> Portal Member
+                </a>
             </div>
+        </div>
+    </header>
+
+    <!-- Main Content: Full Screen Clean Hero Search -->
+    <main class="w-full relative overflow-hidden min-h-[calc(100vh-80px)] flex flex-col justify-center items-center py-16 sm:py-24" x-data="heroSlideshow()">
+        
+        <!-- Background Image Slideshow with Smooth Crossfade (True Fade Transition) -->
+        <div class="absolute inset-0 z-0 overflow-hidden bg-slate-100">
+            <div class="absolute inset-0 bg-cover bg-center transition-opacity duration-2000 ease-in-out will-change-[opacity]"
+                 style="background-image: url('/static/img/bg3.jpg');"
+                 :class="currentBg === 0 ? 'opacity-85 pointer-events-auto' : 'opacity-0 pointer-events-none'"></div>
+            <div class="absolute inset-0 bg-cover bg-center transition-opacity duration-2000 ease-in-out will-change-[opacity]"
+                 style="background-image: url('/static/img/bg2.jpg');"
+                 :class="currentBg === 1 ? 'opacity-85 pointer-events-auto' : 'opacity-0 pointer-events-none'"></div>
+            <div class="absolute inset-0 bg-cover bg-center transition-opacity duration-2000 ease-in-out will-change-[opacity]"
+                 style="background-image: url('/static/img/bg1.jpg');"
+                 :class="currentBg === 2 ? 'opacity-85 pointer-events-auto' : 'opacity-0 pointer-events-none'"></div>
+            <div class="absolute inset-0 bg-cover bg-center transition-opacity duration-2000 ease-in-out will-change-[opacity]"
+                 style="background-image: url('/static/img/bg4.jpg');"
+                 :class="currentBg === 3 ? 'opacity-85 pointer-events-auto' : 'opacity-0 pointer-events-none'"></div>
+            <!-- Soft Light Tint Overlay -->
+            <div class="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-white/70 backdrop-blur-[0.5px]"></div>
+        </div>
+
+        <!-- Centered Search Content -->
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center relative z-10 w-full py-20 sm:py-32">
+            
+            <!-- Headline Display -->
+            <h1 class="font-serif-academic font-bold text-slate-900 text-3xl sm:text-5xl md:text-6xl mb-4 tracking-tight leading-[1.12]">
+                Institutional Repository
+            </h1>
+
+            <p class="text-slate-600 text-sm sm:text-base md:text-lg mb-10 max-w-2xl mx-auto font-normal leading-relaxed">
+                Jelajahi koleksi digital eksklusif yang mencakup Skripsi, Tesis, Disertasi, dan Publikasi Ilmiah sivitas akademika St. Jerome Library.
+            </p>
+
+            <!-- SINGLE UNIFIED SEARCH BAR (Redirects directly to result page) -->
+            <div class="w-full max-w-2xl mx-auto">
+                <form @submit.prevent="submitSearch()" class="relative flex items-center bg-white/95 backdrop-blur-md rounded-2xl border-2 border-slate-300 hover:border-sky-600 focus-within:border-sky-600 focus-within:ring-4 focus-within:ring-sky-500/15 shadow-xl transition-all p-1.5 sm:p-2">
+                    <div class="pl-4 pr-2 text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass text-lg sm:text-xl text-sky-600"></i>
+                    </div>
+                    <input type="text" x-model="searchQuery" 
+                           placeholder="Ketik judul skripsi, nama penulis, topik, atau kata kunci..." 
+                           class="w-full bg-transparent text-slate-900 placeholder:text-slate-400 text-sm sm:text-base font-medium py-2.5 sm:py-3 px-2 focus:outline-none"
+                           autofocus>
+                    <button type="submit" class="bg-slate-900 hover:bg-[#1b3b6f] text-white font-semibold text-xs sm:text-sm px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl transition-all shadow-md flex items-center gap-2 shrink-0">
+                        <span>Cari</span>
+                        <i class="fa-solid fa-arrow-right text-xs text-[#C5A059]"></i>
+                    </button>
+                </form>
+            </div>
+
         </div>
     </main>
 
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 text-slate-400 text-xs mt-auto border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div class="md:col-span-2 space-y-3">
+                    <div class="flex items-center gap-3">
+                        <img src="/static/img/logo_imavi.png" alt="IMAVI Logo" class="h-10 w-10 rounded-full bg-white p-1">
+                        <div>
+                            <p class="text-white font-script-elegant text-2xl leading-none">St. Jerome Library</p>
+                            <p class="text-[10px] tracking-wider uppercase text-slate-400">Institutum Ioannis Mariae Vianney</p>
+                        </div>
+                    </div>
+                    <p class="text-slate-400 text-xs max-w-sm leading-relaxed">
+                        Repositori Digital resmi Institutum Ioannis Mariae Vianney (IMAVI) Surabaya. Menyediakan akses naskah akademik, skripsi, dan riset sivitas akademika.
+                    </p>
+                </div>
+
+                <div>
+                    <h5 class="text-white font-semibold text-sm mb-3">Pintasan Layanan</h5>
+                    <ul class="space-y-2 text-xs">
+                        <li><a href="/opac" class="hover:text-white transition-colors">Beranda OPAC Buku</a></li>
+                        <li><a href="/opac/repository" class="hover:text-white transition-colors text-white font-medium">Digital Repository</a></li>
+                        <li><a href="/e-resources" class="hover:text-white transition-colors">E-Resources Jurnal</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h5 class="text-white font-semibold text-sm mb-3">Akses Sivitas</h5>
+                    <ul class="space-y-2 text-xs">
+                        <li><a href="/opac/member/login" class="hover:text-white transition-colors">Portal Anggota</a></li>
+                        <li><a href="https://wa.me/6281234567890" target="_blank" class="hover:text-white transition-colors">Bantuan Sirkulasi &amp; Pustakawan</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-900 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
+                <div>&copy; 2026 St. Jerome Library &bull; Institutum Ioannis Mariae Vianney. All rights reserved.</div>
+                <div class="text-slate-400 font-serif-academic italic">Veritas Liberabit Vos</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Alpine Script -->
     <script>
-        function repoSearch() {
+        function heroSlideshow() {
             return {
-                query: '',
-                results: [],
-                init() { this.search(); },
-                async search() {
-                    try {
-                        const response = await fetch('/api/repository/search?q=' + encodeURIComponent(this.query));
-                        const data = await response.json();
-                        this.results = data;
-                    } catch (e) {
-                        console.error(e);
-                    }
+                currentBg: 0,
+                bgs: ['/static/img/bg3.jpg', '/static/img/bg2.jpg', '/static/img/bg1.jpg', '/static/img/bg4.jpg'],
+                init() {
+                    setInterval(() => {
+                        this.currentBg = (this.currentBg + 1) % this.bgs.length;
+                    }, 10000);
+                }
+            }
+        }
+
+        function repoHome() {
+            return {
+                searchQuery: '',
+                submitSearch() {
+                    let q = this.searchQuery.trim();
+                    window.location.href = '/opac/repository/search_page?q=' + encodeURIComponent(q);
                 }
             }
         }
