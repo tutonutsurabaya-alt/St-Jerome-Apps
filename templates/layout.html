@@ -574,23 +574,25 @@
 
             </div>
             
-            <!-- Sidebar System Footer (With Bottom Subtle Pin) -->
+            <!-- Pin / Kunci Sidebar Row (Ditempatkan di atas v2.6) -->
+            <div class="px-3 pt-2 pb-1 border-t border-stone-150 bg-stone-50/40">
+                <button type="button" @click="isPinned = !isPinned; localStorage.setItem('sjla_sidebar_pinned', isPinned)"
+                        :title="isPinned ? 'Lepas Kunci Sidebar (Auto-collapse)' : 'Kunci Sidebar Statis (Pinned)'"
+                        class="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
+                        :class="isPinned ? 'bg-stone-100 text-stone-900 font-semibold' : ''">
+                    <i class="fa-solid fa-thumbtack w-4 text-center text-xs transition-transform duration-200" :class="isPinned ? 'rotate-45 text-amber-700' : 'text-stone-400'"></i>
+                    <span class="truncate sidebar-collapsible-text text-[11px]" x-text="isPinned ? 'Sidebar Terkunci' : 'Kunci Sidebar'"></span>
+                </button>
+            </div>
+
+            <!-- Sidebar System Footer (Status Versi & Lokasi Bersih) -->
             <div class="sidebar-system-footer px-3.5 py-2.5 border-t border-stone-200 bg-stone-50/70 text-xs overflow-hidden">
-                <div class="flex items-center justify-between gap-2">
-                    <div class="sidebar-collapsible-text min-w-0 flex items-center justify-between flex-1 text-stone-500 whitespace-nowrap">
-                        <span class="flex items-center gap-1.5 font-medium text-[11px]">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
-                            <span class="truncate">St. Jerome v2.6</span>
-                        </span>
-                        <span class="text-[10px] text-stone-400 font-semibold tracking-wide uppercase">{{ branding.default_lokasi }}</span>
-                    </div>
-                    <!-- Discreet Bottom Pin Button -->
-                    <button type="button" @click="isPinned = !isPinned; localStorage.setItem('sjla_sidebar_pinned', isPinned)" 
-                            :title="isPinned ? 'Lepas Kunci Sidebar (Auto-collapse)' : 'Kunci Sidebar Statis (Pinned)'"
-                            class="shrink-0 flex items-center justify-center w-7 h-7 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 transition cursor-pointer"
-                            :class="isPinned ? 'bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs' : 'border border-transparent'">
-                        <i class="fa-solid fa-thumbtack text-[11px] transition-transform duration-200" :class="isPinned ? 'rotate-45 text-amber-800' : 'opacity-60 hover:opacity-100'"></i>
-                    </button>
+                <div class="flex items-center justify-between text-stone-500">
+                    <span class="flex items-center gap-1.5 font-medium text-[11px] whitespace-nowrap">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                        <span class="sidebar-collapsible-text">St. Jerome v2.6</span>
+                    </span>
+                    <span class="sidebar-collapsible-text text-[10px] text-stone-400 font-semibold tracking-wide uppercase">{{ branding.default_lokasi }}</span>
                 </div>
             </div>
         </aside>
