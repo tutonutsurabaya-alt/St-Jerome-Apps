@@ -160,21 +160,30 @@
                             <!-- Sampul & Detail Buku -->
                             <td class="py-3 px-4">
                                 <div class="flex items-start gap-3">
-                                    <!-- Thumbnail Cover Buku -->
-                                    <div class="w-12 h-16 shrink-0 rounded-lg overflow-hidden border border-stone-200 shadow-xs bg-stone-100 relative group cursor-pointer"
+                                    <!-- Thumbnail Cover Buku (Foto Asli atau Smart Typographical Jacket) -->
+                                    <div class="w-12 h-16 shrink-0 rounded-lg overflow-hidden border border-stone-200 shadow-xs relative group cursor-pointer"
                                          @click="openImageModal(item)"
                                          :title="'Klik untuk memperbesar sampul: ' + item.judul">
-                                        <template x-if="item.image">
+                                        <template x-if="item.image && !item.coverFailed">
                                             <img :src="getCoverUrl(item.image)" 
-                                                 class="w-full h-full object-cover group-hover:scale-110 transition duration-300" 
+                                                 class="w-full h-full object-cover group-hover:scale-105 transition duration-200" 
                                                  :alt="item.judul"
-                                                 @error="$el.style.display='none'; if ($el.nextElementSibling) $el.nextElementSibling.style.display='flex'">
+                                                 @error="item.coverFailed = true">
                                         </template>
-                                        <div class="w-full h-full flex flex-col items-center justify-center p-1 text-center bg-stone-100 text-stone-400"
-                                             :style="item.image ? 'display: none;' : 'display: flex;'">
-                                            <i class="fa-solid fa-book text-stone-300 text-base mb-0.5"></i>
-                                            <span class="text-[7.5px] font-mono leading-tight truncate w-full text-stone-400" x-text="item.no_induk"></span>
-                                        </div>
+                                        <!-- Smart Typographical Jacket Fallback -->
+                                        <template x-if="!item.image || item.coverFailed">
+                                            <div :class="getJacketGradient(item.klasifikasi)" class="w-full h-full relative overflow-hidden flex flex-col justify-between p-1 select-none transition-transform duration-200 group-hover:scale-105">
+                                                <div class="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-r from-black/35 via-white/10 to-transparent pointer-events-none"></div>
+                                                <div class="relative z-10 flex items-center justify-between text-[6px] font-mono tracking-wider opacity-90 pl-1">
+                                                    <span class="font-bold px-0.5 rounded bg-black/40 text-white" x-text="item.klasifikasi || 'DDC'"></span>
+                                                    <i class="fa-solid fa-bookmark text-[5px] text-white/80"></i>
+                                                </div>
+                                                <div class="relative z-10 my-auto text-center px-0.5">
+                                                    <div class="text-[7px] font-serif font-bold leading-tight line-clamp-3 text-white drop-shadow-sm" x-text="item.judul"></div>
+                                                </div>
+                                                <div class="relative z-10 text-[5.5px] font-mono tracking-wider text-center text-white/80 truncate border-t border-white/20 pt-0.5" x-text="item.no_induk"></div>
+                                            </div>
+                                        </template>
                                         <!-- Hover Overlay Zoom Icon -->
                                         <div class="absolute inset-0 bg-stone-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs">
                                             <i class="fa-solid fa-magnifying-glass-plus"></i>
@@ -673,6 +682,24 @@ function monitoringKeterlambatan() {
             const encoded = encodeURIComponent(this.waMessageInput);
             const url = phone ? `https://wa.me/${phone}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
             window.open(url, '_blank');
+        },
+
+        getJacketGradient(ddc) {
+            const code = String(ddc || '').trim();
+            const first = code.charAt(0);
+            const map = {
+                '0': 'bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900',
+                '1': 'bg-gradient-to-br from-indigo-700 via-indigo-800 to-slate-900',
+                '2': 'bg-gradient-to-br from-amber-700 via-amber-800 to-stone-900',
+                '3': 'bg-gradient-to-br from-blue-700 via-blue-800 to-slate-900',
+                '4': 'bg-gradient-to-br from-teal-700 via-teal-800 to-slate-900',
+                '5': 'bg-gradient-to-br from-emerald-700 via-emerald-800 to-stone-900',
+                '6': 'bg-gradient-to-br from-cyan-700 via-cyan-800 to-slate-900',
+                '7': 'bg-gradient-to-br from-rose-700 via-rose-800 to-stone-900',
+                '8': 'bg-gradient-to-br from-fuchsia-700 via-fuchsia-800 to-slate-900',
+                '9': 'bg-gradient-to-br from-stone-700 via-stone-800 to-stone-950'
+            };
+            return map[first] || 'bg-gradient-to-br from-amber-800 via-stone-800 to-stone-950';
         },
 
         getCoverUrl(img) {
